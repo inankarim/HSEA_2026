@@ -1,15 +1,6 @@
 @import "tailwindcss";
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&display=swap");
 
-/* Prevents stray horizontal scroll on mobile from any decorative
-   absolutely-positioned elements, and removes the tap-highlight flash
-   on touch devices for a more native feel. */
-html,
-body {
-  overflow-x: hidden;
-  -webkit-tap-highlight-color: transparent;
-}
-
 @theme {
   --color-brand-lime: #a9cd58;
   --color-brand-teal: #52be87;
@@ -28,29 +19,17 @@ body {
   --font-body: "Open Sans", Arial, Helvetica, sans-serif;
 }
 
-/* ... rest of your file (brand-surface, dot-grid, award-circle, logo-loop) unchanged ... */
+html,
 body {
-  font-family: var(--font-body);
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
 }
 
-@theme {
-  --color-brand-lime: #a9cd58;
-  --color-brand-teal: #52be87;
-  --color-brand-cyan: #12a3ca;
-  --color-brand-navy: #4a698d;
-
-  --color-mark-dark: #4c403b;   /* the "L" shade */
-  --color-mark-mauve: #7b6668;  /* the "H" shade */
-
-  --color-accent-cyan: #4dfbe4;
-  --color-navy-deep: #12233f;
-  --color-navy-mid: #1a3a63;
-  --color-navy-ink: #14202e;    /* header logo glyph on white */
+body {
+  font-family: var(--font-body);
 }
 
-/* Full-bleed brand gradient: covers header + hero as one continuous surface */
+/* Full-bleed brand gradient */
 .brand-surface {
   background: linear-gradient(
     135deg,
@@ -63,7 +42,6 @@ body {
   overflow: visible;
 }
 
-/* Soft dot grid, fades out toward the center */
 .dot-grid {
   background-image: radial-gradient(
     rgba(255, 255, 255, 0.35) 1.5px,
@@ -75,10 +53,10 @@ body {
   pointer-events: none;
 }
 
-/* Layered circular plates behind the award lockup, right side of hero */
 .award-circle-outer {
   background: var(--color-navy-mid);
 }
+
 .award-circle-inner {
   background: radial-gradient(
     circle at 35% 30%,
@@ -88,7 +66,6 @@ body {
   );
 }
 
-/* ============ Logo loop animation (looping, all-the-time) ============ */
 .logo-loop {
   --cycle: 5s;
 }
@@ -96,15 +73,19 @@ body {
 .logo-loop .shape-l {
   animation: slideInLeft var(--cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
+
 .logo-loop .shape-h {
   animation: slideInRight var(--cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
+
 .logo-loop .wordmark {
   animation: fadeUpHold var(--cycle) ease-out infinite;
 }
+
 .logo-loop .award-block {
   animation: fadeUpHold2 var(--cycle) ease-out infinite;
 }
+
 .logo-loop .award-line {
   animation: growLine var(--cycle) ease-out infinite;
 }
@@ -119,6 +100,7 @@ body {
   97% { opacity: 0; transform: translateX(0) scale(0.96); }
   100% { opacity: 0; transform: translateX(-160px) scale(0.9); }
 }
+
 @keyframes slideInRight {
   0% { opacity: 0; transform: translateX(160px) scale(0.9); }
   3% { opacity: 0; transform: translateX(160px) scale(0.9); }
@@ -129,6 +111,7 @@ body {
   97% { opacity: 0; transform: translateX(0) scale(0.96); }
   100% { opacity: 0; transform: translateX(160px) scale(0.9); }
 }
+
 @keyframes fadeUpHold {
   0% { opacity: 0; transform: translateY(14px); }
   27% { opacity: 0; transform: translateY(14px); }
@@ -137,6 +120,7 @@ body {
   97% { opacity: 0; transform: translateY(10px); }
   100% { opacity: 0; transform: translateY(14px); }
 }
+
 @keyframes fadeUpHold2 {
   0% { opacity: 0; transform: translateY(10px); }
   43% { opacity: 0; transform: translateY(10px); }
@@ -145,6 +129,7 @@ body {
   97% { opacity: 0; transform: translateY(8px); }
   100% { opacity: 0; transform: translateY(10px); }
 }
+
 @keyframes growLine {
   0% { width: 0; }
   43% { width: 0; }
