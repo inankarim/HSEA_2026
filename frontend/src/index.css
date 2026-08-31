@@ -1,0 +1,154 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Open+Sans:wght@400;600&display=swap");
+
+/* Prevents stray horizontal scroll on mobile from any decorative
+   absolutely-positioned elements, and removes the tap-highlight flash
+   on touch devices for a more native feel. */
+html,
+body {
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@theme {
+  --color-brand-lime: #a9cd58;
+  --color-brand-teal: #52be87;
+  --color-brand-cyan: #12a3ca;
+  --color-brand-navy: #4a698d;
+
+  --color-mark-dark: #4c403b;   /* the "L" shade */
+  --color-mark-mauve: #7b6668;  /* the "H" shade */
+
+  --color-accent-cyan: #4dfbe4;
+  --color-navy-deep: #12233f;
+  --color-navy-mid: #1a3a63;
+  --color-navy-ink: #14202e;    /* header logo glyph on white */
+
+  --font-heading: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Open Sans", Arial, Helvetica, sans-serif;
+}
+
+/* ... rest of your file (brand-surface, dot-grid, award-circle, logo-loop) unchanged ... */
+body {
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@theme {
+  --color-brand-lime: #a9cd58;
+  --color-brand-teal: #52be87;
+  --color-brand-cyan: #12a3ca;
+  --color-brand-navy: #4a698d;
+
+  --color-mark-dark: #4c403b;   /* the "L" shade */
+  --color-mark-mauve: #7b6668;  /* the "H" shade */
+
+  --color-accent-cyan: #4dfbe4;
+  --color-navy-deep: #12233f;
+  --color-navy-mid: #1a3a63;
+  --color-navy-ink: #14202e;    /* header logo glyph on white */
+}
+
+/* Full-bleed brand gradient: covers header + hero as one continuous surface */
+.brand-surface {
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-lime) 0%,
+    var(--color-brand-teal) 30%,
+    var(--color-brand-cyan) 62%,
+    var(--color-brand-navy) 100%
+  );
+  position: relative;
+  overflow: visible;
+}
+
+/* Soft dot grid, fades out toward the center */
+.dot-grid {
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.35) 1.5px,
+    transparent 1.5px
+  );
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(to bottom right, black, transparent 55%);
+  mask-image: linear-gradient(to bottom right, black, transparent 55%);
+  pointer-events: none;
+}
+
+/* Layered circular plates behind the award lockup, right side of hero */
+.award-circle-outer {
+  background: var(--color-navy-mid);
+}
+.award-circle-inner {
+  background: radial-gradient(
+    circle at 35% 30%,
+    var(--color-brand-teal) 0%,
+    var(--color-brand-cyan) 45%,
+    var(--color-navy-deep) 100%
+  );
+}
+
+/* ============ Logo loop animation (looping, all-the-time) ============ */
+.logo-loop {
+  --cycle: 5s;
+}
+
+.logo-loop .shape-l {
+  animation: slideInLeft var(--cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.logo-loop .shape-h {
+  animation: slideInRight var(--cycle) cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.logo-loop .wordmark {
+  animation: fadeUpHold var(--cycle) ease-out infinite;
+}
+.logo-loop .award-block {
+  animation: fadeUpHold2 var(--cycle) ease-out infinite;
+}
+.logo-loop .award-line {
+  animation: growLine var(--cycle) ease-out infinite;
+}
+
+@keyframes slideInLeft {
+  0% { opacity: 0; transform: translateX(-160px) scale(0.9); }
+  3% { opacity: 0; transform: translateX(-160px) scale(0.9); }
+  18% { opacity: 1; transform: translateX(0) scale(1); }
+  20% { transform: translateX(0) scale(1.06); }
+  22% { transform: translateX(0) scale(1); }
+  88% { opacity: 1; transform: translateX(0) scale(1); }
+  97% { opacity: 0; transform: translateX(0) scale(0.96); }
+  100% { opacity: 0; transform: translateX(-160px) scale(0.9); }
+}
+@keyframes slideInRight {
+  0% { opacity: 0; transform: translateX(160px) scale(0.9); }
+  3% { opacity: 0; transform: translateX(160px) scale(0.9); }
+  18% { opacity: 1; transform: translateX(0) scale(1); }
+  20% { transform: translateX(0) scale(1.06); }
+  22% { transform: translateX(0) scale(1); }
+  88% { opacity: 1; transform: translateX(0) scale(1); }
+  97% { opacity: 0; transform: translateX(0) scale(0.96); }
+  100% { opacity: 0; transform: translateX(160px) scale(0.9); }
+}
+@keyframes fadeUpHold {
+  0% { opacity: 0; transform: translateY(14px); }
+  27% { opacity: 0; transform: translateY(14px); }
+  41% { opacity: 1; transform: translateY(0); }
+  88% { opacity: 1; transform: translateY(0); }
+  97% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 0; transform: translateY(14px); }
+}
+@keyframes fadeUpHold2 {
+  0% { opacity: 0; transform: translateY(10px); }
+  43% { opacity: 0; transform: translateY(10px); }
+  57% { opacity: 1; transform: translateY(0); }
+  88% { opacity: 1; transform: translateY(0); }
+  97% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 0; transform: translateY(10px); }
+}
+@keyframes growLine {
+  0% { width: 0; }
+  43% { width: 0; }
+  55% { width: 64px; }
+  88% { width: 64px; }
+  100% { width: 0; }
+}

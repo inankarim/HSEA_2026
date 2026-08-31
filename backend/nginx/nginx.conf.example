@@ -1,0 +1,48 @@
+# Example Nginx reverse-proxy / load-balancer config for the HSEA 2026
+# backend. Adjust upstream ports/hosts as you scale Node.js instances,
+# and swap the upstream block for your PaaS/Cloud Load Balancer's own
+# health-check + backend-pool configuration if not self-hosting Nginx.
+
+upstream hsea_backend {
+    # Add one line per Node.js instance. `least_conn` spreads submission
+    # spikes more evenly than default round-robin when requests vary in
+    # duration (e.g. final submission vs. a lightweight GET).
+    least_conn;
+    server 127.0.0.1:4000 max_fails=3 fail_timeout=10s;
+    server 127.0.0.1:4001 max_fails=3 fail_timeout=10s;
+    server 127.0.0.1:4002 max_fails=3 fail_timeout=10s;
+    keepalive 64;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name api.hsea2026.example.com;
+
+    ssl_certificate     /etc/letsencrypt/live/api.hsea2026.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api.hsea2026.example.com/privkey.pem;
+
+    client_max_body_size 512k;   # no file uploads — JSON payloads only
+    proxy_read_timeout 20s;
+    proxy_connect_timeout 5s;
+
+    location /health {
+        proxy_pass http://hsea_backend;
+        access_log off;
+    }
+
+    location / {
+        proxy_pass http://hsea_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+server {
+    listen 80;
+    server_name api.hsea2026.example.com;
+    return 301 https://$host$request_uri;
+}
