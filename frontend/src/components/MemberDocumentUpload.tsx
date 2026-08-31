@@ -6,8 +6,8 @@ import {
   MAX_DOCUMENT_SIZE_BYTES,
   acceptAttrFor,
   type DocumentKind,
-  type DocumentType,
   type DocumentUiState,
+  type MemberDocumentType,
 } from "../types/Document";
 
 /**
@@ -31,7 +31,7 @@ export default function MemberDocumentUpload({
 }: {
   applicationId: string;
   memberId: string;
-  documentType: DocumentType;
+  documentType:  MemberDocumentType;
   label: string;
   kind: DocumentKind;
   required: boolean;
@@ -40,8 +40,8 @@ export default function MemberDocumentUpload({
   initialFilename?: string;
   disabled?: boolean;
   concurrencyGate: (fn: () => Promise<void>) => Promise<void>;
-  onUploaded?: (documentType: DocumentType, filename: string) => void;
-  onRemoved?: (documentType: DocumentType) => void;
+  onUploaded?: (documentType: MemberDocumentType, filename: string) => void;
+  onRemoved?: (documentType: MemberDocumentType) => void;
 }) {
   const [state, setState] = useState<DocumentUiState>(
     initialStatus === "UPLOADED" ? "uploaded" : "idle",

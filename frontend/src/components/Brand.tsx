@@ -4,8 +4,15 @@ import holcim_water from "../assets/HolcimWaterProtect.4.png";
 import holcimstrong from "../assets/HolcimStrongStructure.4.png"
 import holcimcoastal from "../assets/Holcim Coastal Guard.webp"
 
+interface Product {
+  title: string;
+  description: string;
+  productlink: string;
+  image: string;
+}
+
 const Brand = () => {
-  const products = [
+  const products: Product[] = [
     {
       title: "HOLCIM STRONG STRUCTURE",
       description: "Holcim (Strong Structure), a Portland Composite Cement (PCC) complies with BDS EN 197-1:2003, CEM II/B-M (S-V-L), 42.5N standard. The usage of this type of cement started from last few decades in Bangladesh.",
@@ -20,7 +27,7 @@ const Brand = () => {
     },
     {
       title: "HOLCIM COASTAL GUARD",
-      description: "Holcim Coastal Guard is a low-carbon sulphate-resisting pozzolanic cement developed for salinity- and sulphate-rich soil and water environments, particularly in Bangladesh’s coastal regions (approximately 32% of the land area).",
+      description: "Holcim Coastal Guard is a low-carbon sulphate-resisting pozzolanic cement developed for salinity- and sulphate-rich soil and water environments, particularly in Bangladesh's coastal regions (approximately 32% of the land area).",
       productlink: "https://www.facebook.com/reel/1093178833355848/?s=single_unit",
       image: holcimcoastal
     },
@@ -32,11 +39,15 @@ const Brand = () => {
     },
     {
       title: "SUPERCRETE PLUS",
-      description: "Supercrete Plus is the number one Fair Face cement in Bangladesh with “CPR (Concrete Porosity Reduction) & Strength Enhancing Technology” that enhances superior bonding and ensures high strength.",
+      description: `Supercrete Plus is the number one Fair Face cement in Bangladesh with "CPR (Concrete Porosity Reduction) & Strength Enhancing Technology" that enhances superior bonding and ensures high strength.`,
       productlink: "https://www.facebook.com/reel/1093178833355848/?s=single_unit",
       image: supercreate_plus
     },
   ];
+
+  const handleCardClick = (productLink: string): void => {
+    window.open(productLink, "_blank");
+  };
 
   return (
     <div className="w-full py-12 px-4 md:px-8 bg-white">
@@ -62,7 +73,10 @@ const Brand = () => {
               }}
             >
               {/* Image Container */}
-              <div className="relative w-full h-64 md:h-72 lg:h-80 flex items-center justify-center  mb-6 overflow-hidden group">
+              <div 
+                onClick={() => handleCardClick(product.productlink)}
+                className="relative w-full h-64 md:h-72 lg:h-80 flex items-center justify-center mb-6 overflow-hidden group cursor-pointer"
+              >
                 <img
                   src={product.image}
                   alt={product.title}
