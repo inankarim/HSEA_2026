@@ -10,7 +10,7 @@ import {
 const GeneralInfo = () => {
   return (
     <div className="bg-white text-[#071C2C] [text-shadow:0_2px_8px_rgba(0,0,0,0.35)]">
-      <InfoHero title="General Information" />
+      <InfoHero title="General Information" titleClassName="text-white" />
 
       <ChapterIntro
         number="01"

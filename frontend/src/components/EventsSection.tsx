@@ -3,18 +3,18 @@ import FadeIn from "./FadeIn";
 
 // Import your event images
 import eventImage1 from "../assets/card1.png";
-import eventImage2 from "../assets/card2.png";
+import eventImage2 from "../assets/_asia_largest.jpg.png";
 import eventImage3 from "../assets/event3.jpg.webp";
 import eventImage4 from "../assets/card4.png";
 import eventImage5 from "../assets/card5.png";
 import eventImage6 from "../assets/Urbanbridgespan.webp";
+
 
 const events = [
   {
     title: "ECOPact contributes to LEED Gold certification of Arca, new building in Milan",
     description:
       "As a global leader in innovative and sustainable building solutions, our products play an essential role in the development of greener buildings and more liveable cities. For example, low-carbon concrete range of HOLCIM ECOPact offers 30% to 100% lower carbon compared to standard (CEM I) concrete.",
-    date: "15 NOVEMBER 2024",
     image: eventImage1,
     link: "https://www.holcim.com/who-we-are/our-stories/ecopact-contributes-to-leed-gold-certification-of-arca-building-milan",
   },
@@ -118,12 +118,6 @@ export default function EventsSection() {
 
               {/* Content Container */}
               <div className="flex flex-col flex-grow p-6 md:p-8">
-                {/* Date */}
-                {event.date && (
-                  <p className="text-xs md:text-sm font-bold uppercase tracking-wider text-gray-500 mb-3">
-                    {event.date}
-                  </p>
-                )}
 
                 {/* Title */}
                 <h3 className="text-lg md:text-xl font-bold leading-tight text-slate-950 mb-4 group-hover:text-blue-900 transition-colors">

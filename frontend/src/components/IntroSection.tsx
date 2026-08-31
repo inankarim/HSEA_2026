@@ -17,11 +17,11 @@ export default function IntroSection() {
 
             <FadeIn delay={0.15}>
               <div className="mt-8 lg:mt-10 flex flex-wrap items-center gap-x-4 sm:gap-x-5 lg:gap-x-6 gap-y-3 text-sm sm:text-base lg:text-lg font-bold uppercase tracking-wide text-accent-cyan">
-                <a href="/awards/about" className="hover:underline flex items-center gap-1.5 lg:gap-2">
+                <a href="/awards/about" className="hover:underline flex items-center gap-1.5 lg:gap-2  text-navy-deep">
                   Learn more <span aria-hidden>→</span>
                 </a>
                 <span className="text-gray-300">|</span>
-                <a href="/jury" className="hover:underline flex items-center gap-1.5 lg:gap-2">
+                <a href="/jury" className="hover:underline flex items-center gap-1.5 lg:gap-2  text-navy-deep" >
                   Meet the jury <span aria-hidden>→</span>
                 </a>
               </div>

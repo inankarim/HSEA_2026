@@ -9,27 +9,27 @@ export default function AboutSection() {
       <div className="mx-auto max-w-7xl px-6 py-12 sm:py-16 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-start">
         {/* Side image, stacked cards like the reference */}
        <div className="relative h-96 sm:h-[420px] md:h-[480px] lg:[520px] mx-auto w-full max-w-sm md:max-w-none">
-          <motion.div
-            className="absolute left-0 top-4 sm:top-10 h-64 w-64 sm:h-96 sm:w-96 md:h-[440px] md:w-[440px] rounded-2xl bg-gray-300"
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
-          />
-          <motion.div
-            className="absolute left-6 sm:left-8 md:left-10 top-10 sm:top-14 md:top-16 h-64 w-64 sm:h-96 sm:w-96 md:h-[440px] md:w-[440px] rounded-2xl overflow-hidden shadow-xl"
-            initial={{ opacity: 0, y: 30 }}
-            viewport={{ once: true, amount: 0.3 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            whileHover={{ scale: 1.03 }}
-          >
-            <img
-              src={image}
-              alt="About LafargeHolcim Excellence Award"
-              className="h-full w-full object-cover"
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 top-4 sm:top-10 h-64 w-64 sm:h-96 sm:w-96 md:h-[440px] md:w-[440px] rounded-2xl bg-gray-300"
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.6 }}
             />
-          </motion.div>
+            <motion.div
+              className="absolute left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0 md:left-10 top-10 sm:top-14 md:top-16 h-64 w-64 sm:h-96 sm:w-96 md:h-[440px] md:w-[440px] rounded-2xl overflow-hidden shadow-xl"
+              initial={{ opacity: 0, y: 30 }}
+              viewport={{ once: true, amount: 0.3 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              whileHover={{ scale: 1.03 }}
+            >
+              <img
+                src={image}
+                alt="About LafargeHolcim Excellence Award"
+                className="h-full w-full object-cover"
+              />
+            </motion.div>
         </div>
         {/* Copy */}
         <FadeIn delay={0.1}>

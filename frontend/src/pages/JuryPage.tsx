@@ -1,7 +1,7 @@
 import { motion, useScroll } from "framer-motion";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import bg2 from "../assets/bg.jpg";
+import bg2 from "../assets/jury.jpeg";
 
 import picture1 from "../assets/Picture1.png";
 import picture2 from "../assets/Picture2.png";
@@ -49,30 +49,6 @@ function MaskedLine({
         whileInView={{ y: 0 }}
         viewport={{ once: true, amount: 0.6 }}
         transition={{ duration: 0.8, delay, ease: EASE }}
-      >
-        {text}
-      </motion.span>
-    </span>
-  );
-}
-
-/** Same reveal, but fires on mount rather than on scroll — for hero content. */
-function MaskedLineOnLoad({
-  text,
-  delay = 0,
-  className = "",
-}: {
-  text: string;
-  delay?: number;
-  className?: string;
-}) {
-  return (
-    <span className="block overflow-hidden">
-      <motion.span
-        className={`block ${className}`}
-        initial={{ y: "110%" }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.9, delay, ease: EASE }}
       >
         {text}
       </motion.span>
@@ -192,7 +168,7 @@ function JuryProfile({
 
       <div className={reverse ? "lg:order-1" : ""}>
         <h3 className="text-2xl md:text-3xl font-bold uppercase leading-tight text-[#171A1C]">
-          <MaskedLineOnLoad text={name} delay={0} />  {/* ← Fires immediately */}
+          <MaskedLine text={name} delay={0} />
         </h3>
 
         <RiseIn delay={0.1} className="mt-3">
@@ -305,37 +281,29 @@ const JuryPage = () => {
     <div className="bg-[#F8FAFC] text-[#171A1C]">
       <ScrollProgress />
 
-      {/* HERO */}
-      <section className="relative h-[55vh] min-h-[380px] md:min-h-[440px] overflow-hidden border-b border-[#171A1C]/10">
-        <div
-          className="absolute inset-0 bg-[#D6D6D6] bg-cover bg-center"
-          style={{ backgroundImage: `url(${bg2})` }}
-        />
-        {/* Full-hero scrim: darkest at left where the text sits, fading out
-            to the right, plus a lighter top strip so the header stays readable. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-transparent pointer-events-none" />
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
-
-        <div className="relative z-20">
-          <Header />
+      {/* HERO — Detailsawards style (contained image, no title overlay) */}
+      <section className="relative w-full overflow-hidden bg-[#171A1C]">
+        {/* Background Image */}
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.img
+            src={bg2}
+            alt="Jury Board Hero"
+            className="absolute inset-0 w-full h-full object-contain object-center"
+          />
         </div>
 
-        <div className="relative z-10 h-[calc(100%-6rem)] flex flex-col justify-center px-6 md:px-16">
-          <h1 className="mt-4 text-3xl sm:text-4xl md:text-6xl font-bold uppercase text-white">
-            <MaskedLineOnLoad text="Jury Board" delay={0.2} />
-          </h1>
-          <div className="mt-4 max-w-lg overflow-hidden">
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.45, ease: EASE }}
-              className="text-sm md:text-base text-white/80 leading-relaxed"
-            >
-              An independent panel of distinguished engineers, academics, and
-              industry leaders entrusted with safeguarding the highest
-              standards of structural excellence.
-            </motion.p>
-          </div>
+        {/* Spacer - maintains fixed height */}
+        <div className="w-full h-[55vh] min-h-[380px] md:min-h-[440px]" />
+
+        {/* Gradient Scrim - from bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10 pointer-events-none" />
+
+        {/* Header Scrim - from top */}
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
+
+        {/* Header */}
+        <div className="absolute top-0 left-0 right-0 z-20">
+          <Header />
         </div>
       </section>
 

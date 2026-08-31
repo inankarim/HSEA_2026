@@ -17,7 +17,13 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 /*  Hero                                                               */
 /* ------------------------------------------------------------------ */
 
-export function InfoHero({ title }: { title: string }) {
+export function InfoHero({
+  title,
+  titleClassName = "text-[#171A1C]",
+}: {
+  title: string;
+  titleClassName?: string;
+}) {
   return (
     <section className="relative h-[55vh] min-h-[380px] md:min-h-[440px] overflow-hidden border-b border-[#171A1C]/10">
       {/* Background image */}
@@ -26,25 +32,22 @@ export function InfoHero({ title }: { title: string }) {
         style={{ backgroundImage: `url(${bg2})` }}
       />
 
-      {/* Scrim behind the header so white nav text stays legible
-          no matter how light bg2.jpg is */}
       <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
 
-      {/* Header sits inside the hero, on top of the scrim */}
       <div className="relative z-20">
         <Header />
       </div>
 
-      {/* Heading */}
       <div className="relative z-10 h-[calc(100%-6rem)] flex items-center px-6 md:px-16">
-        <motion.h1
+       <motion.h1
           initial={{ opacity: 0, x: -60 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
-          className="text-3xl sm:text-4xl md:text-6xl font-bold uppercase text-[#171A1C]"
+          className={`text-3xl sm:text-4xl md:text-6xl font-bold uppercase ${titleClassName}`}
+          style={{ color: titleClassName === "text-white" ? "#ffffff" : undefined }}
         >
           {title}
-        </motion.h1>
+</motion.h1>
       </div>
     </section>
   );

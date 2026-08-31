@@ -1,8 +1,8 @@
-import supercreate from "../assets/Supercrete.1.png";
-import supercreate_plus from "../assets/SupercretePlus.png";
-import holcim_water from "../assets/HolcimWaterProtect.4.png";
-import holcimstrong from "../assets/HolcimStrongStructure.4.png"
-import holcimcoastal from "../assets/Holcim Coastal Guard.webp"
+import supercreate from "../assets/Supercrete.jpeg";
+import supercreate_plus from "../assets/SupercretePlus.jpeg";
+import holcim_water from "../assets/HolcimWaterProtect.jpeg";
+import holcimstrong from "../assets/HolcimStrongStructure.jpeg"
+import holcimcoastal from "../assets/HolcimCoastalGuard.png"
 
 interface Product {
   title: string;

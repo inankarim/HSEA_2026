@@ -1,6 +1,6 @@
 import { motion, useScroll } from "framer-motion";
 import Header from "../components/Header";
-import bg2 from "../assets/52802_HOLCIM_2021_ID7A7548_Wilkinson_Eyre_Gasholders_sRGB.jpg";
+import bg2 from "../assets/abouttheawards.jpeg";
 import img from "../assets/dashbg2.jpg"
 import Footer from "../components/Footer";
 
@@ -279,65 +279,38 @@ function CategoryCard({
 }) {
   return (
     <motion.div
-      initial="rest"
-      whileHover="hover"
-      animate="rest"
-      className="group relative border-b border-r border-[#171A1C]/10 p-8 overflow-hidden cursor-default"
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.3 }}
+      className="group relative border-b border-r border-[#171A1C]/10 p-8 overflow-hidden cursor-default h-full flex flex-col"
     >
       <motion.div
-        variants={{
-          rest: { opacity: 0 },
-          hover: { opacity: 1 },
-        }}
-        transition={{ duration: 0.4 }}
         className="absolute inset-0 bg-[#EEF4F7]"
+        initial={{ opacity: 0 }}
+        whileHover={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
       />
 
-      <div className="relative">
-        <motion.span
-          variants={{
-            rest: { scale: 1 },
-            hover: { scale: 1.15 },
-          }}
-          transition={{ duration: 0.4 }}
-          className="inline-block text-3xl font-light text-[#C86F3D] tabular-nums text-navy-deep"
-        >
+      <div className="relative flex flex-col flex-1">
+        <span className="inline-block text-3xl font-light text-[#C86F3D] tabular-nums text-navy-deep">
           {number}
-        </motion.span>
+        </span>
 
         <h4 className="mt-5 text-base font-bold uppercase tracking-wide text-black">
           {title}
         </h4>
 
-        <motion.p
-          variants={{
-            rest: {
-              opacity: 0,
-              y: 8,
-              height: 0,
-            },
-            hover: {
-              opacity: 1,
-              y: 0,
-              height: "auto",
-            },
-          }}
-          transition={{ duration: 0.4 }}
-          className="mt-3 text-sm leading-relaxed text-[#66727A] overflow-hidden"
-        >
+        <p className="mt-3 text-sm leading-relaxed text-[#66727A] flex-1">
           {description}
-        </motion.p>
+        </p>
 
         <motion.span
-          variants={{
-            rest: {
-              x: 0,
-              opacity: 0.4,
-            },
-            hover: {
-              x: 6,
-              opacity: 1,
-            },
+          initial={{
+            x: 0,
+            opacity: 0.4,
+          }}
+          whileHover={{
+            x: 6,
+            opacity: 1,
           }}
           transition={{ duration: 0.3 }}
           className="mt-6 inline-block text-[#171A1C]"
@@ -432,53 +405,35 @@ const Detailsawards = () => {
       {/* HERO                                                              */}
       {/* ================================================================ */}
 
-      <section className="relative h-[55vh] min-h-[380px] md:min-h-[440px] overflow-hidden border-b border-[#171A1C]/10">
-        {/* Background image */}
-        <div
-          className="absolute inset-0 bg-[#D6D6D6] bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${bg2})`,
-          }}
-        />
+<section className="relative w-full overflow-hidden bg-[#171A1C]">
+  {/* Background Image */}
+  <div className="absolute inset-0 overflow-hidden">
+    <motion.img
+      src={bg2}
+      alt="About The Award Hero"
+      className="absolute inset-0 w-full h-full object-contain object-center"
+    />
+  </div>
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10 pointer-events-none" />
+  {/* Spacer - maintains fixed height */}
+  <div className="w-full h-[55vh] min-h-[380px] md:min-h-[440px]" />
 
-        {/* Header scrim */}
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
+  {/* Gradient Scrim - from bottom */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10 pointer-events-none" />
 
-        {/* Header */}
-        <div className="relative z-20">
-          <Header />
-        </div>
+  {/* Header Scrim - from top */}
+  <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
 
-        {/* Heading */}
-        <div className="relative z-10 h-[calc(100%-6rem)] flex items-center px-6 md:px-16">
-          <motion.h1
-            initial={{
-              opacity: 0,
-              x: -60,
-            }}
-            animate={{
-              opacity: 1,
-              x: 0,
-            }}
-            transition={{
-              duration: 0.7,
-              delay: 0.2,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="text-3xl sm:text-4xl md:text-6xl font-bold uppercase text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.35)]"
-          >
-            About The Award
-          </motion.h1>
-        </div>
-      </section>
-
+  {/* Header */}
+  <div className="absolute top-0 left-0 right-0 z-20">
+    <Header />
+  </div>
+</section>
       {/* ================================================================ */}
       {/* 01 — THE AWARD (centered)                                        */}
       {/* ================================================================ */}
 
-      <section className="relative border-t border-[#171A1C]/5">
+      <section className="relative border-t border-b border-[#171A1C]/10">
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <div className="mx-auto max-w-3xl text-center">
             <SlideIn>
@@ -487,7 +442,7 @@ const Detailsawards = () => {
               </p>
 
               <h2 className="mt-4 text-3xl md:text-5xl font-bold uppercase leading-tight text-navy-deep">
-                A National Platform For Structural Excellence
+                The Platform For Structural Excellence
               </h2>
 
               <span className="mt-6 inline-block h-[3px] w-16 bg-[#C86F3D]" />
@@ -497,7 +452,7 @@ const Detailsawards = () => {
               <div className="mt-8 space-y-6 text-[#66727A] leading-relaxed">
                 <p className="text-lg text-[#171A1C]">
                   The Holcim Structural Excellence Awards 2026 (HSEA 2026) is a
-                  premier national platform dedicated to honoring
+                  premier  platform dedicated to honoring
                   extraordinary achievements in{" "}
                   <span className="text-[#C86F3D] font-semibold">
                     structural engineering
@@ -527,6 +482,37 @@ const Detailsawards = () => {
       </section>
 
       {/* ================================================================ */}
+      {/* WHY HSEA 2026? — SIX CATEGORIES                                  */}
+      {/* ================================================================ */}
+
+      <section className="relative">
+        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+          <SlideIn>
+            <div className="max-w-3xl">
+              <h2 className="text-3xl md:text-5xl font-bold uppercase leading-tight text-navy-deep">
+                Why HSEA 2026?
+              </h2>
+
+              <div className="mt-4 flex items-center gap-4">
+                <span className="h-px w-12 bg-[#C86F3D]" />
+                <p className="text-xs font-bold uppercase tracking-[3px] text-[#C86F3D]">
+                  Six Principles. One Vision. Built For The Future.
+                </p>
+              </div>
+            </div>
+          </SlideIn>
+
+          <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[#171A1C]/10 auto-rows-fr">
+            {categories.map((c, index) => (
+              <SlideIn key={c.number} delay={index * 0.1}>
+                <CategoryCard {...c} />
+              </SlideIn>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ================================================================ */}
       {/* 02 — WHY NOW                                                      */}
       {/* ================================================================ */}
 
@@ -534,187 +520,196 @@ const Detailsawards = () => {
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <div>
             <SlideIn>
-              <h2 className="text-3xl md:text-5xl font-bold uppercase leading-tight max-w-3xl text-navy-deep">
+              <h2 className="text-3xl md:text-4xl font-bold uppercase leading-tight max-w-3xl text-navy-deep">
                 The Structural Engineer Has Never Been More Important.
               </h2>
             </SlideIn>
 
-            <div className="mt-10 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-10 lg:gap-16 items-start">
-              {/* Text */}
-              <SlideIn delay={0.15}>
-                <div className="space-y-6 text-[#66727A] leading-relaxed max-w-xl">
-                  <p>
-                    As Bangladesh undergoes a historic transformation marked
-                    by complex infrastructure and rapid urbanization, the
-                    role of the structural engineer has never been more
-                    critical.
-                  </p>
+            {/* Two Column Layout: Text Left, Large Image Right */}
+            <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+              {/* Left Column: Text + Two Small Images */}
+              <div className="lg:col-span-5 flex flex-col">
+                {/* Text */}
+                <SlideIn delay={0.15}>
+                  <div className="space-y-6 text-[23.22px] text-[#66727A] leading-relaxed">
+                    <p>
+                      As Bangladesh undergoes a historic transformation marked
+                      by complex infrastructure and rapid urbanization, the
+                      role of the structural engineer has never been more
+                      critical.
+                    </p>
 
-                  <p>
-                    HSEA 2026 spotlights the brilliant minds — engineers,
-                    structural designers, and multi-disciplinary project
-                    teams — whose technical expertise and creative
-                    problem-solving push the boundaries of what is possible.
-                  </p>
+                    <p>
+                      HSEA 2026 spotlights the brilliant minds — engineers,
+                      structural designers, and multi-disciplinary project
+                      teams — whose technical expertise and creative
+                      problem-solving push the boundaries of what is possible.
+                    </p>
 
-                  <p>
-                    By elevating these contributions, the award highlights
-                    how sophisticated structural design forms the silent,
-                    essential backbone of safe, efficient, and iconic built
-                    environments.
-                  </p>
+                    <p>
+                      By elevating these contributions, the award highlights
+                      how sophisticated structural design forms the silent,
+                      essential backbone of safe, efficient, and iconic built
+                      
+                      environments.
+                    </p>
+                  </div>
+                </SlideIn>
+
+                {/* Two Small Images */}
+                <div className="mt-8 grid grid-cols-2 gap-4">
+                  <SlideIn delay={0.25}>
+                    <ArchitecturalImage
+                      image={IMAGE_ASSETS.reinforcedConcreteJoint}
+                      category="Detail"
+                      caption="Reinforced concrete joint"
+                      meta="Technical Detail"
+                      aspect="aspect-square"
+                    />
+                  </SlideIn>
+
+                  <SlideIn delay={0.3}>
+                    <ArchitecturalImage
+                      image={IMAGE_ASSETS.urbanBridgeSpan}
+                      category="Infrastructure"
+                      caption="Urban bridge span"
+                      meta="Civil Engineering"
+                      aspect="aspect-square"
+                    />
+                  </SlideIn>
                 </div>
-              </SlideIn>
+              </div>
 
-              {/* OPTIMIZED IMAGES WITH LAZY LOADING */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Right Column: Large Image */}
+              <SlideIn delay={0.2} className="lg:col-span-7">
                 <ArchitecturalImage
                   image={IMAGE_ASSETS.highRiseCoreStructure}
                   category="Structural System"
                   caption="High-rise core structure"
                   meta="Engineering / Bangladesh"
                   aspect="aspect-[3/4]"
-                  className="col-span-2"
+                  className="w-full"
                 />
-
-                <ArchitecturalImage
-                  image={IMAGE_ASSETS.reinforcedConcreteJoint}
-                  category="Detail"
-                  caption="Reinforced concrete joint"
-                  meta="Technical Detail"
-                  aspect="aspect-square"
-                />
-
-                <ArchitecturalImage
-                  image={IMAGE_ASSETS.urbanBridgeSpan}
-                  category="Infrastructure"
-                  caption="Urban bridge span"
-                  meta="Civil Engineering"
-                  aspect="aspect-square"
-                />
-              </div>
+              </SlideIn>
             </div>
           </div>
         </div>
       </section>
 
-{/* ================================================================ */}
-{/* 03 — ENGINEERING THE FUTURE                                     */}
-{/* ================================================================ */}
+      {/* ================================================================ */}
+      {/* 03 — ENGINEERING THE FUTURE                                     */}
+      {/* ================================================================ */}
 
-<section className="relative bg-[#F8FAFC]">
-  <div className="mx-auto max-w-7xl px-4 md:px-6 py-20 md:py-28">
+      <section className="relative bg-[#F8FAFC]">
+        <div className="mx-auto max-w-7xl px-4 md:px-6 py-20 md:py-28">
 
-    {/* Section heading */}
-    <SlideIn direction="left">
-      <div className="flex items-end justify-between gap-8">
-        <div>
-          <p className="mb-5 text-xs font-bold uppercase tracking-[3px] text-[#C86F3D]">
-            Engineering The Future
-          </p>
+          {/* Section heading */}
+          <SlideIn direction="left">
+            <div className="flex items-end justify-between gap-8">
+              <div>
+                <p className="mb-5 text-xs font-bold uppercase tracking-[3px] text-[#C86F3D]">
+                  Engineering The Future
+                </p>
 
-          <h2 className="max-w-4xl text-4xl md:text-6xl lg:text-7xl font-bold uppercase leading-[0.92] tracking-tight text-navy-deep">
-            Building Stronger.
-            <br />
-            Building Smarter.
-            <br />
-            Building Responsibly.
-          </h2>
+                <h2 className="max-w-4xl text-3xl md:text-4xl lg:text-5xl font-bold uppercase leading-[0.92] tracking-tight text-navy-deep">
+                  Building Stronger.
+                  <br />
+                  Building Smarter.
+                  <br />
+                  Building Responsibly.
+                </h2>
+              </div>
+
+              <span className="hidden lg:block text-sm uppercase tracking-[2px] text-[#66727A] pb-2">
+                03 / 04
+              </span>
+            </div>
+          </SlideIn>
+
+
+          {/* Image + text */}
+          <div className="mt-16 md:mt-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+
+            {/* Large architectural image */}
+            <SlideIn direction="left" className="lg:col-span-7">
+              <ArchitecturalImage
+                image={img}
+                category="Engineering / Sustainability"
+                caption="Building for a resilient future"
+                meta="Structural Excellence / Bangladesh"
+                aspect="aspect-[16/10]"
+                className="w-full"
+              />
+            </SlideIn>
+
+
+            {/* Description */}
+            <SlideIn
+              direction="right"
+              delay={0.15}
+              className="lg:col-span-5 flex items-center"
+            >
+              <div className="max-w-lg lg:pl-4">
+
+                <div className="mb-7 flex items-center gap-4">
+                  <span className="h-px w-12 bg-[#C86F3D]" />
+
+                  <span className="text-xs font-bold uppercase tracking-[2px] text-[#66727A]">
+                    Our Vision
+                  </span>
+                </div>
+
+                <div className="space-y-6 text-[#66727A] leading-relaxed">
+
+                  <p className="text-lg md:text-xl text-[#171A1C] font-medium leading-relaxed">
+                    Inspired by Holcim&apos;s global leadership in net-zero
+                    construction, HSEA 2026 responds directly to the climate
+                    and resource challenges facing our deltaic landscape.
+                  </p>
+
+                  <p>
+                    The platform actively champions low-carbon structural
+                    systems, climate-resilient engineering, optimized material
+                    usage, and innovative practices that minimize
+                    environmental footprints without compromising structural
+                    integrity.
+                  </p>
+
+                </div>
+
+                {/* Small visual indicator */}
+                <div className="mt-10 flex items-center gap-4">
+
+                  <div className="h-px flex-1 bg-[#171A1C]/10" />
+                </div>
+
+              </div>
+            </SlideIn>
+
+          </div>
+
+
+          {/* Principles */}
+          <div className="mt-20 md:mt-28">
+
+            <div className="mb-8 flex items-center gap-5">
+              <span className="text-xs font-bold uppercase tracking-[3px] text-[#66727A]">
+                Four Principles
+              </span>
+
+              <div className="h-px flex-1 bg-[#171A1C]/10" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
+              {principles.map((p) => (
+                <PrincipleCard key={p.number} {...p} />
+              ))}
+            </div>
+
+          </div>
+
         </div>
-
-        <span className="hidden lg:block text-sm uppercase tracking-[2px] text-[#66727A] pb-2">
-          03 / 04
-        </span>
-      </div>
-    </SlideIn>
-
-
-    {/* Image + text */}
-    <div className="mt-16 md:mt-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-
-      {/* Large architectural image */}
-      <SlideIn direction="left" className="lg:col-span-7">
-        <ArchitecturalImage
-          image={img}
-          category="Engineering / Sustainability"
-          caption="Building for a resilient future"
-          meta="Structural Excellence / Bangladesh"
-          aspect="aspect-[16/10]"
-          className="w-full"
-        />
-      </SlideIn>
-
-
-      {/* Description */}
-      <SlideIn
-        direction="right"
-        delay={0.15}
-        className="lg:col-span-5 flex items-center"
-      >
-        <div className="max-w-lg lg:pl-4">
-
-          <div className="mb-7 flex items-center gap-4">
-            <span className="h-px w-12 bg-[#C86F3D]" />
-
-            <span className="text-xs font-bold uppercase tracking-[2px] text-[#66727A]">
-              Our Vision
-            </span>
-          </div>
-
-          <div className="space-y-6 text-[#66727A] leading-relaxed">
-
-            <p className="text-lg md:text-xl text-[#171A1C] font-medium leading-relaxed">
-              Inspired by Holcim&apos;s global leadership in net-zero
-              construction, HSEA 2026 responds directly to the climate
-              and resource challenges facing our deltaic landscape.
-            </p>
-
-            <p>
-              The platform actively champions low-carbon structural
-              systems, climate-resilient engineering, optimized material
-              usage, and innovative practices that minimize
-              environmental footprints without compromising structural
-              integrity.
-            </p>
-
-          </div>
-
-          {/* Small visual indicator */}
-          <div className="mt-10 flex items-center gap-4">
-            <span className="text-5xl font-light text-[#C86F3D]">
-              03
-            </span>
-
-            <div className="h-px flex-1 bg-[#171A1C]/10" />
-          </div>
-
-        </div>
-      </SlideIn>
-
-    </div>
-
-
-    {/* Principles */}
-    <div className="mt-20 md:mt-28">
-
-      <div className="mb-8 flex items-center gap-5">
-        <span className="text-xs font-bold uppercase tracking-[3px] text-[#66727A]">
-          Four Principles
-        </span>
-
-        <div className="h-px flex-1 bg-[#171A1C]/10" />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-10">
-        {principles.map((p) => (
-          <PrincipleCard key={p.number} {...p} />
-        ))}
-      </div>
-
-    </div>
-
-  </div>
-</section>
+      </section>
 
       {/* ================================================================ */}
       {/* 04 — MORE THAN AN AWARD                                          */}
@@ -736,7 +731,7 @@ const Detailsawards = () => {
               </SlideIn>
 
               <SlideIn delay={0.15}>
-                <div className="mt-8 space-y-6 text-[#66727A] leading-relaxed max-w-xl">
+                <div className="mt-8  space-y-6 text-[#66727A] leading-relaxed max-w-xl">
                   <p>
                     More than an annual accolade, the Holcim Structural
                     Excellence Awards aspires to establish an enduring,
@@ -763,32 +758,6 @@ const Detailsawards = () => {
               meta="Bangladesh / 2026"
               aspect="aspect-[4/5]"
             />
-          </div>
-        </div>
-      </section>
-
-      {/* ================================================================ */}
-      {/* WHY HSEA 2026? — SIX CATEGORIES                                  */}
-      {/* ================================================================ */}
-
-      <section className="relative">
-        <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
-          <SlideIn>
-            <div className="max-w-3xl">
-              <h2 className="text-3xl md:text-5xl font-bold uppercase leading-tight text-navy-deep">
-                Why HSEA 2026?
-              </h2>
-
-              <p className="mt-4 text-xs font-bold uppercase tracking-[3px] text-[#C86F3D]">
-                Six Principles. One Vision. Built For The Future.
-              </p>
-            </div>
-          </SlideIn>
-
-          <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[#171A1C]/10">
-            {categories.map((c) => (
-              <CategoryCard key={c.number} {...c} />
-            ))}
           </div>
         </div>
       </section>

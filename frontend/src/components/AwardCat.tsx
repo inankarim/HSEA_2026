@@ -1,6 +1,6 @@
 import { motion, useScroll } from "framer-motion";
 import Header from "../components/Header";
-import bg2 from "../assets/52802_HOLCIM_2021_ID7A7548_Wilkinson_Eyre_Gasholders_sRGB.jpg";
+import bg2 from "../assets/awardcat.jpeg";
 
 const IMAGE_ASSETS = {
   visionary_category: "/assets/visionary_design.webp",
@@ -40,28 +40,6 @@ function RevealUp({
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.7, delay, ease: EASE }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/** Same reveal, but fires on mount for hero content */
-function RevealUpOnLoad({
-  children,
-  delay = 0,
-  className = "",
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  className?: string;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, delay, ease: EASE }}
       className={className}
     >
@@ -232,38 +210,31 @@ const AwardCat = () => {
       </div>
 
       {/* ================================================================ */}
-      {/* HERO                                                              */}
+      {/* HERO — Detailsawards style (contained image, no title overlay)   */}
       {/* ================================================================ */}
 
-      <section className="relative h-[55vh] min-h-[380px] md:min-h-[440px] overflow-hidden border-b border-slate-200">
-        <div
-          className="absolute inset-0 bg-slate-300 bg-cover bg-center"
-          style={{ backgroundImage: `url(${bg2})` }}
-        />
-
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10 pointer-events-none" />
-
-        <div className="relative z-20">
-          <Header />
+      <section className="relative w-full overflow-hidden bg-[#171A1C]">
+        {/* Background Image */}
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.img
+            src={bg2}
+            alt="Award Categories Hero"
+            className="absolute inset-0 w-full h-full object-contain object-center"
+          />
         </div>
 
-        <div className="relative z-10 h-[calc(100%-6rem)] flex flex-col justify-center px-6 md:px-16">
-          <RevealUpOnLoad delay={0.1}>
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold uppercase text-white [text-shadow:0_2px_8px_rgba(0,0,0,0.35)]">
-              Award Categories
-            </h1>
-          </RevealUpOnLoad>
+        {/* Spacer - maintains fixed height */}
+        <div className="w-full h-[55vh] min-h-[380px] md:min-h-[440px]" />
 
-        
+        {/* Gradient Scrim - from bottom */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10 pointer-events-none" />
 
-          <RevealUpOnLoad delay={0.25} className="mt-4">
-            <p className="text-sm md:text-base text-white/95 leading-relaxed max-w-md">
-              Four dimensions of structural excellence, innovation, and
-              sustainable development.
-            </p>
-          </RevealUpOnLoad>
+        {/* Header Scrim - from top */}
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
 
-         
+        {/* Header */}
+        <div className="absolute top-0 left-0 right-0 z-20">
+          <Header />
         </div>
       </section>
 

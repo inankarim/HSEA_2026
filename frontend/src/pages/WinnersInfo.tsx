@@ -12,8 +12,8 @@ import {
 
 const WinnersInfo = () => {
   return (
-    <div className="bg-white text-[#171A1C]">
-      <InfoHero title="Privileges For Winners" />
+    <div className="bg-white text-white">
+      <InfoHero title="Privileges For Winners" titleClassName="text-white" />
 
       {/* Intro keeps the exact chapter number given in the brief (02),
           continuing the numbering sequence started on the About page. */}
