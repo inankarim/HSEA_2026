@@ -87,8 +87,15 @@ export const env = {
   // rename() rather than a copy+unlink fallback. See LocalFileStorage.js.
   STORAGE_TEMP_DIR: optional(
     "STORAGE_TEMP_DIR",
+
     path.join(optional("STORAGE_ROOT", DEFAULT_STORAGE_ROOT), "tmp"),
   ),
+
+  PICTURE_UPLOAD_DIR: optional(
+    "PICTURE_UPLOAD_DIR",
+    path.resolve(process.cwd(), "uploads", "images"),
+  ),
+  PICTURE_PUBLIC_PREFIX: optional("PICTURE_PUBLIC_PREFIX", "/uploads/images"),
 };
 
 if (isProduction && env.JWT_SECRET.length < 32) {

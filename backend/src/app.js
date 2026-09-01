@@ -96,7 +96,7 @@ export function createApp() {
   app.use(
     "/uploads/images",
     helmet.crossOriginResourcePolicy({ policy: "cross-origin" }),
-    express.static(path.resolve(process.cwd(), "uploads", "images"), {
+    express.static(env.PICTURE_UPLOAD_DIR, {
       maxAge: "7d",
       immutable: true,
       fallthrough: false,

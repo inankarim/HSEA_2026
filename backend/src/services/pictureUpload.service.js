@@ -4,6 +4,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { ApiError } from "../middleware/error.middleware.js";
 import { logger } from "../utils/logger.js";
+import { env } from "../config/env.js";
 
 /**
  * Generic, reusable image upload + verification service (profile photos
@@ -73,12 +74,9 @@ const SIGNATURES = [
 
 const ALLOWED_MIME_TYPES = SIGNATURES.flatMap((s) => s.mimeTypes);
 
-const UPLOAD_ROOT =
-  process.env.PICTURE_UPLOAD_DIR ||
-  path.resolve(process.cwd(), "uploads", "images");
+const UPLOAD_ROOT = env.PICTURE_UPLOAD_DIR;
 
-const PUBLIC_URL_PREFIX =
-  process.env.PICTURE_PUBLIC_PREFIX || "/uploads/images";
+const PUBLIC_URL_PREFIX = env.PICTURE_PUBLIC_PREFIX;
 
 async function ensureUploadDir(purpose) {
   const dir = path.join(UPLOAD_ROOT, purpose);
