@@ -1,6 +1,6 @@
 import { motion, useScroll } from "framer-motion";
 import Header from "../components/Header";
-import bg2 from "../assets/awardcat.jpeg";
+import bg2 from "../assets/awardcart.jpeg";
 
 const IMAGE_ASSETS = {
   visionary_category: "/assets/visionary_design.webp",
@@ -196,25 +196,19 @@ const AwardCat = () => {
   return (
     <div className="bg-white text-slate-950">
       <ScrollProgress />
+      <Header />
 
       {/* Subtle fixed chapter indicator, desktop only */}
       <div className="hidden lg:flex fixed right-8 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-4">
         {["01", "02", "03", "04"].map((n) => (
-          <span
-            key={n}
-            className="text-[10px] font-bold tracking-[1px] text-slate-300"
-          >
+          <span key={n} className="text-[10px] font-bold tracking-[1px] text-slate-300">
             {n}
           </span>
         ))}
       </div>
 
-      {/* ================================================================ */}
-      {/* HERO — Detailsawards style (contained image, no title overlay)   */}
-      {/* ================================================================ */}
-
+      {/* HERO */}
       <section className="relative w-full overflow-hidden bg-[#171A1C]">
-        {/* Background Image */}
         <div className="absolute inset-0 overflow-hidden">
           <motion.img
             src={bg2}
@@ -223,19 +217,10 @@ const AwardCat = () => {
           />
         </div>
 
-        {/* Spacer - maintains fixed height */}
-        <div className="w-full h-[55vh] min-h-[380px] md:min-h-[440px]" />
-
-        {/* Gradient Scrim - from bottom */}
-
-        {/* Header Scrim - from top */}
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
-
-        {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-20">
-          <Header />
-        </div>
+        <div className="w-full aspect-[4/1]" />
       </section>
+
+      {/* ...rest unchanged... */}
 
       {/* ================================================================ */}
       {/* INTRODUCTION                                                      */}

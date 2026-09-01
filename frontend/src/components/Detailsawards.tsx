@@ -400,35 +400,22 @@ const Detailsawards = () => {
   return (
     <div className="bg-[#F8FAFC] text-navy-deep]">
       <ScrollProgress />
+      <Header />
 
-      {/* ================================================================ */}
-      {/* HERO                                                              */}
-      {/* ================================================================ */}
+      {/* HERO */}
+      <section className="relative w-full overflow-hidden bg-[#171A1C]">
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.img
+            src={bg2}
+            alt="About The Award Hero"
+            className="absolute inset-0 w-full h-full object-contain object-center"
+          />
+        </div>
 
-        <section className="relative w-full overflow-hidden bg-[#171A1C]">
-          {/* Background Image */}
-          <div className="absolute inset-0 overflow-hidden">
-            <motion.img
-              src={bg2}
-              alt="About The Award Hero"
-              className="absolute inset-0 w-full h-full object-contain object-center"
-            />
-          </div>
+        <div className="w-full aspect-[4/1]" />
+      </section>
 
-          {/* Spacer - maintains fixed height */}
-          <div className="w-full h-[55vh] min-h-[380px] md:min-h-[440px]" />
-
-          {/* Gradient Scrim - from bottom */}
-          {/* <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10 pointer-events-none" /> */}
-
-          {/* Header Scrim - from top */}
-          <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
-
-          {/* Header */}
-          <div className="absolute top-0 left-0 right-0 z-20">
-            <Header />
-          </div>
-        </section>
+      {/* ...rest unchanged... */}
       {/* ================================================================ */}
       {/* 01 — THE AWARD (centered)                                        */}
       {/* ================================================================ */}

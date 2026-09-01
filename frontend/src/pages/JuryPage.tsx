@@ -1,7 +1,7 @@
 import { motion, useScroll } from "framer-motion";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import bg2 from "../assets/jury.jpeg";
+import bg2 from "../assets/jury.png";
 
 import picture1 from "../assets/Picture1.png";
 import picture2 from "../assets/Picture2.png";
@@ -281,31 +281,25 @@ const JuryPage = () => {
     <div className="bg-[#F8FAFC] text-[#171A1C]">
       <ScrollProgress />
 
-      {/* HERO — Detailsawards style (contained image, no title overlay) */}
-      <section className="relative w-full overflow-hidden bg-[#171A1C]">
-        {/* Background Image */}
-        <div className="absolute inset-0 overflow-hidden">
-          <motion.img
-            src={bg2}
-            alt="Jury Board Hero"
-            className="absolute inset-0 w-full h-full object-contain object-center"
-          />
-        </div>
+<>
+  <Header />
 
-        {/* Spacer - maintains fixed height */}
-        <div className="w-full h-[55vh] min-h-[380px] md:min-h-[440px]" />
+  <section className="relative w-full overflow-hidden bg-[#171A1C]">
+    <div className="absolute inset-0 overflow-hidden">
+      <motion.img
+        src={bg2}
+        alt="Jury Board Hero"
+        className="absolute inset-0 w-full h-full object-contain object-center"
+      />
+    </div>
 
+    <div className="w-full aspect-[4/1]" />
 
+    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent pointer-events-none" />
+  </section>
 
-        {/* Header Scrim - from top */}
-        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
-
-        {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-20">
-          <Header />
-        </div>
-      </section>
-
+  {/* rest of JuryPage content */}
+</>
       {/* 01 — THE JURY BOARD */}
       <section className="relative border-t border-[#171A1C]/5">
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-10 md:gap-16">

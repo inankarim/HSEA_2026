@@ -1,17 +1,28 @@
 import Footer from "../components/Footer";
+import { motion } from "framer-motion";
 import {
-  InfoHero,
   ChapterIntro,
   ChapterGroup,
   RuleItem,
   PendingNote,
 } from "../components/Editorial";
-
+import general from "../assets/general.png"
+import Header from "../components/Header";
 const GeneralInfo = () => {
   return (
-    <div className="bg-white text-[#071C2C] [text-shadow:0_2px_8px_rgba(0,0,0,0.35)]">
-      <InfoHero title="General Information" titleClassName="text-white" />
+    <div className="bg-white text-[#071C2C]">
+     <Header/>
+     <section className="relative w-full overflow-hidden bg-[#171A1C]">
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.img
+            src={general}
+            alt="Award Categories Hero"
+            className="absolute inset-0 w-full h-full object-contain object-center"
+          />
+        </div>
 
+        <div className="w-full aspect-[4/1]" />
+      </section>
       <ChapterIntro
         number="01"
         label="The Foundation"

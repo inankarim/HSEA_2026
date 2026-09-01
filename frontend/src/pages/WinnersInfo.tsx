@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import Footer from "../components/Footer";
 import {
-  InfoHero,
   ChapterIntro,
   ChapterGroup,
   RuleItem,
@@ -9,16 +8,25 @@ import {
   Highlight,
   GhostWord,
 } from "../components/Editorial";
-
+import winner from "../assets/winners.png"
+import Header from "../components/Header";
 const WinnersInfo = () => {
   return (
     <div className="bg-white text-white">
-      <InfoHero title="Privileges For Winners" titleClassName="text-white" />
-   
-      {/* Intro keeps the exact chapter number given in the brief (02),
-          continuing the numbering sequence started on the About page. */}
+      <Header/>
+        <section className="relative w-full overflow-hidden bg-[#171A1C]">
+        <div className="absolute inset-0 overflow-hidden">
+          <motion.img
+            src={winner}
+            alt="Award Categories Hero"
+            className="absolute inset-0 w-full h-full object-contain object-center"
+          />
+        </div>
+
+        <div className="w-full aspect-[4/1]" />
+      </section>
       <div className="relative">
-        <GhostWord>HOLCIM</GhostWord>
+
         <ChapterIntro
           number="02"
           label="Beyond The Trophy"
