@@ -16,19 +16,19 @@ const Brand = () => {
     {
       title: "HOLCIM STRONG STRUCTURE",
       description: "Holcim (Strong Structure), a Portland Composite Cement (PCC) complies with BDS EN 197-1:2003, CEM II/B-M (S-V-L), 42.5N standard. The usage of this type of cement started from last few decades in Bangladesh.",
-      productlink: "https://www.facebook.com/reel/1093178833355848/?s=single_unit",
+      productlink: "https://www.facebook.com/reel/844737976178736",
       image: holcimstrong
     },
     {
       title: "HOLCIM WATER PROTECT",
       description: "A unique tailor made product that addresses the key problems of water seepage, dampness and water ingress that are of significant concern for home builders. Holcim Water Protect a Portland Composite Cement (PCC) complies with BDS EN 197-1:2010, CEM II/B-M (V-S-L), 42.5N standard.",
-      productlink: "https://www.facebook.com/reel/1093178833355848/?s=single_unit",
+      productlink: "https://www.facebook.com/reel/752957697054329",
       image: holcim_water
     },
     {
       title: "HOLCIM COASTAL GUARD",
       description: "Holcim Coastal Guard is a low-carbon sulphate-resisting pozzolanic cement developed for salinity- and sulphate-rich soil and water environments, particularly in Bangladesh's coastal regions (approximately 32% of the land area).",
-      productlink: "https://www.facebook.com/reel/1093178833355848/?s=single_unit",
+      productlink: "https://www.facebook.com/holcimbangladesh/videos/1410777727369743",
       image: holcimcoastal
     },
     {
@@ -40,7 +40,7 @@ const Brand = () => {
     {
       title: "SUPERCRETE PLUS",
       description: `Supercrete Plus is the number one Fair Face cement in Bangladesh with "CPR (Concrete Porosity Reduction) & Strength Enhancing Technology" that enhances superior bonding and ensures high strength.`,
-      productlink: "https://www.facebook.com/reel/1093178833355848/?s=single_unit",
+      productlink: "https://www.facebook.com/reel/1124527064900241",
       image: supercreate_plus
     },
   ];

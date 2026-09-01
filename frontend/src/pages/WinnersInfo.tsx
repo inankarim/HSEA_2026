@@ -14,7 +14,7 @@ const WinnersInfo = () => {
   return (
     <div className="bg-white text-white">
       <InfoHero title="Privileges For Winners" titleClassName="text-white" />
-
+   
       {/* Intro keeps the exact chapter number given in the brief (02),
           continuing the numbering sequence started on the About page. */}
       <div className="relative">
@@ -96,7 +96,7 @@ const WinnersInfo = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="grid grid-cols-1 md:grid-cols-[80px_1fr] gap-4 md:gap-10">
-            <span className="text-3xl font-light text-[#C86F3D]/70 tabular-nums">
+            <span className="text-3xl font-light text-navy-deep tabular-nums">
               07
             </span>
             <div>
@@ -108,7 +108,7 @@ const WinnersInfo = () => {
               </h4>
 
               <div className="mt-5 border border-[#171A1C]/10 p-6 md:p-8">
-                <p className="text-sm font-bold uppercase tracking-[2px] text-[#C86F3D]">
+                <p className="text-sm font-bold uppercase tracking-[2px] text-navy-deep">
                   Account Payee Cheque
                 </p>
                 <p className="mt-3 max-w-2xl text-[#66727A] leading-relaxed">
@@ -130,7 +130,7 @@ const WinnersInfo = () => {
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="grid grid-cols-1 md:grid-cols-[80px_1fr] gap-4 md:gap-10">
-            <span className="text-3xl font-light text-[#C86F3D]/70 tabular-nums">
+            <span className="text-3xl font-light text-navy-deep tabular-nums">
               08
             </span>
             <div>
@@ -142,7 +142,7 @@ const WinnersInfo = () => {
               </h4>
 
               <div className="mt-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 border border-[#171A1C]/10 p-6 md:p-8">
-                <span className="text-4xl md:text-5xl font-bold text-[#C86F3D] tabular-nums shrink-0">
+                <span className="text-4xl md:text-5xl font-bold text-navy-deep tabular-nums shrink-0">
                   6 Months
                 </span>
                 <p className="max-w-xl text-[#66727A] leading-relaxed">
@@ -161,7 +161,7 @@ const WinnersInfo = () => {
       <section className="relative overflow-hidden">
         <GhostWord>HOLCIM</GhostWord>
         <div className="relative mx-auto max-w-4xl px-6 py-24 md:py-32 text-center">
-          <span className="text-xs font-bold uppercase tracking-[3px] text-[#C86F3D]">
+          <span className="text-xs font-bold uppercase tracking-[3px] text-navy-deep">
             The Recognition Continues
           </span>
           <p className="mt-6 text-2xl md:text-4xl font-bold leading-snug text-[#171A1C]">

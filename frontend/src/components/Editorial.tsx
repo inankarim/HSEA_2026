@@ -32,7 +32,7 @@ export function InfoHero({
         style={{ backgroundImage: `url(${bg2})` }}
       />
 
-      <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
+   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10 pointer-events-none" />
 
       <div className="relative z-20">
         <Header />
@@ -43,7 +43,7 @@ export function InfoHero({
           initial={{ opacity: 0, x: -60 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
-          className={`text-3xl sm:text-4xl md:text-6xl font-bold uppercase ${titleClassName}`}
+          className={`text-3xl sm:text-4xl md:text-7xl font-extrabold uppercase ${titleClassName}`}
           style={{ color: titleClassName === "text-white" ? "#ffffff" : undefined }}
         >
           {title}
@@ -133,7 +133,7 @@ export function ChapterIntro({
     <section className="relative border-t border-[#171A1C]/5">
       <div className="mx-auto max-w-7xl px-6 py-20 md:py-28 grid grid-cols-1 md:grid-cols-[200px_1fr] gap-10 md:gap-16">
         <div className="flex md:flex-col items-baseline md:items-start gap-3 md:gap-4">
-          <span className="text-5xl md:text-6xl font-light text-[#C86F3D]/80 tabular-nums">
+          <span className="text-5xl md:text-6xl font-light text-navy-deep tabular-nums">
             {number}
           </span>
           <span className="text-xs font-bold uppercase tracking-[3px] text-[#66727A]">
@@ -183,7 +183,7 @@ export function ChapterGroup({
     <section className={`relative ${tinted ? "bg-[#EEF4F7]" : ""}`}>
       <div className="mx-auto max-w-7xl px-6 py-20 md:py-24">
         <div className="flex items-baseline gap-4">
-          <span className="text-xs font-bold uppercase tracking-[3px] text-[#66727A]">
+          <span className="text-xs font-bold uppercase tracking-[3px] text-navy-deep">
             {number} / {total}
           </span>
         </div>
@@ -223,7 +223,7 @@ export function RuleItem({
       transition={{ duration: 0.6, delay: Math.min(index * 0.08, 0.4), ease: EASE }}
     >
       <div className="grid grid-cols-1 md:grid-cols-[80px_1fr] gap-4 md:gap-10">
-        <span className="text-3xl font-light text-[#C86F3D]/70 tabular-nums">
+        <span className="text-3xl font-light text-navy-deep tabular-nums">
           {number}
         </span>
 

@@ -67,7 +67,7 @@ export default function Footer() {
               <LinkedinIcon />
             </a>
             
-            <a  href="https://www.facebook.com/p/LafargeHolcim-Bangladesh-PLC-100057574054507/"
+            <a  href="https://www.facebook.com/holcimbangladesh"
               className="hover:text-accent-cyan transition-colors"
             >
               <FacebookIcon />
@@ -89,9 +89,6 @@ export default function Footer() {
               >
                 excellenceaward@lafargeholcim.com
               </a>
-            </p>
-            <p className="text-sm lg:text-base text-white/60">
-              Contact: <span className="hover:text-accent-cyan">+880 1XXX-XXXXXX</span>
             </p>
           </div>
         </div>

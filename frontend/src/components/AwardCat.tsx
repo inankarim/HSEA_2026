@@ -227,7 +227,6 @@ const AwardCat = () => {
         <div className="w-full h-[55vh] min-h-[380px] md:min-h-[440px]" />
 
         {/* Gradient Scrim - from bottom */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-black/10 pointer-events-none" />
 
         {/* Header Scrim - from top */}
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/45 to-transparent pointer-events-none" />
