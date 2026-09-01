@@ -67,7 +67,7 @@ export default function DashboardHero() {
       <div className="w-full aspect-[4/1] sm:aspect-[3.5/1] lg:aspect-[4/1]" />
 
       {/* Scrim so any future overlay content stays legible */}
-      <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/50 via-navy-deep/20 to-transparent pointer-events-none" />
+      {/* <div className="absolute inset-0 bg-gradient-to-t from-navy-deep/50 via-navy-deep/20 to-transparent pointer-events-none" /> */}
     </section>
   );
 }
