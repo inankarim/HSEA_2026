@@ -105,6 +105,17 @@ export function createApp() {
     }),
   );
 
+  // Prevent any proxy/cache layer from caching API responses — these are
+  // per-user and must never be shared across sessions.
+  app.use("/api", (req, res, next) => {
+    res.setHeader(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, private",
+    );
+    res.setHeader("Pragma", "no-cache");
+    next();
+  });
+
   app.use("/api", globalApiLimiter, apiRoutes);
 
   app.use(notFoundHandler);
