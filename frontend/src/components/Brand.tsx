@@ -54,7 +54,7 @@ const Brand = () => {
       {/* Header Section */}
       <div className="max-w-7xl mx-auto mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-[#0A192F] mb-2" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: '700' }}>
-          Our Products and Brands
+          Our Products and Solutions
         </h2>
         <p className="text-gray-500 text-base" style={{ fontFamily: 'Open Sans, sans-serif' }}>
           {products.length} Results
