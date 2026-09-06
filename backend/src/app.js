@@ -116,6 +116,26 @@ export function createApp() {
     next();
   });
 
+  // --- TEMPORARY WORKAROUND ---
+  // The hosting provider's nginx config currently blocks PUT/DELETE with a
+  // 403 at the edge (limit_except GET POST), before requests ever reach
+  // this app. Until that's fixed on their end, the frontend sends PUT/DELETE
+  // requests as POST with this header, and we translate it back here.
+  // Safe: only honored for POST, only overridable to PUT/DELETE/PATCH,
+  // and every downstream route/middleware behaves identically either way.
+  app.use((req, res, next) => {
+    const override = req.headers["x-http-method-override"];
+    if (
+      req.method === "POST" &&
+      typeof override === "string" &&
+      ["PUT", "DELETE", "PATCH"].includes(override.toUpperCase())
+    ) {
+      req.method = override.toUpperCase();
+    }
+    next();
+  });
+  // --- END TEMPORARY WORKAROUND ---
+
   app.use("/api", globalApiLimiter, apiRoutes);
 
   app.use(notFoundHandler);

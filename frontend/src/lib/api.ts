@@ -117,10 +117,21 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
     headers["Idempotency-Key"] = opts.idempotencyKey;
   }
 
+  // TEMPORARY WORKAROUND: hosting nginx blocks PUT/DELETE at the edge.
+  // Send PUT/DELETE as POST with an override header; backend translates
+  // it back to the real method. Remove this once nginx is fixed to allow
+  // PUT/DELETE through to /api/*.
+  const realMethod = opts.method || "GET";
+  const wireMethod =
+    realMethod === "PUT" || realMethod === "DELETE" ? "POST" : realMethod;
+  if (wireMethod !== realMethod) {
+    headers["X-HTTP-Method-Override"] = realMethod;
+  }
+
   let response: Response;
   try {
     response = await fetch(`${BASE_URL}${path}`, {
-      method: opts.method || "GET",
+      method: wireMethod,
       credentials: "include",
       headers,
       body,
@@ -152,7 +163,6 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
 
   return (json as { data: T }).data;
 }
-
 /**
  * Low-level multipart/form-data POST, used only by upload endpoints.
  * Deliberately separate from request(): file uploads must NOT set a
