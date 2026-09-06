@@ -1,2 +1,15 @@
 .env
 node_modules/
+# Build folders
+storage/documents/applicants/
+storage/documents/
+backend/storage/
+
+# Uploads
+uploads/
+hsea-uploads/
+hsea-picture-uploads/
+
+# Node
+node_modules/
+dist/
