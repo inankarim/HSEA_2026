@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import FadeIn from "./FadeIn";
-import bgImage from "../assets/bg2.png";
+import bgImage from "../assets/bg2.webp";
 
 const DEADLINE = new Date("2026-10-31T23:59:00+06:00").getTime();
 
