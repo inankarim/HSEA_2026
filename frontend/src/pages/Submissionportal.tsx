@@ -138,7 +138,7 @@ export default function SubmissionPortal() {
     // is authorized entirely by their session cookie, so we deliberately
     // avoid attaching a stale/irrelevant guest token in that case.
     if (authLoading) return;
-    const token = isAuthenticated ? null : getGuestAccessToken(applicationId);
+    const token = getGuestAccessToken(applicationId);  // Always check for guest token
     setGuestToken(token);
 
     let cancelled = false;
