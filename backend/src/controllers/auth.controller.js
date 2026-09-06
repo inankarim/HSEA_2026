@@ -16,6 +16,7 @@ const baseCookieOptions = {
   secure: env.isProduction,
   sameSite: env.isProduction ? "strict" : "lax",
   path: "/",
+  domain: env.isProduction ? "structuralexcellenceawardbd.com" : undefined,
 };
 
 function setAuthCookies(res, { accessToken, refreshToken }) {
