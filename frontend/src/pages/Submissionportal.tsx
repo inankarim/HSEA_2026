@@ -110,7 +110,6 @@ export default function SubmissionPortal() {
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const [iabResult, setIabResult] = useState<null | { verified: boolean; memberName?: string }>(null);
   const [uniResult, setUniResult] = useState<null | { verified: boolean; name?: string }>(null);
 
   const [existingDocuments, setExistingDocuments] = useState<Record<string, SubmissionDocument>>({});
@@ -166,9 +165,6 @@ export default function SubmissionPortal() {
         setSubmission(sub);
         setDraft(draftFromSubmission(sub));
         setTeamMembers(membersResult.members);
-        if (sub.iabVerificationStatus !== "NOT_APPLICABLE") {
-          setIabResult({ verified: sub.iabVerificationStatus === "VERIFIED" });
-        }
         if (sub.universityVerificationStatus !== "NOT_APPLICABLE") {
           setUniResult({ verified: sub.universityVerificationStatus === "VERIFIED" });
         }
@@ -235,9 +231,6 @@ export default function SubmissionPortal() {
       setFieldErrors({});
       setSaveState("saved");
       setLastSavedAt(new Date());
-      if (patch.iabMembershipNumber !== undefined) {
-        setIabResult({ verified: updated.iabVerificationStatus === "VERIFIED" });
-      }
       if (patch.universityEmail !== undefined) {
         setUniResult({ verified: updated.universityVerificationStatus === "VERIFIED" });
       }
@@ -280,18 +273,6 @@ export default function SubmissionPortal() {
   }, []);
 
   // --- verification -------------------------------------------------------
-
-  async function checkIab() {
-    const number = (draft.iabMembershipNumber || "").trim();
-    if (!number) return;
-    try {
-      const result = await verification.iab(number);
-      setIabResult({ verified: result.verified, memberName: result.memberName });
-    } catch {
-      // Instant check failed silently — the authoritative status still
-      // comes back from the draft save above.
-    }
-  }
 
   async function checkUniversityEmail() {
     const email = (draft.universityEmail || "").trim();
@@ -400,9 +381,6 @@ export default function SubmissionPortal() {
     if (draft.applicantType === "IAB_MEMBER") {
       if (!draft.iabMembershipNumber?.trim()) {
         return { valid: false, error: "Please enter your IAB membership number." };
-      }
-      if (iabResult?.verified === false) {
-        return { valid: false, error: "IAB membership number could not be verified." };
       }
     } else {
       if (!draft.universityName?.trim()) {
@@ -682,27 +660,19 @@ export default function SubmissionPortal() {
                       />
                     </FormField>
                   </div>
-
-                  {isIabApplicant ? (
-                    <FormField label="IEB Membership Number" required error={fieldErrors.iabMembershipNumber}>
-                      <input
-                        className={inputClasses}
-                        value={draft.iabMembershipNumber || ""}
-                        onChange={(e) => update("iabMembershipNumber", e.target.value)}
-                        onBlur={checkIab}
-                      />
-                      {iabResult && (
-                        <VerificationBadge
-                          status={iabResult.verified ? "VERIFIED" : "FAILED"}
-                          verifiedLabel={
-                            iabResult.memberName
-                              ? `IEB membership verified — ${iabResult.memberName}`
-                              : "IEB membership verified"
-                          }
-                          failedLabel="We could not verify this IEB membership number. Please check the number and try again."
-                        />
-                      )}
-                    </FormField>
+                {isIabApplicant ? (
+                  <FormField label="IEB Membership Number" required error={fieldErrors.iabMembershipNumber}>
+                    <input
+                      className={inputClasses}
+                      value={draft.iabMembershipNumber || ""}
+                      onChange={(e) => update("iabMembershipNumber", e.target.value)}
+                    />
+                    <VerificationBadge
+                      status={submission.iabVerificationStatus}
+                      verifiedLabel="IEB membership verified"
+                      failedLabel="This IEB membership number could not be verified."
+                    />
+                  </FormField>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <FormField label="University Name" required error={fieldErrors.universityName}>

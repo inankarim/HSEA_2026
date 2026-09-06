@@ -3,7 +3,6 @@ import { pool, withTransaction } from "../config/database.js";
 import { ApiError } from "../middleware/error.middleware.js";
 import { generateApplicationId } from "../utils/applicationId.js";
 import { countWords } from "../utils/wordCount.js";
-import { verifyIabMembership } from "./iab.service.js";
 import { verifyUniversityEmail } from "./university.service.js";
 import { logger } from "../utils/logger.js";
 // Required-document registry, used only by the final-submit check near the
@@ -363,10 +362,11 @@ export async function updateSubmissionDraft(
   // Re-run verification eagerly when the applicant changes their IAB
   // number or university email mid-draft, so the UI can reflect status
   // before final submission (final submission always re-verifies too).
+  // IAB/IEB numbers are stored as-is and checked manually later. Any edit
+  // to the number resets its status to PENDING rather than auto-verifying.
   if (patch.iabMembershipNumber !== undefined) {
-    const { verified } = await verifyIabMembership(patch.iabMembershipNumber);
     setClauses.push(`iab_verification_status = $${i}`);
-    values.push(verified ? "VERIFIED" : "FAILED");
+    values.push("PENDING");
     i += 1;
   }
   if (patch.universityEmail !== undefined) {
@@ -435,71 +435,73 @@ export async function addMember(applicationId, input, auth) {
   let iabStatus = "NOT_APPLICABLE";
   let universityStatus = "NOT_APPLICABLE";
 
+  // IAB/IEB numbers are stored as submitted and checked manually by the
+  // organizers later — never auto-verified, never blocks adding a member.
   if (input.applicantType === "IAB_MEMBER") {
-    const { verified } = await verifyIabMembership(input.iabMembershipNumber);
-    iabStatus = verified ? "VERIFIED" : "FAILED";
-    if (!verified) {
-      throw new ApiError(
-        "This team member's IAB membership number could not be verified. Please check the number and try again.",
-        422,
-      );
-    }
+    iabStatus = "PENDING";
   }
 
   if (input.applicantType === "STUDENT" && input.universityEmail) {
-    // Verified and stored, but never blocks — same policy as the main
-    // applicant's university check.
     const { verified } = await verifyUniversityEmail(input.universityEmail);
     universityStatus = verified ? "VERIFIED" : "FAILED";
   }
 
   return withTransaction(async (client) => {
+    // Check member count limit
     const countResult = await client.query(
       "SELECT COUNT(*)::int AS count FROM submission_members WHERE application_id = $1",
       [applicationId],
     );
     if (countResult.rows[0].count >= MAX_MEMBERS_PER_SUBMISSION) {
       throw new ApiError(
-        `A submission can have at most ${MAX_MEMBERS_PER_SUBMISSION} team members.`,
+        `Maximum ${MAX_MEMBERS_PER_SUBMISSION} team members allowed.`,
         422,
       );
     }
 
+    // Enforce only one team leader among members
     if (input.isTeamLeader) {
-      const leaderCheck = await client.query(
+      const leaderResult = await client.query(
         "SELECT 1 FROM submission_members WHERE application_id = $1 AND is_team_leader = TRUE",
         [applicationId],
       );
-      if (leaderCheck.rowCount > 0) {
-        throw new ApiError("This submission already has a team leader.", 422);
+      if (leaderResult.rowCount > 0) {
+        throw new ApiError(
+          "A team member is already designated as team leader.",
+          422,
+        );
       }
     }
 
+    // Insert new member
     const result = await client.query(
-      `INSERT INTO submission_members
-         (application_id, full_name, position, phone, email, applicant_type,
-          iab_membership_number, iab_verification_status,
-          university_name, university_email, university_verification_status,
-          is_team_leader, display_order)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
-         (SELECT COALESCE(MAX(display_order), -1) + 1 FROM submission_members WHERE application_id = $13))
-       RETURNING *`,
+      `INSERT INTO submission_members (
+        application_id, full_name, position, phone, email,
+        applicant_type, iab_membership_number, iab_verification_status,
+        university_name, university_email, university_verification_status,
+        is_team_leader
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING *`,
       [
         applicationId,
         input.fullName,
-        input.position || null,
+        input.position,
         input.phone || null,
-        input.email || null,
-        input.applicantType || null,
+        input.email,
+        input.applicantType,
         input.iabMembershipNumber || null,
         iabStatus,
         input.universityName || null,
         input.universityEmail || null,
         universityStatus,
-        Boolean(input.isTeamLeader),
-        applicationId,
+        input.isTeamLeader || false,
       ],
     );
+
+    logger.info("Team member added", {
+      applicationId,
+      memberId: result.rows[0].id,
+    });
 
     return toPublicMember(result.rows[0]);
   });
@@ -745,19 +747,11 @@ export async function finalizeSubmission(
     }
 
     // Server-side re-verification — never trust a cached client-side status.
+    // Server-side re-verification — never trust a cached client-side status.
+    // IAB/IEB numbers are never auto-verified — stored as submitted and
+    // checked manually by the organizers after submission.
     let iabStatus = row.iab_verification_status;
     let universityStatus = row.university_verification_status;
-
-    if (row.applicant_type === "IAB_MEMBER") {
-      const { verified } = await verifyIabMembership(row.iab_membership_number);
-      iabStatus = verified ? "VERIFIED" : "FAILED";
-      if (!verified) {
-        throw new ApiError(
-          "IAB membership number could not be verified. Please check the number and try again.",
-          422,
-        );
-      }
-    }
 
     if (row.applicant_type === "STUDENT") {
       const { verified } = await verifyUniversityEmail(row.university_email);
@@ -799,30 +793,6 @@ export async function finalizeSubmission(
     );
     if (leaderCheck.rows[0].count === 0 && !row.applicant_is_team_leader) {
       missing.push("a team leader must be designated");
-    }
-
-    // Re-verify every IAB-member team member's number server-side — never
-    // trust the status stored at add-time. University email failures are
-    // informational only for members and never block final submission.
-    const memberRows = await client.query(
-      "SELECT id, full_name, applicant_type, iab_membership_number FROM submission_members WHERE application_id = $1",
-      [applicationId],
-    );
-    for (const member of memberRows.rows) {
-      if (member.applicant_type === "IAB_MEMBER") {
-        const { verified } = await verifyIabMembership(
-          member.iab_membership_number,
-        );
-        await client.query(
-          "UPDATE submission_members SET iab_verification_status = $1 WHERE id = $2",
-          [verified ? "VERIFIED" : "FAILED", member.id],
-        );
-        if (!verified) {
-          missing.push(
-            `team member "${member.full_name}"'s IAB membership number could not be re-verified`,
-          );
-        }
-      }
     }
 
     if (missing.length > 0) {
