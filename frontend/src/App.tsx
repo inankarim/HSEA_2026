@@ -12,6 +12,12 @@ import Register from "./pages/Register";
 import GeneralInfo from "./pages/GeneralInfo";
 import WinnersInfo from "./pages/WinnersInfo";
 import NotFound from "./pages/NotFound";
+import { AdminAuthProvider } from "./context/AdminAuthContext";
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminChangePassword from "./pages/admin/AdminChangePassword";
+import AdminPanel from "./pages/admin/AdminPanel";
+import AdminSubmissionDetail from "./pages/admin/AdminSubmissionDetail";
+import AdminRouteGuard from "./pages/admin/AdminRouteGuard";
 
 declare global {
   interface Window {
@@ -55,6 +61,39 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="*" element={<NotFound />} />
+      <Route  path="/123456789/admin/*"
+              element={
+                <AdminAuthProvider>
+                  <Routes>
+                    <Route path="login" element={<AdminLogin />} />
+                    <Route
+                      path=""
+                      element={
+                        <AdminRouteGuard>
+                          <AdminPanel />
+                        </AdminRouteGuard>
+                      }
+                    />
+                    <Route
+                      path="change-password"
+                      element={
+                        <AdminRouteGuard>
+                          <AdminChangePassword />
+                        </AdminRouteGuard>
+                      }
+                    />
+                    <Route
+                      path=":applicationId"
+                      element={
+                        <AdminRouteGuard>
+                          <AdminSubmissionDetail />
+                        </AdminRouteGuard>
+                      }
+                    />
+                  </Routes>
+                </AdminAuthProvider>
+              }
+/>
     </Routes>
   );
 }

@@ -4,7 +4,7 @@ import helmet from "helmet";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import compression from "compression";
-
+import adminRoutes from "./routes/admin.routes.js";
 import { env } from "./config/env.js";
 import { requestId } from "./middleware/requestId.middleware.js";
 import { globalApiLimiter } from "./middleware/rateLimit.middleware.js";
@@ -37,6 +37,9 @@ export function createApp() {
   app.use(express.json({ limit: "256kb" }));
   app.use(express.urlencoded({ extended: true, limit: "256kb" }));
   app.use(cookieParser(env.COOKIE_SECRET));
+  app.get("/robots.txt", (req, res) =>
+    res.type("text/plain").send("Disallow: /"),
+  );
 
   // Basic request timeout guard: final-submission and draft-save requests
   // are lightweight (no file I/O), so anything hanging this long is
@@ -137,6 +140,7 @@ export function createApp() {
   // --- END TEMPORARY WORKAROUND ---
 
   app.use("/api", globalApiLimiter, apiRoutes);
+  app.use("/api/admin", adminRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

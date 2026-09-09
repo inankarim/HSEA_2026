@@ -8,7 +8,7 @@ import { MAX_DOCUMENT_SIZE_BYTES } from "../config/documentTypes.js";
  * Deliberately NOT multer.memoryStorage(). Applicant documents are
  * capped at 2MB each, but at ~1,000 concurrent applicants near the
  * deadline, memoryStorage would mean up to ~2GB of request bodies live
- * in the Node.js heap simultaneously in the worst case, plus GC pressure
+ * in the Node.js heap simultaneously in the worst case, plus GC p ressure
  * from all those buffers. diskStorage streams the multipart body
  * straight to a temp file on STORAGE_TEMP_DIR as it arrives — Node's
  * memory footprint per upload stays a small, constant-size buffer
