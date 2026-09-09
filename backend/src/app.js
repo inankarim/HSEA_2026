@@ -138,9 +138,8 @@ export function createApp() {
     next();
   });
   // --- END TEMPORARY WORKAROUND ---
-
-  app.use("/api", globalApiLimiter, apiRoutes);
   app.use("/api/admin", adminRoutes);
+  app.use("/api", globalApiLimiter, apiRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
