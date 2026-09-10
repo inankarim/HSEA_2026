@@ -194,3 +194,93 @@ export const adminSubmissions = {
   downloadUrl: (applicationId: string) =>
     `${BASE_URL}/api/admin/submissions/${applicationId}/download`,
 };
+export interface AdminKpis {
+  totalApplicants: number;
+  totalSubmitted: number;
+  totalUsers: number;
+  totalViews: number | null;
+  totalVisitors: number | null;
+}
+
+export const adminKpis = {
+  get: () => request<AdminKpis>("/api/admin/kpis"),
+};
+
+export function resolveAdminMediaUrl(
+  url: string | null | undefined,
+): string | null {
+  if (!url) return null;
+  if (
+    /^https?:\/\//i.test(url) ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  )
+    return url;
+  return `${BASE_URL}${url}`;
+}
+
+export interface AdminUserRow {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  organization: string | null;
+  designation: string | null;
+  applicantType: "IAB_MEMBER" | "STUDENT";
+  iabMembershipNumber: string | null;
+  universityName: string | null;
+  universityEmail: string | null;
+  profilePhotoUrl: string | null;
+  createdAt: string;
+}
+
+export interface AdminUserListResult {
+  rows: AdminUserRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface AdminAccountRow {
+  id: string;
+  email: string;
+  fullName: string;
+  mustChangePassword: boolean;
+  createdAt: string;
+}
+
+export const adminUsers = {
+  list: (params: { search?: string; page?: number; pageSize?: number }) => {
+    const query = new URLSearchParams();
+    if (params.search) query.set("search", params.search);
+    if (params.page) query.set("page", String(params.page));
+    if (params.pageSize) query.set("pageSize", String(params.pageSize));
+    const qs = query.toString();
+    return request<AdminUserListResult>(
+      `/api/admin/users${qs ? `?${qs}` : ""}`,
+    );
+  },
+  detail: (userId: string) =>
+    request<{ user: AdminUserRow }>(`/api/admin/users/${userId}`),
+  resetPassword: (userId: string) =>
+    request<{ temporaryPassword: string }>(
+      `/api/admin/users/${userId}/reset-password`,
+      {
+        method: "POST",
+      },
+    ),
+  remove: (userId: string, code: string) =>
+    request<Record<string, never>>(`/api/admin/users/${userId}`, {
+      method: "DELETE",
+      body: { code },
+    }),
+};
+
+export const adminAdmins = {
+  list: () => request<{ admins: AdminAccountRow[] }>("/api/admin/admins"),
+  remove: (adminId: string, code: string) =>
+    request<Record<string, never>>(`/api/admin/admins/${adminId}`, {
+      method: "DELETE",
+      body: { code },
+    }),
+};

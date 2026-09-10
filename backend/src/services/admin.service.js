@@ -4,7 +4,11 @@ import { ApiError } from "../middleware/error.middleware.js";
 import { logger } from "../utils/logger.js";
 import { storage } from "../storage/index.js";
 import archiver from "archiver";
-
+import { getAnalyticsSummary } from "./analytics.service.js";
+import crypto from "node:crypto";
+import path from "node:path";
+import { env } from "../config/env.js";
+import { deleteImageUpload } from "./pictureUpload.service.js";
 const BCRYPT_ROUNDS = 12;
 
 function toPublicAdmin(row) {
@@ -77,24 +81,6 @@ export async function changeAdminPassword(
   );
 
   logger.info("Admin changed password", { adminId });
-}
-
-export async function logAdminAction(adminId, action, applicationId = null) {
-  // Fire-and-forget by design — an audit-log write failing should never
-  // block or fail the actual admin request it's logging.
-  try {
-    await pool.query(
-      "INSERT INTO admin_audit_log (admin_id, action, application_id) VALUES ($1,$2,$3)",
-      [adminId, action, applicationId],
-    );
-  } catch (err) {
-    logger.error("Failed to write admin audit log", {
-      adminId,
-      action,
-      applicationId,
-      error: err.message,
-    });
-  }
 }
 export async function listSubmissions({
   status,
@@ -404,4 +390,222 @@ export async function updateSubmissionStatus(
   });
 
   return result.rows[0];
+}
+
+export async function getKpis() {
+  const [applicantsResult, submittedResult, usersResult, analytics] =
+    await Promise.all([
+      pool.query("SELECT COUNT(*)::int AS count FROM submissions"),
+      pool.query(
+        "SELECT COUNT(*)::int AS count FROM submissions WHERE status != 'DRAFT'",
+      ),
+      pool.query("SELECT COUNT(*)::int AS count FROM users"),
+      getAnalyticsSummary(),
+    ]);
+
+  return {
+    totalApplicants: applicantsResult.rows[0].count,
+    totalSubmitted: submittedResult.rows[0].count,
+    totalUsers: usersResult.rows[0].count,
+    totalViews: analytics.totalViews,
+    totalVisitors: analytics.totalVisitors,
+  };
+}
+
+export async function logAdminAction(adminId, action, context = null) {
+  const {
+    applicationId = null,
+    targetType = null,
+    targetId = null,
+  } = typeof context === "string" ? { applicationId: context } : context || {};
+  try {
+    await pool.query(
+      `INSERT INTO admin_audit_log (admin_id, action, application_id, target_type, target_id)
+       VALUES ($1,$2,$3,$4,$5)`,
+      [adminId, action, applicationId, targetType, targetId],
+    );
+  } catch (err) {
+    logger.error("Failed to write admin audit log", {
+      adminId,
+      action,
+      applicationId,
+      targetType,
+      targetId,
+      error: err.message,
+    });
+  }
+}
+
+function assertValidDeleteCode(code) {
+  if (!env.ADMIN_DELETE_CODE) {
+    throw new ApiError(
+      "Destructive actions are not configured on this server. Set ADMIN_DELETE_CODE.",
+      500,
+    );
+  }
+  if (!code || typeof code !== "string") {
+    throw new ApiError("A confirmation code is required for this action.", 422);
+  }
+  const expected = Buffer.from(env.ADMIN_DELETE_CODE);
+  const actual = Buffer.from(code);
+  const matches =
+    expected.length === actual.length &&
+    crypto.timingSafeEqual(expected, actual);
+  if (!matches) {
+    throw new ApiError("Incorrect confirmation code.", 403);
+  }
+}
+
+function toAdminUserView(row) {
+  return {
+    id: row.id,
+    fullName: row.full_name,
+    email: row.email,
+    phone: row.phone,
+    organization: row.organization,
+    designation: row.designation,
+    applicantType: row.applicant_type,
+    iabMembershipNumber: row.iab_membership_number,
+    universityName: row.university_name,
+    universityEmail: row.university_email,
+    profilePhotoUrl: row.profile_photo_url || null,
+    createdAt: row.created_at,
+    // password_hash intentionally never included, same rule as documents'
+    // storage_path never appearing in admin API responses.
+  };
+}
+
+export async function listUsers({ search, page = 1, pageSize = 25 }) {
+  const conditions = [];
+  const values = [];
+  let i = 1;
+
+  if (search) {
+    conditions.push(
+      `(full_name ILIKE $${i} OR email ILIKE $${i} OR iab_membership_number ILIKE $${i} OR university_name ILIKE $${i})`,
+    );
+    values.push(`%${search}%`);
+    i += 1;
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const limitParam = i++;
+  const offsetParam = i++;
+  const offset = (page - 1) * pageSize;
+
+  const rows = await pool.query(
+    `SELECT * FROM users ${where} ORDER BY created_at DESC LIMIT $${limitParam} OFFSET $${offsetParam}`,
+    [...values, pageSize, offset],
+  );
+  const countResult = await pool.query(
+    `SELECT COUNT(*)::int AS count FROM users ${where}`,
+    values,
+  );
+
+  return {
+    rows: rows.rows.map(toAdminUserView),
+    total: countResult.rows[0].count,
+    page,
+    pageSize,
+  };
+}
+
+export async function getUserDetail(userId) {
+  const result = await pool.query("SELECT * FROM users WHERE id = $1", [
+    userId,
+  ]);
+  if (result.rowCount === 0) throw new ApiError("User not found.", 404);
+  return toAdminUserView(result.rows[0]);
+}
+
+function generateTemporaryPassword() {
+  const ALPHABET = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const bytes = crypto.randomBytes(14);
+  let out = "";
+  for (let i = 0; i < 14; i++) out += ALPHABET[bytes[i] % ALPHABET.length];
+  return out;
+}
+
+export async function resetUserPassword(userId, adminId) {
+  const temporaryPassword = generateTemporaryPassword();
+  const passwordHash = await bcrypt.hash(temporaryPassword, BCRYPT_ROUNDS);
+
+  const result = await pool.query(
+    "UPDATE users SET password_hash = $1, updated_at = now() WHERE id = $2 RETURNING id",
+    [passwordHash, userId],
+  );
+  if (result.rowCount === 0) throw new ApiError("User not found.", 404);
+
+  await logAdminAction(adminId, "RESET_USER_PASSWORD", {
+    targetType: "USER",
+    targetId: userId,
+  });
+  logger.info("Admin reset a user's password", { adminId, userId });
+
+  // Returned once, in-memory only — never logged or stored anywhere.
+  return { temporaryPassword };
+}
+
+export async function deleteUser(userId, adminId, code) {
+  assertValidDeleteCode(code);
+
+  const existing = await pool.query(
+    "SELECT profile_photo_path FROM users WHERE id = $1",
+    [userId],
+  );
+  if (existing.rowCount === 0) throw new ApiError("User not found.", 404);
+
+  await pool.query("DELETE FROM users WHERE id = $1", [userId]);
+
+  const photoPath = existing.rows[0].profile_photo_path;
+  if (photoPath) {
+    deleteImageUpload(path.basename(photoPath), {
+      purpose: "profile-photos",
+    }).catch(() => {});
+  }
+
+  await logAdminAction(adminId, "DELETE_USER", {
+    targetType: "USER",
+    targetId: userId,
+  });
+  logger.info("Admin deleted a user account", { adminId, userId });
+}
+
+export async function listAdmins() {
+  const result = await pool.query(
+    "SELECT id, email, full_name, must_change_password, created_at FROM admin_users ORDER BY created_at ASC",
+  );
+  return result.rows.map((r) => ({
+    id: r.id,
+    email: r.email,
+    fullName: r.full_name,
+    mustChangePassword: r.must_change_password,
+    createdAt: r.created_at,
+  }));
+}
+
+export async function deleteAdminAccount(targetAdminId, currentAdminId, code) {
+  assertValidDeleteCode(code);
+
+  if (targetAdminId === currentAdminId) {
+    throw new ApiError(
+      "You cannot delete your own admin account while logged in.",
+      422,
+    );
+  }
+
+  const result = await pool.query("DELETE FROM admin_users WHERE id = $1", [
+    targetAdminId,
+  ]);
+  if (result.rowCount === 0)
+    throw new ApiError("Admin account not found.", 404);
+
+  await logAdminAction(currentAdminId, "DELETE_ADMIN", {
+    targetType: "ADMIN",
+    targetId: targetAdminId,
+  });
+  logger.info("Admin deleted another admin account", {
+    currentAdminId,
+    targetAdminId,
+  });
 }

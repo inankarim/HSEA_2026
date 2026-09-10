@@ -96,6 +96,10 @@ export const env = {
     path.resolve(process.cwd(), "uploads", "images"),
   ),
   PICTURE_PUBLIC_PREFIX: optional("PICTURE_PUBLIC_PREFIX", "/uploads/images"),
+  GA4_PROPERTY_ID: optional("GA4_PROPERTY_ID", null),
+  GOOGLE_OAUTH_CLIENT_ID: optional("GOOGLE_OAUTH_CLIENT_ID", null),
+  GOOGLE_OAUTH_CLIENT_SECRET: optional("GOOGLE_OAUTH_CLIENT_SECRET", null),
+  GOOGLE_OAUTH_REFRESH_TOKEN: optional("GOOGLE_OAUTH_REFRESH_TOKEN", null),
 };
 
 if (isProduction && env.JWT_SECRET.length < 32) {

@@ -30,7 +30,6 @@ function extractToken(req) {
 /** Requires a valid, authenticated session. */
 export const requireAuth = asyncHandler(async (req, res, next) => {
   const token = extractToken(req);
-  console.log("DEBUG: token extracted:", !!token, "cookies:", req.cookies);
   if (!token) {
     throw new ApiError("Authentication required.", 401);
   }

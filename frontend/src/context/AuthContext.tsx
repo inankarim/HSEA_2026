@@ -31,7 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const isAdminRoute = () =>
+    window.location.pathname.startsWith("/123456789/admin");
+
   const refresh = useCallback(async () => {
+    if (isAdminRoute()) {
+      setLoading(false);
+      return;
+    }
     try {
       const { user } = await auth.me();
       setUser(user);

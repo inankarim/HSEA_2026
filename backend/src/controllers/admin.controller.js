@@ -14,9 +14,16 @@ import {
   streamApplicantZip,
   logAdminAction,
   updateSubmissionStatus,
+  listUsers,
+  getUserDetail,
+  resetUserPassword,
+  deleteUser,
+  listAdmins,
+  deleteAdminAccount,
 } from "../services/admin.service.js";
 
 import { env } from "../config/env.js";
+import { getKpis } from "../services/admin.service.js";
 
 const adminCookieOptions = {
   httpOnly: true,
@@ -110,4 +117,52 @@ export const updateStatus = asyncHandler(async (req, res) => {
     req.admin.id,
   );
   return ok(res, result, "Status updated.");
+});
+
+export const kpis = asyncHandler(async (req, res) => {
+  const data = await getKpis();
+  return ok(res, data);
+});
+
+export const listUsersHandler = asyncHandler(async (req, res) => {
+  const { search, page, pageSize } = req.query;
+  const result = await listUsers({
+    search: typeof search === "string" ? search : undefined,
+    page: Number(page) || 1,
+    pageSize: Number(pageSize) || 25,
+  });
+  return ok(res, result);
+});
+
+export const userDetailHandler = asyncHandler(async (req, res) => {
+  const user = await getUserDetail(req.params.userId);
+  return ok(res, { user });
+});
+
+export const resetUserPasswordHandler = asyncHandler(async (req, res) => {
+  const result = await resetUserPassword(req.params.userId, req.admin.id);
+  return ok(
+    res,
+    result,
+    "Password reset. Share this temporary password with the user securely — it will not be shown again.",
+  );
+});
+
+const deleteCodeSchema = z.object({ code: z.string().min(1) }).strict();
+
+export const deleteUserHandler = asyncHandler(async (req, res) => {
+  const { code } = deleteCodeSchema.parse(req.body);
+  await deleteUser(req.params.userId, req.admin.id, code);
+  return ok(res, {}, "User account deleted.");
+});
+
+export const listAdminsHandler = asyncHandler(async (req, res) => {
+  const admins = await listAdmins();
+  return ok(res, { admins });
+});
+
+export const deleteAdminHandler = asyncHandler(async (req, res) => {
+  const { code } = deleteCodeSchema.parse(req.body);
+  await deleteAdminAccount(req.params.adminId, req.admin.id, code);
+  return ok(res, {}, "Admin account deleted.");
 });

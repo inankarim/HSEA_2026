@@ -10,10 +10,19 @@ import {
   me,
   changePassword,
   updateStatus,
+  list,
+  detail,
+  downloadZip,
+  kpis,
+  listUsersHandler,
+  userDetailHandler,
+  resetUserPasswordHandler,
+  deleteUserHandler,
+  listAdminsHandler,
+  deleteAdminHandler,
 } from "../controllers/admin.controller.js";
 
 import { isValidApplicationIdFormat } from "../utils/applicationId.js";
-import { list, detail, downloadZip } from "../controllers/admin.controller.js";
 
 const router = Router();
 const applicationIdParamSchema = z
@@ -97,6 +106,53 @@ router.get(
   requireAdmin,
   validate(applicationIdParamSchema, "params"),
   downloadZip,
+);
+router.get("/kpis", requireAdmin, kpis);
+
+const userIdParamSchema = z
+  .object({ userId: z.string().uuid("Invalid user ID.") })
+  .passthrough();
+const adminIdParamSchema = z
+  .object({ adminId: z.string().uuid("Invalid admin ID.") })
+  .passthrough();
+
+const destructiveActionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) =>
+    fail(res, "Too many attempts. Please wait and try again.", 429),
+});
+
+router.get("/users", requireAdmin, listUsersHandler);
+router.get(
+  "/users/:userId",
+  requireAdmin,
+  validate(userIdParamSchema, "params"),
+  userDetailHandler,
+);
+router.post(
+  "/users/:userId/reset-password",
+  requireAdmin,
+  validate(userIdParamSchema, "params"),
+  resetUserPasswordHandler,
+);
+router.delete(
+  "/users/:userId",
+  requireAdmin,
+  destructiveActionLimiter,
+  validate(userIdParamSchema, "params"),
+  deleteUserHandler,
+);
+
+router.get("/admins", requireAdmin, listAdminsHandler);
+router.delete(
+  "/admins/:adminId",
+  requireAdmin,
+  destructiveActionLimiter,
+  validate(adminIdParamSchema, "params"),
+  deleteAdminHandler,
 );
 
 export default router;

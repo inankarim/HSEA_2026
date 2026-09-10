@@ -94,10 +94,15 @@ export default function AdminPanel() {
       {/* Header */}
       <div className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-6 py-5 flex items-center justify-between">
-          <div>
+          <button
+            onClick={() => navigate("/123456789/admin")}
+            className="text-left"
+          >
             <p className="text-xs font-bold uppercase tracking-wide text-navy-deep/50">HSEA 2026</p>
-            <h1 className="text-xl font-bold text-navy-deep">Admin Panel</h1>
-          </div>
+            <h1 className="text-xl font-bold text-navy-deep hover:text-accent-cyan transition-colors">
+              Admin Panel
+            </h1>
+          </button>
           <div className="flex items-center gap-4">
             <p className="text-sm text-gray-500">{admin?.fullName}</p>
             <button
@@ -206,7 +211,7 @@ export default function AdminPanel() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => navigate(`/123456789/admin/${row.application_id}`)}
+                          onClick={() => navigate(`/123456789/admin/submissions/${row.application_id}`)}
                           className="text-xs font-bold uppercase tracking-wide text-accent-cyan hover:underline"
                         >
                           View
