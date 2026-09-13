@@ -38,10 +38,26 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
     body = JSON.stringify(opts.body);
   }
 
+  // TEMPORARY WORKAROUND: the hosting provider's nginx config blocks
+  // PUT/DELETE with a 403 at the edge (limit_except GET POST), before
+  // requests ever reach the Express app. Send PUT/DELETE as POST with an
+  // override header; app.js's override middleware translates it back to
+  // the real method before routing. This mirrors the identical workaround
+  // already used in lib/api.ts for the applicant-facing API client — the
+  // backend middleware is registered globally (not path-scoped), so it
+  // covers /api/admin/* the same way it covers /api/*. Remove this once
+  // nginx is fixed to allow PUT/DELETE through to /api/*.
+  const realMethod = opts.method || "GET";
+  const wireMethod =
+    realMethod === "PUT" || realMethod === "DELETE" ? "POST" : realMethod;
+  if (wireMethod !== realMethod) {
+    headers["X-HTTP-Method-Override"] = realMethod;
+  }
+
   let response: Response;
   try {
     response = await fetch(`${BASE_URL}${path}`, {
-      method: opts.method || "GET",
+      method: wireMethod,
       credentials: "include", // sends hsea_admin_token cookie
       headers,
       body,
