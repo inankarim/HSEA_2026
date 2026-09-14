@@ -1,6 +1,6 @@
 import { motion, useScroll } from "framer-motion";
 import Header from "../components/Header";
-import bg2 from "../assets/awardcart.jpeg";
+import bg2 from "../assets/awardcart.webp";
 
 const IMAGE_ASSETS = {
   visionary_category: "/assets/visionary_design.webp",

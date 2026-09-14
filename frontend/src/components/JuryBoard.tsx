@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
 import FadeIn from "./FadeIn";
-import Picture1 from "../assets/Picture1.png";
-import Picture2 from "../assets/Picture2.png";
-import Picture3 from "../assets/picture03_sub.png";
-import Picture4 from "../assets/Picture4.png";
-import Picture5 from "../assets/Picture5.png";
+import Picture1 from "../assets/Picture1.webp";
+import Picture2 from "../assets/Picture2.webp";
+import Picture3 from "../assets/picture03_sub.webp";
+import Picture4 from "../assets/Picture4.webp";
+import Picture5 from "../assets/Picture5.webp";
 
 const jury = [
   { 
@@ -70,6 +70,7 @@ export default function JuryBoard() {
                   <img
                     src={member.image}
                     alt={member.name}
+                    loading="lazy"
                     className={`w-full h-full object-cover ${member.position ?? "object-center"} transition-transform duration-300 group-hover:scale-110`}
                   />
                 </div>

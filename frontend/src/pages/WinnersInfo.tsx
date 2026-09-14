@@ -8,7 +8,7 @@ import {
   Highlight,
   GhostWord,
 } from "../components/Editorial";
-import winner from "../assets/winners.png"
+import winner from "../assets/winners.webp"
 import Header from "../components/Header";
 const WinnersInfo = () => {
   return (

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import image from "../assets/award.jpeg";
+import image from "../assets/award.webp";
 import FadeIn from "./FadeIn";
 import { Link } from "react-router-dom";
 const MotionLink = motion(Link);

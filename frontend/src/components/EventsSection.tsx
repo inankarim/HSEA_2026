@@ -2,11 +2,11 @@ import { motion } from "framer-motion";
 import FadeIn from "./FadeIn";
 
 // Import your event images
-import eventImage1 from "../assets/card1.png";
-import eventImage2 from "../assets/_asia_largest.jpg.png";
+import eventImage1 from "../assets/card1.webp";
+import eventImage2 from "../assets/_asia_largest.jpg.webp";
 import eventImage3 from "../assets/event3.jpg.webp";
-import eventImage4 from "../assets/card4.png";
-import eventImage5 from "../assets/card5.png";
+import eventImage4 from "../assets/card4.webp";
+import eventImage5 from "../assets/card5.webp";
 import eventImage6 from "../assets/Urbanbridgespan.webp";
 
 

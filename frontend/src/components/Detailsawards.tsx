@@ -1,7 +1,7 @@
 import { motion, useScroll } from "framer-motion";
 import Header from "../components/Header";
-import bg2 from "../assets/abouttheawards.jpeg";
-import img from "../assets/dashbg2.jpg"
+import bg2 from "../assets/abouttheawards.webp";
+import img from "../assets/dashbg2.webp"
 import Footer from "../components/Footer";
 
 /* ================================================================ */

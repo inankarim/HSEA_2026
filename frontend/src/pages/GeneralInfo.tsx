@@ -6,7 +6,7 @@ import {
   RuleItem,
   PendingNote,
 } from "../components/Editorial";
-import general from "../assets/general.png"
+import general from "../assets/general.webp"
 import Header from "../components/Header";
 const GeneralInfo = () => {
   return (

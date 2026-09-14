@@ -1,8 +1,8 @@
-import supercreate from "../assets/Supercrete.jpeg";
-import supercreate_plus from "../assets/SupercretePlus.jpeg";
-import holcim_water from "../assets/HolcimWaterProtect.jpeg";
-import holcimstrong from "../assets/HolcimStrongStructure.jpeg"
-import holcimcoastal from "../assets/HolcimCoastalGuard.png"
+import supercreate from "../assets/Supercrete.webp";
+import supercreate_plus from "../assets/SupercretePlus.webp";
+import holcim_water from "../assets/HolcimWaterProtect.webp";
+import holcimstrong from "../assets/HolcimStrongStructure.webp"
+import holcimcoastal from "../assets/HolcimCoastalGuard.webp"
 
 interface Product {
   title: string;
@@ -80,6 +80,7 @@ const Brand = () => {
                 <img
                   src={product.image}
                   alt={product.title}
+                  loading="lazy"
                   className="h-full object-contain px-4 transition-transform duration-500 ease-out group-hover:scale-110"
                 />
               </div>

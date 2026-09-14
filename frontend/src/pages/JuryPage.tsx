@@ -3,11 +3,11 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import bg2 from "../assets/jury.png";
 
-import picture1 from "../assets/Picture1.png";
-import picture2 from "../assets/Picture2.png";
-import picture3 from "../assets/picture03.jpeg";
-import picture4 from "../assets/Picture4.png";
-import picture5 from "../assets/Picture5.png";
+import picture1 from "../assets/Picture1.webp";
+import picture2 from "../assets/Picture2.webp";
+import picture3 from "../assets/picture03.webp";
+import picture4 from "../assets/Picture4.webp";
+import picture5 from "../assets/Picture5.webp";
 
 /* ------------------------------------------------------------------ */
 /*  Design tokens (shared with About Award / Award Categories pages)   */
