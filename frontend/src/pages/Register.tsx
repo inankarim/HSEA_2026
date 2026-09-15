@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -37,7 +37,16 @@ const INITIAL: FormState = {
 
 export default function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { refresh } = useAuth();
+
+  // Mirrors Login.tsx's pattern: SubmissionInstructions.tsx sends
+  // navigate("/register", { state: { from: "/submit" } }) when an
+  // unauthenticated visitor clicks "Start Submission" (guest submission
+  // is disabled — see Submissioninstructions.tsx). Falling back to
+  // "/submit" keeps this page working the same way even if it's ever
+  // linked to directly without that state.
+  const redirectTo = (location.state as { from?: string } | null)?.from || "/submit";
 
   const [form, setForm] = useState<FormState>(INITIAL);
   const [submitting, setSubmitting] = useState(false);
@@ -69,7 +78,7 @@ export default function Register() {
         universityEmail: form.applicantType === "STUDENT" ? form.universityEmail : undefined,
       });
       await refresh();
-      navigate("/submit", { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -101,7 +110,7 @@ export default function Register() {
           </span>
           <h1 className="mt-3 text-3xl font-bold text-navy-deep">Register</h1>
           <p className="mt-2 text-sm text-gray-600">
-            Optional — you can also submit as a guest without an account.
+            Create an account to start and manage your HSEA 2026 submission.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">

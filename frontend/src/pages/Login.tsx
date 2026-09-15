@@ -102,12 +102,6 @@ export default function Login() {
               Create one
             </a>
           </p>
-          <p className="mt-2 text-center text-sm text-gray-500">
-            Prefer not to register?{" "}
-            <a href="/submit" className="font-semibold text-accent-cyan hover:underline">
-              Continue as guest
-            </a>
-          </p>
         </FadeIn>
       </section>
 

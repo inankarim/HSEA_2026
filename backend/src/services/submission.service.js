@@ -13,7 +13,7 @@ import {
   requiredMemberDocumentTypes,
   DOCUMENT_TYPES,
   MEMBER_DOCUMENT_TYPES,
-} from "../config/documentTypes.js";
+} from "../config/documentType.js";
 
 const PROJECT_DESCRIPTION_WORD_LIMIT = 500;
 const MAX_APPLICATION_ID_RETRIES = 5;

@@ -13,7 +13,7 @@ import {
   MEMBER_DOCUMENT_TYPES,
   allowedMimeTypesFor,
   allowedMimeTypesForMember,
-} from "../config/documentTypes.js";
+} from "../config/documentType.js";
 import {
   assertSubmissionEditable,
   getSubmissionForAccess,
@@ -273,7 +273,9 @@ async function uploadDocumentInternal({
     // the same document_type, or with another member's file. We don't
     // touch LocalFileStorage.js's internals — this just reuses its
     // existing (applicationId, slotKey, ext) -> storagePath contract.
-    const slotKey = memberId ? `MEMBER-${memberId}-${documentType}` : documentType;
+    const slotKey = memberId
+      ? `MEMBER-${memberId}-${documentType}`
+      : documentType;
 
     // Commit to final storage BEFORE the DB write. If the DB write then
     // fails, we clean up this newly-committed file in the catch below —

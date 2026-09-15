@@ -55,12 +55,6 @@ export interface DocumentTypeDef {
  */
 export const DOCUMENT_TYPE_DEFS: DocumentTypeDef[] = [
   {
-    type: "APPLICANT_NID",
-    label: "Applicant NID / Passport",
-    kind: "pdf",
-    required: true,
-  },
-  {
     type: "APPLICANT_PHOTO",
     label: "Applicant Photo",
     kind: "image",
@@ -128,12 +122,6 @@ export const MEMBER_DOCUMENT_TYPE_DEFS: {
   kind: DocumentKind;
   required: boolean;
 }[] = [
-  {
-    type: "APPLICANT_NID",
-    label: "NID / Passport",
-    kind: "pdf",
-    required: true,
-  },
   {
     type: "APPLICANT_PHOTO",
     label: "Member Photo",

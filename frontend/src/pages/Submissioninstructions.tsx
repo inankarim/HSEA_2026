@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import FadeIn from "../components/FadeIn";
-import { ApiError, storeGuestAccessToken, submissions } from "../lib/api";
+import { ApiError, submissions } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 
 const PROCESS_STEPS = [
@@ -62,7 +62,6 @@ const REQUIREMENT_GROUPS = [
     title: "Applicant & Team Documents",
     items: [
       "IEB membership number, or university name & email",
-      "NID / Passport for every team member (max 2MB each)",
       "Photograph for every team member (max 2MB each)",
     ],
   },
@@ -90,7 +89,7 @@ const CHECKLIST = [
   "Your applicant information",
   "IEB membership number, or a university email",
   "Project information",
-  "Team member details, with NID/Passport and photo for each",
+  "Team member details, with a photo for each",
   "Project documents ready to upload directly (PDF, under 2MB each)",
   "Photographs, structural drawings, CAD and CDR files ready for Google Drive",
   "Your Google Drive folder, already created and shared",
@@ -101,19 +100,14 @@ const CHECKLIST = [
 export default function SubmissionInstructions() {
   const navigate = useNavigate();
   const { user, isAuthenticated, loading: authLoading } = useAuth();
-  const [showGuestPanel, setShowGuestPanel] = useState(false);
-  const [guestEmail, setGuestEmail] = useState("");
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
 
-  async function beginSubmission(email?: string) {
+  async function beginSubmission() {
     setStarting(true);
     setStartError(null);
     try {
-      const result = await submissions.start(email);
-      if (result.guestAccessToken) {
-        storeGuestAccessToken(result.applicationId, result.guestAccessToken);
-      }
+      const result = await submissions.start();
       navigate(`/submission/${result.applicationId}`);
     } catch (err) {
       setStartError(
@@ -128,7 +122,10 @@ export default function SubmissionInstructions() {
     if (isAuthenticated) {
       beginSubmission();
     } else {
-      setShowGuestPanel(true);
+      // Guest submission is disabled — send unauthenticated visitors to
+      // register, then bring them straight back here once they do
+      // (see Register.tsx, which reads location.state.from).
+      navigate("/register", { state: { from: "/submit" } });
     }
   }
 
@@ -187,15 +184,12 @@ export default function SubmissionInstructions() {
           <FadeIn>
             <div className="rounded-2xl border border-accent-cyan/30 bg-navy-deep px-8 py-10 text-white">
               <h3 className="text-xl font-bold uppercase tracking-wide text-accent-cyan">
-                Your progress auto-saves — but only if you can get back to it
+                Your progress auto-saves as you go
               </h3>
               <p className="mt-3 max-w-2xl leading-relaxed text-white/80">
-                If you're signed in, your form auto-saves as you go and you can return
-                any time from your account. If you're continuing as a guest, your
-                progress auto-saves within that same session — you're free to switch
-                tabs — but it isn't tied to your account, so if you leave and lose that
-                session before submitting, your progress cannot be recovered. Guests
-                should plan to complete and submit their application in one sitting.
+                Once you're signed in, your form auto-saves automatically and you can
+                return to it any time from your account — no need to finish everything
+                in one sitting.
               </p>
             </div>
           </FadeIn>
@@ -375,39 +369,10 @@ export default function SubmissionInstructions() {
                 </p>
               )}
 
-              {showGuestPanel && !isAuthenticated && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 w-full max-w-sm rounded-xl border border-navy-deep/10 bg-gray-50 p-6 text-left"
-                >
-                  <p className="text-xs font-bold uppercase tracking-wide text-navy-deep/60">
-                    Continue as guest
-                  </p>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Optional — add an email so you can be reached about your submission.
-                  </p>
-                  <input
-                    type="email"
-                    value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="mt-3 w-full rounded-lg border border-navy-deep/15 px-3 py-2 text-sm focus:border-accent-cyan focus:outline-none"
-                  />
-                  <button
-                    onClick={() => beginSubmission(guestEmail || undefined)}
-                    disabled={starting}
-                    className="mt-3 w-full rounded-lg bg-accent-cyan px-4 py-2.5 text-sm font-bold uppercase tracking-wide text-navy-ink hover:bg-accent-cyan/90 disabled:opacity-60"
-                  >
-                    {starting ? "Starting…" : "Continue as Guest"}
-                  </button>
-                  <p className="mt-4 text-center text-xs text-gray-500">
-                    Already have an account?{" "}
-                    <a href="/login" className="font-semibold text-accent-cyan hover:underline">
-                      Sign in
-                    </a>
-                  </p>
-                </motion.div>
+              {!isAuthenticated && !authLoading && (
+                <p className="text-xs text-gray-400">
+                  You'll need an account to submit — we'll take you to register first.
+                </p>
               )}
             </div>
           </FadeIn>

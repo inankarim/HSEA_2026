@@ -309,23 +309,41 @@ export default function SubmissionPortal() {
 
   // --- section completeness (for the progress rail) ------------------------
 
-  const completedSections = useMemo(() => {
-    const done = new Set<SectionId>();
-    if (draft.fullName && draft.email) done.add("applicant");
-    if (draft.projectName && draft.projectCategory) done.add("project");
-    if (draft.executiveSummary && draft.projectDescription) done.add("description");
-    if (draft.designDemonstration || draft.materialSpecifications) done.add("technical");
-    if (draft.googleDriveUrl) done.add("drive");
-    if (
-      draft.informationConfirmed &&
-      draft.filesUploadedConfirmed &&
-      draft.namingConventionConfirmed &&
-      draft.authenticityConfirmed &&
-      draft.termsAccepted
-    )
-      done.add("declaration");
-    return done;
-  }, [draft]);
+const completedSections = useMemo(() => {
+  const done = new Set<SectionId>();
+
+  if (draft.fullName && draft.email) done.add("applicant");
+  if (draft.projectName && draft.projectCategory) done.add("project");
+
+  const hasExecutiveSummary =
+    Boolean(draft.executiveSummary?.trim()) ||
+    existingDocuments.EXECUTIVE_SUMMARY?.uploadStatus === "UPLOADED";
+  const hasProjectDescription =
+    Boolean(draft.projectDescription?.trim()) ||
+    existingDocuments.PROJECT_DESCRIPTION?.uploadStatus === "UPLOADED";
+  if (hasExecutiveSummary && hasProjectDescription) done.add("description");
+
+  const hasDesignDemonstration =
+    Boolean(draft.designDemonstration?.trim()) ||
+    existingDocuments.DESIGN_DEMONSTRATION?.uploadStatus === "UPLOADED";
+  const hasCosting =
+    Boolean(draft.costing?.trim()) ||
+    existingDocuments.COSTING?.uploadStatus === "UPLOADED";
+  if (hasDesignDemonstration && hasCosting) done.add("technical");
+
+  if (draft.googleDriveUrl) done.add("drive");
+
+  if (
+    draft.informationConfirmed &&
+    draft.filesUploadedConfirmed &&
+    draft.namingConventionConfirmed &&
+    draft.authenticityConfirmed &&
+    draft.termsAccepted
+  )
+    done.add("declaration");
+
+  return done;
+}, [draft, existingDocuments]);
 
   function goToSection(id: SectionId) {
     saveNow();
@@ -709,7 +727,7 @@ export default function SubmissionPortal() {
                     Identification
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <DocumentUploadField
+                    {/* <DocumentUploadField
                       applicationId={submission.applicationId}
                       guestToken={guestToken}
                       def={docDefByType.APPLICANT_NID}
@@ -717,7 +735,7 @@ export default function SubmissionPortal() {
                       concurrencyGate={uploadGate}
                       onUploaded={handleDocUploaded}
                       onRemoved={handleDocRemoved}
-                    />
+                    /> */}
                     <DocumentUploadField
                       applicationId={submission.applicationId}
                       guestToken={guestToken}

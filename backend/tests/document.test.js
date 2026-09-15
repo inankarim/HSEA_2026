@@ -11,7 +11,7 @@ import {
   requiredDocumentTypes,
   conditionallyRequiredDocumentTypes,
   DOCUMENT_TYPE_KEYS,
-} from "../src/config/documentTypes.js";
+} from "../src/config/documentType.js";
 
 async function makeTempStorage() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "hsea-storage-test-"));

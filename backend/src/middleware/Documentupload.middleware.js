@@ -2,7 +2,7 @@ import multer from "multer";
 import crypto from "node:crypto";
 import { env } from "../config/env.js";
 import { ApiError } from "./error.middleware.js";
-import { MAX_DOCUMENT_SIZE_BYTES } from "../config/documentTypes.js";
+import { MAX_DOCUMENT_SIZE_BYTES } from "../config/documentType.js";
 
 /**
  * Deliberately NOT multer.memoryStorage(). Applicant documents are

@@ -7,7 +7,7 @@ import {
   documentDownloadLimiter,
 } from "../middleware/rateLimit.middleware.js";
 import { isValidApplicationIdFormat } from "../utils/applicationId.js";
-import { isValidDocumentType } from "../config/documentTypes.js";
+import { isValidDocumentType } from "../config/documentType.js";
 import {
   list,
   upload,

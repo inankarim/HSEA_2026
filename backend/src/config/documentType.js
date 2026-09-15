@@ -84,7 +84,7 @@ export const DOCUMENT_TYPES = {
   APPLICANT_NID: {
     label: "Applicant NID / Passport",
     kind: "pdf",
-    required: true,
+    required: false,
   },
   APPLICANT_PHOTO: {
     label: "Applicant Photo",
@@ -151,7 +151,7 @@ export const MEMBER_DOCUMENT_TYPES = {
   APPLICANT_NID: {
     label: "NID / Passport",
     kind: "pdf",
-    required: true,
+    required: false,
   },
   APPLICANT_PHOTO: {
     label: "Member Photo",

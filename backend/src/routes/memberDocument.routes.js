@@ -7,7 +7,7 @@ import {
   documentDownloadLimiter,
 } from "../middleware/rateLimit.middleware.js";
 import { isValidApplicationIdFormat } from "../utils/applicationId.js";
-import { isValidMemberDocumentType } from "../config/documentTypes.js";
+import { isValidMemberDocumentType } from "../config/documentType.js";
 import {
   listMember,
   uploadMember,
@@ -37,12 +37,7 @@ const documentTypeParamSchema = z
   })
   .passthrough();
 
-router.get(
-  "/",
-  optionalAuth,
-  validate(paramsSchema, "params"),
-  listMember,
-);
+router.get("/", optionalAuth, validate(paramsSchema, "params"), listMember);
 
 router.post(
   "/:documentType",

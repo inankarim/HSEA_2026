@@ -162,8 +162,8 @@ export default function TeamMembersSection({
     <section className="space-y-6">
       <h2 className="text-2xl font-bold uppercase tracking-wide text-navy-deep">Team Members</h2>
       <p className="text-sm text-gray-600">
-        Add additional team members (up to 5 total, including you as the team leader). Each
-        member needs their own NID/Passport and a photo.
+       Add additional team members (up to 5 total, including you as the team leader). Each
+        member needs a photo.
       </p>
 
       {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
@@ -177,7 +177,7 @@ export default function TeamMembersSection({
                 {applicantName || "You"} <span className="text-accent-cyan">(Team Leader)</span>
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                You are the team leader for this submission. Your NID/Passport and photo are
+                You are the team leader for this submission. Your photo are
                 uploaded in the Documents section.
               </p>
             </div>
@@ -399,7 +399,7 @@ export default function TeamMembersSection({
             {saving ? "Adding…" : "Add Member"}
           </button>
           <p className="text-xs text-gray-400">
-            You'll be able to upload this member's NID/Passport and photo right after adding them.
+              You'll be able to upload this member's photo right after adding them.
           </p>
         </div>
       )}
