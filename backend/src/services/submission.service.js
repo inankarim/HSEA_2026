@@ -150,6 +150,23 @@ const CAMEL_TO_COLUMN = {
  * Google Drive folder, per the required workflow.
  */
 export async function startSubmission({ userId, guestEmail }) {
+  // Enforce one finalized submission per registered account. Checked
+  // before we allocate an Application ID so we never hand out an ID that
+  // can never be finalized. Guests are exempt (no account to key off) —
+  // finalizeSubmission's own guard below is the real backstop regardless.
+  if (userId) {
+    const already = await pool.query(
+      `SELECT 1 FROM submissions WHERE user_id = $1 AND status != 'DRAFT' LIMIT 1`,
+      [userId],
+    );
+    if (already.rowCount > 0) {
+      throw new ApiError(
+        "You have already submitted an application for HSEA 2026. Only one submission is allowed per account.",
+        409,
+      );
+    }
+  }
+
   let applicationId;
   let attempt = 0;
 
@@ -718,6 +735,23 @@ export async function finalizeSubmission(
     const row = rowResult.rows[0];
     assertCanAccess(row, { userId, guestToken }); // ← moved up, checked before any idempotency shortcut
 
+    // Second backstop: even if an old draft slipped past startSubmission's
+    // guard (e.g. it was created before this check existed), block it
+    // from finalizing if this account already has a real submission.
+    if (row.user_id) {
+      const already = await client.query(
+        `SELECT 1 FROM submissions
+          WHERE user_id = $1 AND status != 'DRAFT' AND application_id != $2 LIMIT 1`,
+        [row.user_id, applicationId],
+      );
+      if (already.rowCount > 0) {
+        throw new ApiError(
+          "You have already submitted an application for HSEA 2026. Only one submission is allowed per account.",
+          409,
+        );
+      }
+    }
+
     const existingIdempotent = await getIdempotentResponse(
       client,
       idempotencyKey,
@@ -746,7 +780,6 @@ export async function finalizeSubmission(
       throw new ApiError(body.message, 409);
     }
 
-    // Server-side re-verification — never trust a cached client-side status.
     // Server-side re-verification — never trust a cached client-side status.
     // IAB/IEB numbers are never auto-verified — stored as submitted and
     // checked manually by the organizers after submission.
@@ -835,18 +868,32 @@ export async function finalizeSubmission(
     return { replayed: false, status: 200, body: submitted };
   });
 }
+
 /**
  * Returns every submission owned by this registered user's account,
  * newest first. Guest-owned drafts never appear here — they have no
  * user_id, and are found only via their Application ID + guest token.
+ *
+ * Once the account has any non-DRAFT submission, every DRAFT is
+ * deliberately omitted from the result: those are abandoned attempts
+ * from before the applicant finalized elsewhere, and startSubmission /
+ * finalizeSubmission above already refuse to let a second one go
+ * anywhere, so there is no reason to keep surfacing them as "Continue"
+ * options on the Profile page.
  */
 export async function listMySubmissions(userId) {
   const result = await pool.query(
     "SELECT * FROM submissions WHERE user_id = $1 ORDER BY created_at DESC",
     [userId],
   );
-  return result.rows.map(toPublicSubmission);
+  const rows = result.rows;
+  const hasFinalized = rows.some((r) => r.status !== "DRAFT");
+  const visible = hasFinalized
+    ? rows.filter((r) => r.status !== "DRAFT")
+    : rows;
+  return visible.map(toPublicSubmission);
 }
+
 export {
   toPublicSubmission,
   hashToken,

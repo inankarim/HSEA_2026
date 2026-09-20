@@ -39,32 +39,29 @@ function chunk<T>(items: T[], size: number): T[][] {
   return rows;
 }
 
-const STATUS_LABELS: Record<SubmissionStatus, string> = {
-  DRAFT: "Draft — not yet submitted",
-  SUBMITTED: "Submitted",
-  UNDER_REVIEW: "Under Review",
-  SHORTLISTED: "Shortlisted",
-  FINALIST: "Finalist",
-  WINNER: "Winner",
-  REJECTED: "Not Selected",
-};
+// Applicants only ever see two states, regardless of what the backend's
+// real status is under the hood (SUBMITTED, UNDER_REVIEW, SHORTLISTED,
+// FINALIST, WINNER, REJECTED all collapse to "Submitted" here). Jury/
+// admin-stage statuses are intentionally never surfaced to the applicant —
+// they belong only in the admin panel. If HSEA ever wants to announce
+// results publicly, that should be a separate, deliberate flag — not this
+// label just falling through to the real pipeline status.
+function applicantStatusLabel(status: SubmissionStatus): string {
+  return status === "DRAFT" ? "Draft — not yet submitted" : "Submitted";
+}
 
-const STATUS_BADGE_CLASSES: Record<SubmissionStatus, string> = {
-  DRAFT: "bg-gray-100 text-gray-600",
-  SUBMITTED: "bg-accent-cyan/15 text-navy-deep",
-  UNDER_REVIEW: "bg-blue-50 text-blue-700",
-  SHORTLISTED: "bg-amber-50 text-amber-700",
-  FINALIST: "bg-amber-50 text-amber-700",
-  WINNER: "bg-emerald-50 text-emerald-700",
-  REJECTED: "bg-red-50 text-red-700",
-};
+function applicantStatusBadgeClass(status: SubmissionStatus): string {
+  return status === "DRAFT"
+    ? "bg-gray-100 text-gray-600"
+    : "bg-accent-cyan/15 text-navy-deep";
+}
 
 function SubmissionStatusBadge({ status }: { status: SubmissionStatus }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${STATUS_BADGE_CLASSES[status]}`}
+      className={`inline-flex shrink-0 items-center rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${applicantStatusBadgeClass(status)}`}
     >
-      {STATUS_LABELS[status]}
+      {applicantStatusLabel(status)}
     </span>
   );
 }
@@ -94,7 +91,9 @@ export default function Profile() {
 
   // Load every submission tied to this account so the applicant can see
   // at a glance what they've submitted (or still have in draft) without
-  // needing to remember an Application ID.
+  // needing to remember an Application ID. The backend itself already
+  // hides stale drafts once a real submission exists — see
+  // listMySubmissions() in submission.service.js.
   useEffect(() => {
     if (!isAuthenticated) return;
     let cancelled = false;
@@ -372,8 +371,8 @@ export default function Profile() {
               whileTap={{ scale: 0.98 }}
               className="mt-4 inline-block"
             >
-              <a
-                href="/submit"
+              
+               <a href="/submit"
                 className="inline-flex rounded-lg bg-navy-deep px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-white hover:bg-navy-deep/90"
               >
                 Start New Submission
