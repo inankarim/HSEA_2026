@@ -835,7 +835,18 @@ export async function finalizeSubmission(
     return { replayed: false, status: 200, body: submitted };
   });
 }
-
+/**
+ * Returns every submission owned by this registered user's account,
+ * newest first. Guest-owned drafts never appear here — they have no
+ * user_id, and are found only via their Application ID + guest token.
+ */
+export async function listMySubmissions(userId) {
+  const result = await pool.query(
+    "SELECT * FROM submissions WHERE user_id = $1 ORDER BY created_at DESC",
+    [userId],
+  );
+  return result.rows.map(toPublicSubmission);
+}
 export {
   toPublicSubmission,
   hashToken,

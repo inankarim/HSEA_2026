@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validate } from "../middleware/validation.middleware.js";
-import { optionalAuth } from "../middleware/auth.middleware.js";
+import { requireAuth, optionalAuth } from "../middleware/auth.middleware.js";
 import {
   startSubmissionLimiter,
   draftSaveLimiter,
@@ -21,6 +21,7 @@ import {
   getMembers,
   addMemberHandler,
   removeMemberHandler,
+  getMine,
 } from "../controllers/submission.controller.js";
 // Application-wide document upload sub-router.
 import documentRoutes from "./document.routes.js";
@@ -38,6 +39,13 @@ router.post(
   validate(guestStartSubmissionSchema),
   start,
 );
+
+// requireAuth: lists submissions tied to the caller's own account. This
+// MUST be registered before GET "/:applicationId" below — Express matches
+// routes in registration order, and the wildcard route would otherwise
+// swallow "/mine" as an (invalid) applicationId value, which is exactly
+// what was producing the 422 "Validation failed." response.
+router.get("/mine", requireAuth, getMine);
 
 router.get(
   "/:applicationId",

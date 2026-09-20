@@ -281,6 +281,7 @@ export const submissions = {
       method: "POST",
       body: guestEmail ? { guestEmail } : undefined,
     }),
+  mine: () => request<{ submissions: Submission[] }>("/api/submissions/mine"),
 
   get: (applicationId: string, guestToken?: string | null) =>
     request<{ submission: Submission }>(`/api/submissions/${applicationId}`, {

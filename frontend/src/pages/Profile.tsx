@@ -4,10 +4,9 @@ import { motion } from "framer-motion";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import FadeIn from "../components/FadeIn";
-import FormField, { inputClasses } from "../components/Formfield";
 import { useAuth } from "../context/AuthContext";
-import { isValidApplicationIdFormat } from "../lib/Applicationid";
-import { ApiError, profile, resolveMediaUrl } from "../lib/api";
+import { ApiError, profile, resolveMediaUrl, submissions } from "../lib/api";
+import type { Submission, SubmissionStatus } from "../types/Submission";
 
 // Mirrors the backend's 2MB ceiling (see pictureUpload.service.js). This
 // is only a fast, friendly pre-check — the backend is always the final
@@ -31,13 +30,54 @@ function initials(name: string) {
     .join("");
 }
 
+/** Splits a flat list into row-groups of `size`, for a divider-per-row grid. */
+function chunk<T>(items: T[], size: number): T[][] {
+  const rows: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    rows.push(items.slice(i, i + size));
+  }
+  return rows;
+}
+
+const STATUS_LABELS: Record<SubmissionStatus, string> = {
+  DRAFT: "Draft — not yet submitted",
+  SUBMITTED: "Submitted",
+  UNDER_REVIEW: "Under Review",
+  SHORTLISTED: "Shortlisted",
+  FINALIST: "Finalist",
+  WINNER: "Winner",
+  REJECTED: "Not Selected",
+};
+
+const STATUS_BADGE_CLASSES: Record<SubmissionStatus, string> = {
+  DRAFT: "bg-gray-100 text-gray-600",
+  SUBMITTED: "bg-accent-cyan/15 text-navy-deep",
+  UNDER_REVIEW: "bg-blue-50 text-blue-700",
+  SHORTLISTED: "bg-amber-50 text-amber-700",
+  FINALIST: "bg-amber-50 text-amber-700",
+  WINNER: "bg-emerald-50 text-emerald-700",
+  REJECTED: "bg-red-50 text-red-700",
+};
+
+function SubmissionStatusBadge({ status }: { status: SubmissionStatus }) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wide ${STATUS_BADGE_CLASSES[status]}`}
+    >
+      {STATUS_LABELS[status]}
+    </span>
+  );
+}
+
 export default function Profile() {
   const { user, isAuthenticated, loading, logout, refresh } = useAuth();
   const navigate = useNavigate();
 
-  const [lookupId, setLookupId] = useState("");
-  const [lookupError, setLookupError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
+
+  const [mySubmissions, setMySubmissions] = useState<Submission[]>([]);
+  const [submissionsLoading, setSubmissionsLoading] = useState(true);
+  const [submissionsError, setSubmissionsError] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -52,6 +92,31 @@ export default function Profile() {
     };
   }, [previewUrl]);
 
+  // Load every submission tied to this account so the applicant can see
+  // at a glance what they've submitted (or still have in draft) without
+  // needing to remember an Application ID.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    submissions
+      .mine()
+      .then(({ submissions: list }) => {
+        if (!cancelled) setMySubmissions(list);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setSubmissionsError(
+          err instanceof ApiError ? err.message : "Couldn't load your submissions."
+        );
+      })
+      .finally(() => {
+        if (!cancelled) setSubmissionsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
@@ -65,17 +130,6 @@ export default function Profile() {
   // No account, no profile to show — send them to sign in and back here after.
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" state={{ from: "/profile" }} replace />;
-  }
-
-  function handleLookup(e: React.FormEvent) {
-    e.preventDefault();
-    const id = lookupId.trim().toUpperCase();
-    if (!isValidApplicationIdFormat(id)) {
-      setLookupError("That doesn't look like a valid Application ID (e.g. HSEA26-8F42KQ).");
-      return;
-    }
-    setLookupError(null);
-    navigate(`/submission/${id}`);
   }
 
   async function handleSignOut() {
@@ -136,6 +190,7 @@ export default function Profile() {
     ["Designation", user.designation],
     ["Applicant Type", user.applicantType === "IAB_MEMBER" ? "IAB Member" : "Student"],
   ];
+  const fieldRows = chunk(fields, 2);
 
   // previewUrl is a local blob: URL (used while uploading) and needs no
   // resolving; user.profilePhotoUrl comes from the backend as a path
@@ -148,130 +203,196 @@ export default function Profile() {
         <Header />
       </div>
 
-      <section className="mx-auto max-w-3xl px-6 py-16">
-        <FadeIn>
-          <div className="flex items-center gap-5">
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingPhoto}
-                aria-label={avatarSrc ? "Change profile photo" : "Upload profile photo"}
-                className="group relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-navy-deep/10 text-lg font-bold text-navy-deep ring-2 ring-white shadow-sm transition-opacity disabled:opacity-70"
-              >
-                {avatarSrc ? (
-                  <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span>{initials(user.fullName) || "?"}</span>
-                )}
-                <span className="absolute inset-0 flex items-center justify-center bg-navy-deep/60 text-center text-[10px] font-bold uppercase leading-tight tracking-wide text-white opacity-0 transition-opacity group-hover:opacity-100">
-                  {uploadingPhoto ? "Uploading…" : avatarSrc ? "Change" : "Upload"}
+      <FadeIn y={12}>
+        <section className="mx-auto max-w-4xl px-6 py-12 lg:py-14">
+          {/* Profile header */}
+          <div className="flex flex-col gap-6 border-b border-navy-deep/10 pb-8 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="relative shrink-0">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                  aria-label={avatarSrc ? "Change profile photo" : "Upload profile photo"}
+                  className="group relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-navy-deep/10 text-base font-bold text-navy-deep ring-1 ring-navy-deep/10 transition-opacity disabled:opacity-70"
+                >
+                  {avatarSrc ? (
+                    <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span>{initials(user.fullName) || "?"}</span>
+                  )}
+                  <span className="absolute inset-0 flex items-center justify-center bg-navy-deep/60 text-center text-[9px] font-bold uppercase leading-tight tracking-wide text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    {uploadingPhoto ? "Uploading…" : avatarSrc ? "Change" : "Upload"}
+                  </span>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="sr-only"
+                  onChange={handlePhotoSelected}
+                />
+              </div>
+
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-[2px] text-accent-cyan">
+                  My Account
                 </span>
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="sr-only"
-                onChange={handlePhotoSelected}
-              />
+                <h1 className="mt-1 text-2xl font-bold leading-tight text-navy-deep sm:text-3xl">
+                  {user.fullName}
+                </h1>
+                <p className="mt-1 text-sm text-gray-500">
+                  Member since {formatDate(user.createdAt)}
+                </p>
+              </div>
             </div>
 
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[3px] text-accent-cyan">
-                My Account
-              </span>
-              <h1 className="mt-1 text-3xl font-bold text-navy-deep">{user.fullName}</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Member since {formatDate(user.createdAt)}
-              </p>
+            <div className="shrink-0 sm:text-right">
+              <p className="text-xs text-gray-400">JPEG, PNG, or WebP, up to 2MB.</p>
+              {photoError && (
+                <p className="mt-1 text-xs font-semibold text-red-600" role="alert">
+                  {photoError}
+                </p>
+              )}
             </div>
           </div>
 
-          <p className="mt-3 text-xs text-gray-400">JPEG, PNG, or WebP, up to 2MB.</p>
-          {photoError && (
-            <p className="mt-1.5 text-xs font-semibold text-red-600" role="alert">
-              {photoError}
-            </p>
-          )}
-        </FadeIn>
+          {/* Account information */}
+          <div className="border-b border-navy-deep/10 py-8">
+            <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-navy-deep/50">
+              Account Information
+            </h2>
 
-        {/* Account details */}
-        <FadeIn delay={0.05}>
-          <div className="mt-10 rounded-xl border border-navy-deep/10 p-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold uppercase tracking-wide text-navy-deep">
-                Account Details
-              </h2>
-            </div>
-            <dl className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-              {fields.map(([label, value]) => (
-                <div key={label}>
-                  <dt className="text-xs font-bold uppercase tracking-wide text-navy-deep/50">
-                    {label}
-                  </dt>
-                  <dd className="mt-1 text-sm text-navy-deep">{value || "—"}</dd>
+            <dl className="mt-5 divide-y divide-navy-deep/10">
+              {fieldRows.map((row, i) => (
+                <div
+                  key={i}
+                  className="grid grid-cols-1 gap-x-10 gap-y-3 py-3.5 first:pt-0 last:pb-0 sm:grid-cols-2"
+                >
+                  {row.map(([label, value]) => (
+                    <div key={label}>
+                      <dt className="text-[11px] font-bold uppercase tracking-wide text-navy-deep/45">
+                        {label}
+                      </dt>
+                      <dd className="mt-1 text-sm font-medium text-navy-deep">{value || "—"}</dd>
+                    </div>
+                  ))}
                 </div>
               ))}
             </dl>
-            <p className="mt-6 text-xs text-gray-400">
+
+            <p className="mt-5 text-xs text-gray-400">
               To update these details, contact the award secretariat — account editing isn't
               available on this page yet.
             </p>
           </div>
-        </FadeIn>
 
-        {/* Find a submission */}
-        <FadeIn delay={0.1}>
-          <div className="mt-6 rounded-xl border border-navy-deep/10 p-6">
-            <h2 className="text-sm font-bold uppercase tracking-wide text-navy-deep">
-              Continue a Submission
+          {/* Your submissions */}
+          <div className="border-b border-navy-deep/10 py-8">
+            <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-navy-deep/50">
+              Your Submissions
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Enter the Application ID you received when you started a submission.
-            </p>
-            <form onSubmit={handleLookup} className="mt-4 flex flex-col sm:flex-row gap-3">
-              <div className="flex-1">
-                <FormField label="Application ID" error={lookupError || undefined}>
-                  <input
-                    className={inputClasses}
-                    placeholder="HSEA26-8F42KQ"
-                    value={lookupId}
-                    onChange={(e) => setLookupId(e.target.value)}
-                  />
-                </FormField>
-              </div>
-              <div className="flex items-end">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  className="w-full sm:w-auto rounded-lg bg-navy-deep px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-white hover:bg-navy-deep/90"
-                >
-                  Open
-                </motion.button>
-              </div>
-            </form>
-            <a
-              href="/submit"
-              className="mt-4 inline-block text-xs font-bold uppercase tracking-wide text-accent-cyan hover:underline"
-            >
-              Start a new submission →
-            </a>
-          </div>
-        </FadeIn>
 
-        {/* Sign out */}
-        <FadeIn delay={0.15}>
-          <button
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="mt-8 text-sm font-bold uppercase tracking-wide text-red-600 hover:text-red-700 disabled:opacity-60"
-          >
-            {signingOut ? "Signing out…" : "Sign Out"}
-          </button>
-        </FadeIn>
-      </section>
+            {submissionsLoading && (
+              <p className="mt-4 text-sm text-gray-400">Loading your submissions…</p>
+            )}
+
+            {submissionsError && (
+              <p className="mt-4 text-sm font-semibold text-red-600" role="alert">
+                {submissionsError}
+              </p>
+            )}
+
+            {!submissionsLoading && !submissionsError && mySubmissions.length === 0 && (
+              <p className="mt-4 text-sm text-gray-500">
+                You haven't started a submission yet.
+              </p>
+            )}
+
+            {!submissionsLoading && mySubmissions.length > 0 && (
+              <div className="mt-5 border-t border-navy-deep/10">
+                {mySubmissions.map((s) => (
+                  <div
+                    key={s.applicationId}
+                    className="flex flex-col items-start justify-between gap-3 border-b border-navy-deep/10 py-4 sm:flex-row sm:items-center"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-bold text-navy-deep">
+                        {s.projectName || "Untitled project"}
+                      </p>
+                      <p className="mt-1 font-mono text-xs text-gray-500">{s.applicationId}</p>
+                      <p className="mt-0.5 text-xs text-gray-400">
+                        {s.status === "DRAFT"
+                          ? `Started ${formatDate(s.createdAt)}`
+                          : s.submittedAt
+                            ? `Submitted ${formatDate(s.submittedAt)}`
+                            : ""}
+                      </p>
+                    </div>
+
+                    <div className="flex w-full shrink-0 items-center gap-3 sm:w-auto">
+                      <SubmissionStatusBadge status={s.status} />
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="button"
+                        onClick={() => navigate(`/submission/${s.applicationId}`)}
+                        className="rounded px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition-colors"
+                        style={
+                          s.status === "DRAFT"
+                            ? {
+                                backgroundColor: "rgb(15, 23, 42)",
+                                color: "white",
+                              }
+                            : {
+                                backgroundColor: "rgba(15, 23, 42, 0.05)",
+                                color: "rgb(15, 23, 42)",
+                              }
+                        }
+                      >
+                        {s.status === "DRAFT" ? "Continue" : "View"}
+                      </motion.button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Start new submission */}
+          <div className="border-b border-navy-deep/10 py-8">
+            <h2 className="text-[11px] font-bold uppercase tracking-[2px] text-navy-deep/50">
+              Ready to Submit?
+            </h2>
+            <p className="mt-2 text-sm text-gray-500">
+              Start a new submission for the HSEA 2026 awards.
+            </p>
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="mt-4 inline-block"
+            >
+              <a
+                href="/submit"
+                className="inline-flex rounded-lg bg-navy-deep px-6 py-2.5 text-sm font-bold uppercase tracking-wide text-white hover:bg-navy-deep/90"
+              >
+                Start New Submission
+              </a>
+            </motion.div>
+          </div>
+
+          {/* Sign out */}
+          <div className="pt-6">
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="text-xs font-bold uppercase tracking-wide text-red-600 hover:text-red-700 disabled:opacity-60"
+            >
+              {signingOut ? "Signing out…" : "Sign Out"}
+            </button>
+          </div>
+        </section>
+      </FadeIn>
 
       <Footer />
     </div>

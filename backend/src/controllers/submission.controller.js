@@ -8,6 +8,7 @@ import {
   listMembers,
   addMember,
   removeMember,
+  listMySubmissions,
 } from "../services/submission.service.js";
 
 // Guests present their draft-access token via this header, obtained once
@@ -110,4 +111,8 @@ export const removeMemberHandler = asyncHandler(async (req, res) => {
     authFrom(req),
   );
   return ok(res, {}, "Team member removed.");
+});
+export const getMine = asyncHandler(async (req, res) => {
+  const mySubmissions = await listMySubmissions(req.user.id);
+  return ok(res, { submissions: mySubmissions });
 });
