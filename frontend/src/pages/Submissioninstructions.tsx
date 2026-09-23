@@ -6,6 +6,7 @@ import Footer from "../components/Footer";
 import FadeIn from "../components/FadeIn";
 import { ApiError, submissions } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+import { trackPixelEvent } from "../lib/pixel";
 
 const PROCESS_STEPS = [
   {
@@ -108,6 +109,7 @@ export default function SubmissionInstructions() {
     setStartError(null);
     try {
       const result = await submissions.start();
+      trackPixelEvent("SubmissionStarted", true);
       navigate(`/submission/${result.applicationId}`);
     } catch (err) {
       setStartError(

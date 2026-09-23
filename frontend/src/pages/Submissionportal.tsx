@@ -18,6 +18,7 @@ import {
   newIdempotencyKey,
 } from "../lib/api";
 import { documents } from "../lib/Documents";
+import { trackPixelEvent } from "../lib/pixel";
 import { useUploadGate } from "../lib/useUploadGate";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -364,6 +365,7 @@ const completedSections = useMemo(() => {
       );
       setSubmission(finalized);
       setConfirmOpen(false);
+      trackPixelEvent("Lead");
     } catch (err) {
       setSubmitError(
         err instanceof ApiError
