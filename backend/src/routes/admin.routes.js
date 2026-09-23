@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import { z } from "zod";
 import { validate } from "../middleware/validation.middleware.js";
 import { requireAdmin } from "../middleware/adminAuth.middleware.js";
+import { globalApiLimiter } from "../middleware/rateLimit.middleware.js";
 import { fail } from "../utils/apiResponse.js";
 import {
   login,
@@ -25,6 +26,15 @@ import {
 import { isValidApplicationIdFormat } from "../utils/applicationId.js";
 
 const router = Router();
+
+// Every admin route previously bypassed the global API rate limiter because
+// this router is mounted before it in app.js. Applying it here directly
+// guarantees admin routes are throttled regardless of mount order —
+// endpoints like /kpis, /submissions/:id/download, and /users have their
+// own stricter limiters only where noted below; everything else still
+// needs at least this baseline.
+router.use(globalApiLimiter);
+
 const applicationIdParamSchema = z
   .object({
     applicationId: z
@@ -57,9 +67,47 @@ const changePasswordSchema = z
   })
   .strict();
 
+// Query params for /submissions and /users were previously read straight
+// off req.query with no schema at all (page/pageSize parsed ad hoc in the
+// controller with no upper bound) — pageSize could be set arbitrarily high
+// to dump an entire table in one response. Coercing + clamping here fixes
+// both the missing validation and the unbounded page size in one place.
+const listSubmissionsQuerySchema = z
+  .object({
+    status: z
+      .enum([
+        "DRAFT",
+        "SUBMITTED",
+        "UNDER_REVIEW",
+        "SHORTLISTED",
+        "FINALIST",
+        "WINNER",
+        "REJECTED",
+      ])
+      .optional(),
+    applicantType: z.enum(["IAB_MEMBER", "STUDENT"]).optional(),
+    search: z.string().trim().max(200).optional(),
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(25),
+  })
+  .strict();
+
+const listUsersQuerySchema = z
+  .object({
+    search: z.string().trim().max(200).optional(),
+    page: z.coerce.number().int().min(1).default(1),
+    pageSize: z.coerce.number().int().min(1).max(100).default(25),
+  })
+  .strict();
+
 // ... after the existing login/logout/me/password routes:
 
-router.get("/submissions", requireAdmin, list);
+router.get(
+  "/submissions",
+  requireAdmin,
+  validate(listSubmissionsQuerySchema, "query"),
+  list,
+);
 
 router.get(
   "/submissions/:applicationId",
@@ -92,21 +140,6 @@ router.put(
   updateStatus,
 );
 
-router.get("/submissions", requireAdmin, list);
-
-router.get(
-  "/submissions/:applicationId",
-  requireAdmin,
-  validate(applicationIdParamSchema, "params"),
-  detail,
-);
-
-router.get(
-  "/submissions/:applicationId/download",
-  requireAdmin,
-  validate(applicationIdParamSchema, "params"),
-  downloadZip,
-);
 router.get("/kpis", requireAdmin, kpis);
 
 const userIdParamSchema = z
@@ -115,6 +148,7 @@ const userIdParamSchema = z
 const adminIdParamSchema = z
   .object({ adminId: z.string().uuid("Invalid admin ID.") })
   .passthrough();
+const deleteCodeSchema = z.object({ code: z.string().min(1) }).strict();
 
 const destructiveActionLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -125,7 +159,12 @@ const destructiveActionLimiter = rateLimit({
     fail(res, "Too many attempts. Please wait and try again.", 429),
 });
 
-router.get("/users", requireAdmin, listUsersHandler);
+router.get(
+  "/users",
+  requireAdmin,
+  validate(listUsersQuerySchema, "query"),
+  listUsersHandler,
+);
 router.get(
   "/users/:userId",
   requireAdmin,
@@ -135,6 +174,7 @@ router.get(
 router.post(
   "/users/:userId/reset-password",
   requireAdmin,
+  destructiveActionLimiter,
   validate(userIdParamSchema, "params"),
   resetUserPasswordHandler,
 );
@@ -143,6 +183,7 @@ router.delete(
   requireAdmin,
   destructiveActionLimiter,
   validate(userIdParamSchema, "params"),
+  validate(deleteCodeSchema, "body"),
   deleteUserHandler,
 );
 
@@ -152,6 +193,7 @@ router.delete(
   requireAdmin,
   destructiveActionLimiter,
   validate(adminIdParamSchema, "params"),
+  validate(deleteCodeSchema, "body"),
   deleteAdminHandler,
 );
 

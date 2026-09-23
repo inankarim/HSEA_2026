@@ -100,6 +100,10 @@ export const env = {
   GOOGLE_OAUTH_CLIENT_ID: optional("GOOGLE_OAUTH_CLIENT_ID", null),
   GOOGLE_OAUTH_CLIENT_SECRET: optional("GOOGLE_OAUTH_CLIENT_SECRET", null),
   GOOGLE_OAUTH_REFRESH_TOKEN: optional("GOOGLE_OAUTH_REFRESH_TOKEN", null),
+  // Shared confirmation code required to delete a user or admin account
+  // (admin.service.js assertValidDeleteCode). Was set in .env but never
+  // read here, so every destructive admin action 500'd.
+  ADMIN_DELETE_CODE: optional("ADMIN_DELETE_CODE", null),
 };
 
 if (isProduction && env.JWT_SECRET.length < 32) {

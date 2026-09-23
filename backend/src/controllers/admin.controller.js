@@ -70,14 +70,17 @@ export const changePassword = asyncHandler(async (req, res) => {
 });
 
 export const list = asyncHandler(async (req, res) => {
+  // req.query has already been validated + coerced/clamped by
+  // listSubmissionsQuerySchema (admin.routes.js) — page/pageSize are
+  // guaranteed integers within bounds, status/applicantType are already
+  // restricted to valid enum values.
   const { status, search, applicantType, page, pageSize } = req.query;
   const result = await listSubmissions({
-    status: typeof status === "string" ? status : undefined,
-    search: typeof search === "string" ? search : undefined,
-    applicantType:
-      typeof applicantType === "string" ? applicantType : undefined,
-    page: Number(page) || 1,
-    pageSize: Number(pageSize) || 25,
+    status,
+    search,
+    applicantType,
+    page,
+    pageSize,
   });
   return ok(res, result);
 });
@@ -125,12 +128,9 @@ export const kpis = asyncHandler(async (req, res) => {
 });
 
 export const listUsersHandler = asyncHandler(async (req, res) => {
+  // Validated + coerced/clamped by listUsersQuerySchema (admin.routes.js).
   const { search, page, pageSize } = req.query;
-  const result = await listUsers({
-    search: typeof search === "string" ? search : undefined,
-    page: Number(page) || 1,
-    pageSize: Number(pageSize) || 25,
-  });
+  const result = await listUsers({ search, page, pageSize });
   return ok(res, result);
 });
 
@@ -148,10 +148,11 @@ export const resetUserPasswordHandler = asyncHandler(async (req, res) => {
   );
 });
 
-const deleteCodeSchema = z.object({ code: z.string().min(1) }).strict();
-
 export const deleteUserHandler = asyncHandler(async (req, res) => {
-  const { code } = deleteCodeSchema.parse(req.body);
+  // req.body already validated by deleteCodeSchema via the shared
+  // validate() middleware (admin.routes.js) — a malformed/missing code
+  // now returns a proper 422 instead of an unhandled ZodError -> 500.
+  const { code } = req.body;
   await deleteUser(req.params.userId, req.admin.id, code);
   return ok(res, {}, "User account deleted.");
 });
@@ -162,7 +163,7 @@ export const listAdminsHandler = asyncHandler(async (req, res) => {
 });
 
 export const deleteAdminHandler = asyncHandler(async (req, res) => {
-  const { code } = deleteCodeSchema.parse(req.body);
+  const { code } = req.body;
   await deleteAdminAccount(req.params.adminId, req.admin.id, code);
   return ok(res, {}, "Admin account deleted.");
 });
