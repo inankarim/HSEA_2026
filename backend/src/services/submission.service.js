@@ -161,7 +161,7 @@ export async function startSubmission({ userId, guestEmail }) {
     );
     if (already.rowCount > 0) {
       throw new ApiError(
-        "You have already submitted an application for HSEA 2026. Only one submission is allowed per account.",
+        "You have already submitted an application for HSEA 2026. Only one submission is allowed per account. If you need to resubmit, please contact us using the details in the footer below.",
         409,
       );
     }
@@ -746,7 +746,7 @@ export async function finalizeSubmission(
       );
       if (already.rowCount > 0) {
         throw new ApiError(
-          "You have already submitted an application for HSEA 2026. Only one submission is allowed per account.",
+          "You have already submitted an application for HSEA 2026. Only one submission is allowed per account. If you need to resubmit, please contact us using the details in the footer below.",
           409,
         );
       }
