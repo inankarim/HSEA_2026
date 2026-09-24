@@ -82,12 +82,12 @@ export default function Footer() {
           </h4>
           <div className="mt-4 lg:mt-6 space-y-3">
             <p className="text-sm lg:text-base text-white/60 whitespace-nowrap">
-              Email:{" "}
+              Phone:{" "}
               
-              <a  href="mailto:excellenceaward@lafargeholcim.com"
+              <a href=""
                 className="text-white/60 hover:text-accent-cyan transition-colors"
               >
-                excellenceaward@lafargeholcim.com
+                +8801755514180
               </a>
             </p>
           </div>
