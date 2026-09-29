@@ -26,8 +26,6 @@ const navItems: NavItem[] = [
     children: [
       { label: "About the Award", to: "/awards/about" },
       { label: "Award Categories", to: "/awards/categories" },
-      { label: "Privilege of Winners", to: "/winners" },
-      { label: "General Information", to: "/awards/general" },
     ],
   },
   { label: "Jury", to: "/jury" },

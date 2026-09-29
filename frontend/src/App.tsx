@@ -13,8 +13,7 @@ const SubmissionPortal = lazy(() => import("./pages/Submissionportal"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
-const GeneralInfo = lazy(() => import("./pages/GeneralInfo"));
-const WinnersInfo = lazy(() => import("./pages/WinnersInfo"));
+
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // --- Admin pages: separate chunk group ---
@@ -65,8 +64,6 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/awards/about" element={<Detailsawards />} />
         <Route path="/awards/categories" element={<Awardcategories />} />
-        <Route path="/awards/general" element={<GeneralInfo />} />
-        <Route path="/winners" element={<WinnersInfo />} />
         <Route path="/jury" element={<JuryPage />} />
         <Route path="/about" element={<Navigate to="/dashboard" replace />} />
         <Route path="/submit" element={<SubmissionInstructions />} />
