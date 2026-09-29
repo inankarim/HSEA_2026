@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import FadeIn from "./FadeIn";
 import Picture1 from "../assets/Picture1.webp";
 import Picture2 from "../assets/Picture2.webp";
-import Picture3 from "../assets/WhatsApp Image 2026-09-29 at 12.58.24 PM.webp";
+import Picture3 from "../assets/Picture3.webp";
 import Picture4 from "../assets/Picture4.webp";
-import Picture5 from "../assets/Picture5.webp";
+import Picture5 from "../assets/Picture5.jpeg";
 
 const jury = [
   { 
