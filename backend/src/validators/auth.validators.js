@@ -2,9 +2,20 @@ import { z } from "zod";
 
 const applicantTypeEnum = z.enum(["IAB_MEMBER", "STUDENT"]);
 
+// Letters (any language) plus spaces, apostrophes, hyphens, and periods —
+// rejects HTML/script-like input (e.g. `<img src=x onerror=...>`) at the
+// validation layer, on top of React's output escaping which already
+// prevents it from ever executing.
+const nameSchema = z
+  .string()
+  .trim()
+  .min(2)
+  .max(200)
+  .regex(/^[\p{L}\p{M}][\p{L}\p{M}\s'.-]*$/u, "Name contains invalid characters.");
+
 export const registerSchema = z
   .object({
-    fullName: z.string().trim().min(2).max(200),
+    fullName: nameSchema,
     email: z.string().trim().toLowerCase().email().max(320),
     password: z
       .string()

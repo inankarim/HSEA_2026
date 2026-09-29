@@ -12,6 +12,10 @@ export const applicationIdParamSchema = z
 
 const applicantTypeEnum = z.enum(["IAB_MEMBER", "STUDENT"]);
 
+// Same rationale as auth.validators.js's nameSchema — rejects HTML/script-
+// like input in name fields at the validation layer.
+const namePattern = /^[\p{L}\p{M}][\p{L}\p{M}\s'.-]*$/u;
+
 /**
  * Fields a client may set when starting or updating a draft submission.
  * Deliberately excludes: id, application_id, user_id, status, created_at,
@@ -23,7 +27,14 @@ export const submissionDraftSchema = z
   .object({
     applicantType: applicantTypeEnum.optional(),
 
-    fullName: z.string().trim().max(200).optional(),
+    fullName: z
+      .string()
+      .trim()
+      .max(200)
+      .refine((val) => val === "" || namePattern.test(val), {
+        message: "Name contains invalid characters.",
+      })
+      .optional(),
     email: z.string().trim().toLowerCase().email().max(320).optional(),
     phone: z.string().trim().max(30).optional(),
     organization: z.string().trim().max(200).optional(),
@@ -80,7 +91,12 @@ export const submissionDraftSchema = z
 
 export const memberSchema = z
   .object({
-    fullName: z.string().trim().min(1).max(200),
+    fullName: z
+      .string()
+      .trim()
+      .min(1)
+      .max(200)
+      .regex(namePattern, "Name contains invalid characters."),
     position: z.string().trim().max(150).optional(),
     phone: z.string().trim().max(30).optional(),
     email: z.string().trim().toLowerCase().email().max(320).optional(),
