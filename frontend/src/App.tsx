@@ -2,6 +2,7 @@ import { useEffect, Suspense, lazy } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AdminAuthProvider } from "./context/AdminAuthContext";
 import AdminRouteGuard from "./pages/admin/AdminRouteGuard";
+import CookieConsentBanner from "./components/CookieConsentBanner";
 
 // --- Public site pages: lazy-loaded, each becomes its own chunk ---
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -58,7 +59,9 @@ function App() {
   usePageViews();
 
   return (
-    <Suspense fallback={<PageFallback />}>
+    <>
+      <CookieConsentBanner />
+      <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -117,7 +120,8 @@ function App() {
           }
         />
       </Routes>
-    </Suspense>
+      </Suspense>
+    </>
   );
 }
 
