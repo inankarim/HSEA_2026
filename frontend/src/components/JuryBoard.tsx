@@ -25,7 +25,7 @@ const jury = [
   },
   { 
     name: "Engr A.K.M. Saiful Bari (P.Eng, BUET)", 
-    role: "Structural Consultant, Pinnacle by Shanta", 
+    role: "Managing Director, SB Consultant LTD", 
     image: Picture4
   },
   { 
