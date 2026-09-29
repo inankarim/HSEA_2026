@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import fsp from "node:fs/promises";
+import path from "node:path";
 import crypto from "node:crypto";
 import { pool, withTransaction } from "../config/database.js";
 import { ApiError } from "../middleware/error.middleware.js";
@@ -103,36 +104,58 @@ async function detectAndValidateSignature(tempPath, def) {
 }
 
 /**
- * For images only: a bounded metadata probe (dimensions), NOT a full
- * decode/re-encode. This keeps CPU cost flat and small regardless of how
- * many applicants upload concurrently — unlike the profile-photo
- * pipeline (pictureUpload.service.js), these documents are never served
- * back for public display, so there's no product requirement to strip
- * EXIF or normalize format here.
+ * For images: fully decodes AND re-encodes via sharp — never a raw
+ * pass-through of the uploaded bytes.
+ *
+ * detectAndValidateSignature() above only checks the first few bytes of
+ * the file. A file can start with a genuine JPEG/PNG/WebP header (valid,
+ * fully-decodable image data) and still have arbitrary extra bytes —
+ * e.g. PHP source — appended after the real image ends; sharp's decoder
+ * happily ignores trailing garbage after a valid image stream, so a
+ * dimension-only probe would pass such a file straight through to
+ * storage. Actually re-encoding discards everything sharp doesn't
+ * recognize as pixel data, closing that gap outright (this mirrors what
+ * pictureUpload.service.js already does for profile photos, and was
+ * confirmed necessary after a real upload attempt used exactly this
+ * technique — a file named "Approval.php" with image magic bytes).
+ * Also strips EXIF/metadata as a side effect. Returns the sanitized
+ * temp file's path (written into the same directory as `tempPath`, so
+ * storage.commit()'s rename() afterward stays an atomic same-filesystem
+ * move) — callers should use this path and ".jpg"/"image/jpeg" for
+ * storage instead of the original upload.
  */
-async function assertReadableImage(tempPath) {
+async function sanitizeImage(tempPath) {
   let sharp;
   try {
     ({ default: sharp } = await import("sharp"));
   } catch {
-    // sharp not installed in this environment — skip the dimension probe
-    // rather than hard-failing every image upload. Signature validation
-    // above still applies.
-    return;
+    // sharp not installed in this environment — cannot safely re-encode,
+    // so fail closed rather than storing unverified image bytes.
+    throw new ApiError(
+      "Image uploads are temporarily unavailable. Please try again shortly.",
+      503,
+    );
   }
+  const outPath = path.join(
+    path.dirname(tempPath),
+    `${crypto.randomUUID()}.sanitized.jpg`,
+  );
   try {
-    const meta = await sharp(tempPath, {
-      limitInputPixels: 268402689,
-    }).metadata();
-    if (!meta.width || !meta.height) {
+    const info = await sharp(tempPath, { limitInputPixels: 268402689 })
+      .rotate()
+      .jpeg({ quality: 90 })
+      .toFile(outPath);
+    if (!info.width || !info.height) {
       throw new Error("no-dimensions");
     }
   } catch {
+    await fsp.unlink(outPath).catch(() => {});
     throw new ApiError(
       "The uploaded file could not be read as a valid image.",
       422,
     );
   }
+  return outPath;
 }
 
 async function sha256File(filePath) {
@@ -254,19 +277,26 @@ async function uploadDocumentInternal({
       throw err;
     }
 
+    let uploadPath = file.path;
     if (
       def.kind === "image" ||
       (def.kind === "pdf_or_image" && signature.ext !== ".pdf")
     ) {
+      let sanitizedPath;
       try {
-        await assertReadableImage(file.path);
+        sanitizedPath = await sanitizeImage(file.path);
       } catch (err) {
         await safeDiscardTemp(file);
         throw err;
       }
+      // The raw upload is no longer needed once re-encoded — only the
+      // sanitized copy ever reaches storage.commit() below.
+      await fsp.unlink(file.path).catch(() => {});
+      uploadPath = sanitizedPath;
+      signature = { mime: "image/jpeg", ext: ".jpg" };
     }
 
-    const checksum = await sha256File(file.path);
+    const checksum = await sha256File(uploadPath);
 
     // Storage "slot" key: for member documents this is namespaced by
     // memberId so it can never collide with the application-wide slot of
@@ -282,7 +312,7 @@ async function uploadDocumentInternal({
     // but we never delete the applicant's previous, still-valid file
     // until the new row is safely persisted.
     const committed = await storage.commit(
-      file.path,
+      uploadPath,
       applicationId,
       slotKey,
       signature.ext,
