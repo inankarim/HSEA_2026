@@ -5,9 +5,9 @@ import bg2 from "../assets/jury.webp";
 
 import picture1 from "../assets/Picture1.webp";
 import picture2 from "../assets/Picture2.webp";
-import picture3 from "../assets/WhatsApp Image 2026-09-29 at 12.58.24 PM.webp";
+import picture3 from "../assets/Picture3.webp";
 import picture4 from "../assets/Picture4.webp";
-import picture5 from "../assets/Picture5.webp";
+import picture5 from "../assets/Picture5.jpeg";
 
 /* ------------------------------------------------------------------ */
 /*  Design tokens (shared with About Award / Award Categories pages)   */
