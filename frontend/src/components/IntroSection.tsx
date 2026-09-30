@@ -1,23 +1,5 @@
 import FadeIn from "./FadeIn";
 import introVideo from "../assets/intro-bg.mp4";
-import pdfdownload from "../assets/Holcim Structural Excellence Award 2026.pdf"
-
-function PdfIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5 lg:h-6 lg:w-6" fill="none">
-      <path
-        d="M6 2.5h8l4 4V20a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 20V4A1.5 1.5 0 0 1 5.5 2.5Z"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path d="M14 2.5V6a1 1 0 0 0 1 1h3.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-      <text x="12" y="16.5" textAnchor="middle" fontSize="6.5" fontWeight="700" fill="currentColor">
-        PDF
-      </text>
-    </svg>
-  );
-}
 
 export default function IntroSection() {
   return (
@@ -43,14 +25,6 @@ export default function IntroSection() {
                   Meet the jury <span aria-hidden>→</span>
                 </a>
               </div>
-              <a
-                href={pdfdownload}
-                download="Holcim Structural Excellence Award 2026.pdf"
-                className="mt-4 inline-flex items-center gap-2 text-sm sm:text-base lg:text-lg font-bold uppercase tracking-wide text-navy-deep hover:underline"
-              >
-                <PdfIcon />
-                Download brochure
-              </a>
             </FadeIn>
           </div>
 
