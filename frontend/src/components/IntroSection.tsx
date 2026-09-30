@@ -1,5 +1,6 @@
 import FadeIn from "./FadeIn";
 import introVideo from "../assets/intro-bg.mp4";
+import pdfdownload from "../assets/Holcim Structural Excellence Award 2026.pdf"
 
 export default function IntroSection() {
   return (
@@ -25,6 +26,13 @@ export default function IntroSection() {
                   Meet the jury <span aria-hidden>→</span>
                 </a>
               </div>
+              <a
+                href={pdfdownload}
+                download="Holcim Structural Excellence Award 2026.pdf"
+                className="mt-4 inline-flex items-center gap-1.5 lg:gap-2 text-sm sm:text-base lg:text-lg font-bold uppercase tracking-wide text-navy-deep hover:underline"
+              >
+                Download brochure <span aria-hidden>↓</span>
+              </a>
             </FadeIn>
           </div>
 
