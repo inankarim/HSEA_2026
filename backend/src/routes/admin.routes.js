@@ -177,6 +177,7 @@ router.post(
   requireAdmin,
   destructiveActionLimiter,
   validate(userIdParamSchema, "params"),
+  validate(deleteCodeSchema, "body"),
   resetUserPasswordHandler,
 );
 router.delete(

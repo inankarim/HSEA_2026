@@ -278,11 +278,12 @@ export const adminUsers = {
   },
   detail: (userId: string) =>
     request<{ user: AdminUserRow }>(`/api/admin/users/${userId}`),
-  resetPassword: (userId: string) =>
+  resetPassword: (userId: string, code: string) =>
     request<{ temporaryPassword: string }>(
       `/api/admin/users/${userId}/reset-password`,
       {
         method: "POST",
+        body: { code },
       },
     ),
   remove: (userId: string, code: string) =>

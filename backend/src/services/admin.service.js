@@ -553,7 +553,9 @@ function generateTemporaryPassword() {
   return out;
 }
 
-export async function resetUserPassword(userId, adminId) {
+export async function resetUserPassword(userId, adminId, code) {
+  assertValidDeleteCode(code);
+
   const temporaryPassword = generateTemporaryPassword();
   const passwordHash = await bcrypt.hash(temporaryPassword, BCRYPT_ROUNDS);
 

@@ -24,6 +24,7 @@ export default function AdminUsers() {
   const [error, setError] = useState<string | null>(null);
 
   const [resetTarget, setResetTarget] = useState<AdminUserRow | null>(null);
+  const [resetCode, setResetCode] = useState("");
   const [resetResult, setResetResult] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminUserRow | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -65,9 +66,13 @@ export default function AdminUsers() {
 
   async function handleResetPassword() {
     if (!resetTarget) return;
+    if (!resetCode.trim()) {
+      setActionError("Enter the confirmation code.");
+      return;
+    }
     setActionError(null);
     try {
-      const { temporaryPassword } = await adminUsers.resetPassword(resetTarget.id);
+      const { temporaryPassword } = await adminUsers.resetPassword(resetTarget.id, resetCode.trim());
       setResetResult(temporaryPassword);
     } catch (err) {
       setActionError(err instanceof AdminApiError ? err.message : "Failed to reset password.");
@@ -182,7 +187,7 @@ export default function AdminUsers() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <button
-                          onClick={() => { setResetTarget(u); setResetResult(null); }}
+                          onClick={() => { setResetTarget(u); setResetResult(null); setResetCode(""); setActionError(null); }}
                           className="text-xs font-bold uppercase tracking-wide text-accent-cyan hover:underline"
                         >
                           Reset Password
@@ -224,6 +229,14 @@ export default function AdminUsers() {
                   This generates a new temporary password for this user. You'll need to share it
                   with them yourself — it cannot be recovered or shown again after this.
                 </p>
+                <input
+                  type="password"
+                  placeholder="Confirmation code"
+                  value={resetCode}
+                  onChange={(e) => setResetCode(e.target.value)}
+                  className="mt-4 w-full rounded-lg border border-navy-deep/15 px-3 py-2.5 text-sm focus:border-accent-cyan focus:outline-none"
+                />
+                {actionError && <p className="mt-2 text-xs font-semibold text-red-600">{actionError}</p>}
                 <div className="mt-6 flex gap-3">
                   <button onClick={() => setResetTarget(null)} className="flex-1 rounded-lg border border-navy-deep/15 py-2.5 text-sm font-bold uppercase tracking-wide text-navy-deep/70">
                     Cancel

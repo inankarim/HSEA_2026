@@ -145,7 +145,7 @@ export const userDetailHandler = asyncHandler(async (req, res) => {
 });
 
 export const resetUserPasswordHandler = asyncHandler(async (req, res) => {
-  const result = await resetUserPassword(req.params.userId, req.admin.id);
+  const result = await resetUserPassword(req.params.userId, req.admin.id, req.body.code);
   return ok(
     res,
     result,

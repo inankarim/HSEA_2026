@@ -5,11 +5,17 @@ export default function DeleteConfirmModal({
   description,
   onConfirm,
   onCancel,
+  confirmLabel = "Delete",
+  confirmingLabel = "Deleting…",
+  confirmButtonClassName = "bg-red-600",
 }: {
   title: string;
   description: string;
   onConfirm: (code: string) => Promise<void>;
   onCancel: () => void;
+  confirmLabel?: string;
+  confirmingLabel?: string;
+  confirmButtonClassName?: string;
 }) {
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -55,9 +61,9 @@ export default function DeleteConfirmModal({
           <button
             onClick={handleConfirm}
             disabled={submitting}
-            className="flex-1 rounded-lg bg-red-600 py-2.5 text-sm font-bold uppercase tracking-wide text-white disabled:opacity-60"
+            className={`flex-1 rounded-lg ${confirmButtonClassName} py-2.5 text-sm font-bold uppercase tracking-wide text-white disabled:opacity-60`}
           >
-            {submitting ? "Deleting…" : "Delete"}
+            {submitting ? confirmingLabel : confirmLabel}
           </button>
         </div>
       </div>
