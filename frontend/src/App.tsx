@@ -1,7 +1,5 @@
 import { useEffect, Suspense, lazy } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AdminAuthProvider } from "./context/AdminAuthContext";
-import AdminRouteGuard from "./pages/admin/AdminRouteGuard";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 
 // --- Public site pages: lazy-loaded, each becomes its own chunk ---
@@ -17,14 +15,9 @@ const Register = lazy(() => import("./pages/Register"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// --- Admin pages: separate chunk group ---
-const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
-const AdminChangePassword = lazy(() => import("./pages/admin/AdminChangePassword"));
-const AdminPanel = lazy(() => import("./pages/admin/AdminPanel"));
-const AdminSubmissionDetail = lazy(() => import("./pages/admin/AdminSubmissionDetail"));
-const AdminMain = lazy(() => import("./pages/admin/AdminMain"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
-const AdminAccounts = lazy(() => import("./pages/admin/AdminAccounts"));
+// Admin panel lives in its own bundle now (admin.html / admin-main.tsx /
+// AdminApp.tsx) — see that file's comment for why. Nothing admin-related
+// is imported here anymore, so none of it ships in this bundle.
 
 declare global {
   interface Window {
@@ -75,50 +68,6 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="*" element={<NotFound />} />
-        <Route
-          path="/123456789/admin/*"
-          element={
-            <AdminAuthProvider>
-              <Routes>
-                <Route path="login" element={<AdminLogin />} />
-                <Route
-                  path=""
-                  element={
-                    <AdminRouteGuard>
-                      <AdminMain />
-                    </AdminRouteGuard>
-                  }
-                />
-                <Route
-                  path="submissions"
-                  element={
-                    <AdminRouteGuard>
-                      <AdminPanel />
-                    </AdminRouteGuard>
-                  }
-                />
-                <Route
-                  path="submissions/:applicationId"
-                  element={
-                    <AdminRouteGuard>
-                      <AdminSubmissionDetail />
-                    </AdminRouteGuard>
-                  }
-                />
-                <Route
-                  path="change-password"
-                  element={
-                    <AdminRouteGuard>
-                      <AdminChangePassword />
-                    </AdminRouteGuard>
-                  }
-                />
-                <Route path="users" element={<AdminRouteGuard><AdminUsers /></AdminRouteGuard>} />
-                <Route path="accounts" element={<AdminRouteGuard><AdminAccounts /></AdminRouteGuard>} />
-              </Routes>
-            </AdminAuthProvider>
-          }
-        />
       </Routes>
       </Suspense>
     </>
