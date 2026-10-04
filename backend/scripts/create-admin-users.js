@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import crypto from "node:crypto";
 import { pool, closePool } from "../src/config/database.js";
+import { strongPasswordSchema } from "../src/validators/auth.validators.js";
 
 const BCRYPT_ROUNDS = 12;
 
@@ -9,11 +10,24 @@ const BCRYPT_ROUNDS = 12;
 // skipped automatically, so it's safe to re-run this file later with a
 // longer list if you need an 11th admin down the line (just bump past 10
 // deliberately, don't silently exceed the intended cap).
+//
+// Optional `password` field: set it to a specific password if you need
+// one (e.g. one someone already picked), or omit it to auto-generate a
+// random one like before. Never hardcode a real password as a literal
+// string here — this file gets committed. Reference an environment
+// variable instead (set only in the shell when you actually run this,
+// never written to disk) — e.g. `password: process.env.ADMIN4_PASSWORD`
+// — and run it like:
+//   ADMIN4_PASSWORD='the-password' node scripts/create-admin-users.js
 const ADMINS_TO_CREATE = [
   { email: "admin1@hsea2026.org", fullName: "Admin One" },
   { email: "admin2@hsea2026.org", fullName: "Admin Two" },
   { email: "admin3@hsea2026.org", fullName: "Admin Three" },
-  // ...
+  {
+    email: "admin4@hsea2026.org",
+    fullName: "munmunhasan",
+    password: process.env.ADMIN4_PASSWORD,
+  },
 ];
 // -----------------------------------------------------------------------
 
@@ -46,7 +60,18 @@ async function main() {
       continue;
     }
 
-    const plainPassword = generatePassword();
+    let plainPassword = admin.password;
+    if (plainPassword) {
+      const check = strongPasswordSchema.safeParse(plainPassword);
+      if (!check.success) {
+        throw new Error(
+          `Password for ${email} does not meet the required policy: ` +
+            check.error.issues.map((i) => i.message).join("; "),
+        );
+      }
+    } else {
+      plainPassword = generatePassword();
+    }
     const passwordHash = await bcrypt.hash(plainPassword, BCRYPT_ROUNDS);
 
     await pool.query(
