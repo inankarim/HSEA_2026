@@ -39,6 +39,29 @@ function int(name, fallback) {
 const NODE_ENV = optional("NODE_ENV", "development");
 const isProduction = NODE_ENV === "production";
 
+const corsOrigins = optional("CORS_ORIGIN", "http://localhost:5173")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+// Hostnames (no protocol/port) this app will answer Host-header requests
+// for — see middleware/hostValidation.middleware.js. Defaults to whatever
+// CORS_ORIGIN already lists (single source of truth for "what domain is
+// this app"), with an explicit ALLOWED_HOSTS override available if they
+// ever need to diverge from that.
+const allowedHostsOverride = optional("ALLOWED_HOSTS", null);
+const ALLOWED_HOSTS = allowedHostsOverride
+  ? allowedHostsOverride.split(",").map((h) => h.trim()).filter(Boolean)
+  : corsOrigins
+      .map((o) => {
+        try {
+          return new URL(o).hostname;
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+
 // Default keeps local dev working with zero config, but production
 // deployments MUST set STORAGE_ROOT explicitly to a path OUTSIDE the web
 // root and outside the app's own working directory (e.g. /data/hsea-uploads)
@@ -68,10 +91,8 @@ export const env = {
   JWT_REFRESH_TOKEN_TTL: optional("JWT_REFRESH_TOKEN_TTL", "30d"),
   COOKIE_SECRET: required("COOKIE_SECRET"),
 
-  CORS_ORIGIN: optional("CORS_ORIGIN", "http://localhost:5173")
-    .split(",")
-    .map((o) => o.trim())
-    .filter(Boolean),
+  CORS_ORIGIN: corsOrigins,
+  ALLOWED_HOSTS,
 
   REDIS_URL: optional("REDIS_URL", null),
 

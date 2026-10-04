@@ -7,6 +7,7 @@ import compression from "compression";
 import adminRoutes from "./routes/admin.routes.js";
 import { env } from "./config/env.js";
 import { requestId } from "./middleware/requestId.middleware.js";
+import { hostValidation } from "./middleware/hostValidation.middleware.js";
 import { globalApiLimiter } from "./middleware/rateLimit.middleware.js";
 import {
   errorHandler,
@@ -25,6 +26,7 @@ export function createApp() {
   // req.ip and rate limiting see the real client IP, not the LB's.
   app.set("trust proxy", 1);
 
+  app.use(hostValidation);
   app.use(requestId);
   app.use(helmet());
   app.use(

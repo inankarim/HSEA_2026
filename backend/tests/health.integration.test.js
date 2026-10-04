@@ -20,7 +20,10 @@ test("GET /health/ready reflects database connectivity", async () => {
 
 test("unknown routes return a 404 in the standard envelope", async () => {
   const app = createApp();
-  const res = await request(app).get("/api/does-not-exist");
+  // supertest's default Host header (127.0.0.1:<ephemeral-port>) isn't in
+  // ALLOWED_HOSTS, so set one that is (see env.js / ALLOWED_HOSTS) —
+  // otherwise this hits hostValidation's 400, not the route it's testing.
+  const res = await request(app).get("/api/does-not-exist").set("Host", "localhost");
   assert.equal(res.status, 404);
   assert.equal(res.body.success, false);
 });
