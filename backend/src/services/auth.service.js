@@ -115,9 +115,10 @@ export async function loginUser({ email, password }) {
 
   // Bump session_version so any token from a previous session (e.g. a
   // still-open browser elsewhere) stops working as soon as this new
-  // login's tokens are issued — single-session enforcement.
+  // login's tokens are issued — single-session enforcement. Also resets
+  // last_active_at so the fresh session gets a full idle window.
   const bumped = await pool.query(
-    "UPDATE users SET session_version = session_version + 1 WHERE id = $1 RETURNING *",
+    "UPDATE users SET session_version = session_version + 1, last_active_at = now() WHERE id = $1 RETURNING *",
     [row.id],
   );
   const user = bumped.rows[0];
@@ -174,6 +175,21 @@ export async function refreshAccessToken(refreshToken) {
       401,
     );
   }
+
+  // A refresh token is valid for up to 30 days regardless of activity —
+  // without this check, a dormant one could silently resurrect a session
+  // well past the idle timeout that would otherwise apply to it.
+  const idleMs = Date.now() - new Date(user.last_active_at).getTime();
+  if (idleMs > env.SESSION_IDLE_TIMEOUT_MS) {
+    throw new ApiError(
+      "Your session has expired due to inactivity. Please log in again.",
+      401,
+    );
+  }
+
+  await pool.query("UPDATE users SET last_active_at = now() WHERE id = $1", [
+    user.id,
+  ]);
 
   return {
     user: toPublicUser(user),

@@ -41,15 +41,35 @@ export const requireAdmin = asyncHandler(async (req, res, next) => {
   }
 
   const result = await pool.query(
-    "SELECT session_version FROM admin_users WHERE id = $1",
+    "SELECT session_version, last_active_at FROM admin_users WHERE id = $1",
     [payload.sub],
   );
-  if (result.rows[0]?.session_version !== payload.sv) {
+  const row = result.rows[0];
+  if (!row || row.session_version !== payload.sv) {
     throw new ApiError(
       "This session has been signed out (e.g. a newer login elsewhere). Please log in again.",
       401,
     );
   }
+
+  // Real idle timeout (env.SESSION_IDLE_TIMEOUT_MS), distinct from the
+  // token's own 8h absolute TTL — a session idle longer than this is
+  // rejected even if the token itself hasn't expired yet.
+  const idleMs = Date.now() - new Date(row.last_active_at).getTime();
+  if (idleMs > env.SESSION_IDLE_TIMEOUT_MS) {
+    throw new ApiError(
+      "Your session has expired due to inactivity. Please log in again.",
+      401,
+    );
+  }
+
+  // Sliding renewal. Advisory/best-effort — not worth blocking the
+  // request on, so this doesn't await.
+  pool
+    .query("UPDATE admin_users SET last_active_at = now() WHERE id = $1", [
+      payload.sub,
+    ])
+    .catch(() => {});
 
   req.admin = { id: payload.sub, email: payload.email };
   next();

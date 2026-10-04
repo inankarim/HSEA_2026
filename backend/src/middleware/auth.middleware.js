@@ -15,19 +15,40 @@ const ACCESS_COOKIE_NAME = "hsea_access_token";
  * live value on the user's row — a single indexed primary-key lookup, not
  * a full session store, but enough to make logout/new-login/password-
  * change immediately revoke every other outstanding token instead of
- * only relying on natural expiry (see auth.service.js).
+ * only relying on natural expiry (see auth.service.js) — and enforces a
+ * real idle timeout (env.SESSION_IDLE_TIMEOUT_MS), distinct from the
+ * token's own absolute TTL: a session idle longer than that is rejected
+ * even if its token hasn't expired yet.
  */
 export function verifyAccessToken(token) {
   return jwt.verify(token, env.JWT_SECRET);
 }
 
-async function isSessionCurrent(userId, sessionVersion) {
+async function checkSession(userId, sessionVersion) {
   const result = await pool.query(
-    "SELECT session_version FROM users WHERE id = $1",
+    "SELECT session_version, last_active_at FROM users WHERE id = $1",
     [userId],
   );
-  return result.rows[0]?.session_version === sessionVersion;
+  const row = result.rows[0];
+  if (!row || row.session_version !== sessionVersion) {
+    return { ok: false, reason: "superseded" };
+  }
+  const idleMs = Date.now() - new Date(row.last_active_at).getTime();
+  if (idleMs > env.SESSION_IDLE_TIMEOUT_MS) {
+    return { ok: false, reason: "idle" };
+  }
+  // Sliding renewal. Advisory/best-effort freshness tracking — not worth
+  // blocking the request on, so this doesn't await.
+  pool
+    .query("UPDATE users SET last_active_at = now() WHERE id = $1", [userId])
+    .catch(() => {});
+  return { ok: true };
 }
+
+const SUPERSEDED_MESSAGE =
+  "This session has been signed out (e.g. a newer login elsewhere). Please log in again.";
+const IDLE_MESSAGE =
+  "Your session has expired due to inactivity. Please log in again.";
 
 function extractToken(req) {
   if (req.cookies?.[ACCESS_COOKIE_NAME]) {
@@ -40,7 +61,7 @@ function extractToken(req) {
   return null;
 }
 
-/** Requires a valid, authenticated, still-current session. */
+/** Requires a valid, authenticated, still-current, not-idle session. */
 export const requireAuth = asyncHandler(async (req, res, next) => {
   const token = extractToken(req);
   if (!token) {
@@ -52,9 +73,10 @@ export const requireAuth = asyncHandler(async (req, res, next) => {
   } catch {
     throw new ApiError("Session expired or invalid. Please log in again.", 401);
   }
-  if (!(await isSessionCurrent(payload.sub, payload.sv))) {
+  const session = await checkSession(payload.sub, payload.sv);
+  if (!session.ok) {
     throw new ApiError(
-      "This session has been signed out (e.g. a newer login elsewhere). Please log in again.",
+      session.reason === "idle" ? IDLE_MESSAGE : SUPERSEDED_MESSAGE,
       401,
     );
   }
@@ -62,13 +84,14 @@ export const requireAuth = asyncHandler(async (req, res, next) => {
   next();
 });
 
-/** Attaches `req.user` if a valid, still-current token is present, but never rejects. */
+/** Attaches `req.user` if a valid, still-current, not-idle token is present, but never rejects. */
 export const optionalAuth = asyncHandler(async (req, res, next) => {
   const token = extractToken(req);
   if (!token) return next();
   try {
     const payload = verifyAccessToken(token);
-    if (await isSessionCurrent(payload.sub, payload.sv)) {
+    const session = await checkSession(payload.sub, payload.sv);
+    if (session.ok) {
       req.user = { id: payload.sub, email: payload.email };
     }
   } catch {

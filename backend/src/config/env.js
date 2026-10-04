@@ -89,6 +89,10 @@ export const env = {
   JWT_SECRET: required("JWT_SECRET"),
   JWT_ACCESS_TOKEN_TTL: optional("JWT_ACCESS_TOKEN_TTL", "15m"),
   JWT_REFRESH_TOKEN_TTL: optional("JWT_REFRESH_TOKEN_TTL", "30d"),
+  // Real idle timeout — distinct from the token TTLs above. A session is
+  // rejected if last_active_at is older than this, even if its token
+  // hasn't expired yet. Applies to both applicant and admin sessions.
+  SESSION_IDLE_TIMEOUT_MS: int("SESSION_IDLE_TIMEOUT_MS", 30 * 60 * 1000),
   COOKIE_SECRET: required("COOKIE_SECRET"),
 
   CORS_ORIGIN: corsOrigins,

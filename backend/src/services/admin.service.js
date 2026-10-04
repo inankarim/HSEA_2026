@@ -53,7 +53,7 @@ export async function loginAdmin({ email, password }) {
   // Bump session_version so any token from a previous admin session
   // (e.g. a still-open browser elsewhere) stops working immediately.
   const bumped = await pool.query(
-    "UPDATE admin_users SET session_version = session_version + 1 WHERE id = $1 RETURNING *",
+    "UPDATE admin_users SET session_version = session_version + 1, last_active_at = now() WHERE id = $1 RETURNING *",
     [row.id],
   );
   const admin = bumped.rows[0];
@@ -89,7 +89,8 @@ export async function changeAdminPassword(
   const updated = await pool.query(
     `UPDATE admin_users
         SET password_hash = $1, must_change_password = FALSE,
-            session_version = session_version + 1, updated_at = now()
+            session_version = session_version + 1, last_active_at = now(),
+            updated_at = now()
       WHERE id = $2
       RETURNING *`,
     [newHash, adminId],
