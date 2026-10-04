@@ -60,6 +60,38 @@ export class LocalFileStorage {
     const probe = path.join(this.tempDir, `.write-check-${process.pid}`);
     await fsp.writeFile(probe, "ok");
     await fsp.unlink(probe);
+
+    await this._writeHtaccessGuard();
+  }
+
+  // Defense-in-depth, independent of "STORAGE_ROOT lives outside the web
+  // root" (the primary control — see the module doc comment). If this
+  // directory were ever reachable by Apache/httpd (a future misconfigured
+  // STORAGE_ROOT, a vhost change, etc.), this denies all direct access and
+  // explicitly disables script execution, so a file that somehow had an
+  // executable extension still couldn't run. Written on every boot so it
+  // self-heals if ever deleted; a no-op on hosts that don't use Apache.
+  async _writeHtaccessGuard() {
+    const htaccessPath = path.join(this.root, ".htaccess");
+    const contents = `# Auto-generated — do not rely on this alone; STORAGE_ROOT must also
+# stay outside the web root. See LocalFileStorage.js.
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order allow,deny
+  Deny from all
+</IfModule>
+Options -ExecCGI -Indexes
+RemoveHandler .php .php3 .php4 .php5 .phtml .pl .py .cgi .sh
+<IfModule mod_php.c>
+  php_flag engine off
+</IfModule>
+`;
+    await fsp.writeFile(htaccessPath, contents).catch(() => {
+      // Non-fatal — e.g. a read-only mount or a non-Apache host. The
+      // primary control (outside the web root) still applies either way.
+    });
   }
 
   /** Best-effort startup sweep: removes temp files older than maxAgeMs left behind by a crash/restart mid-upload. Never touches committed applicant files (those live under applicantsDir, not tempDir). */
