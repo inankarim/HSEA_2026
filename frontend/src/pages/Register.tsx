@@ -8,6 +8,7 @@ import FormField, { inputClasses } from "../components/Formfield";
 import { ApiError, auth } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { ApplicantType } from "../types/Submission";
+import { NAME_PATTERN, NAME_TITLE, LIMITS } from "../lib/validation";
 
 type FormState = {
   fullName: string;
@@ -137,6 +138,10 @@ export default function Register() {
             <FormField label="Full Name" required error={fieldErrors.fullName}>
               <input
                 required
+                minLength={2}
+                maxLength={LIMITS.fullName}
+                pattern={NAME_PATTERN}
+                title={NAME_TITLE}
                 className={inputClasses}
                 value={form.fullName}
                 onChange={(e) => set("fullName", e.target.value)}
@@ -148,6 +153,7 @@ export default function Register() {
                 <input
                   type="email"
                   required
+                  maxLength={LIMITS.email}
                   autoComplete="email"
                   className={inputClasses}
                   value={form.email}
@@ -175,6 +181,8 @@ export default function Register() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <FormField label="Phone">
                 <input
+                  type="tel"
+                  maxLength={LIMITS.phone}
                   className={inputClasses}
                   value={form.phone}
                   onChange={(e) => set("phone", e.target.value)}
@@ -182,6 +190,7 @@ export default function Register() {
               </FormField>
               <FormField label="Organization">
                 <input
+                  maxLength={LIMITS.organization}
                   className={inputClasses}
                   value={form.organization}
                   onChange={(e) => set("organization", e.target.value)}
@@ -191,6 +200,7 @@ export default function Register() {
 
             <FormField label="Designation">
               <input
+                maxLength={LIMITS.designation}
                 className={inputClasses}
                 value={form.designation}
                 onChange={(e) => set("designation", e.target.value)}
@@ -205,6 +215,7 @@ export default function Register() {
               >
                 <input
                   required
+                  maxLength={LIMITS.iabMembershipNumber}
                   className={inputClasses}
                   value={form.iabMembershipNumber}
                   onChange={(e) => set("iabMembershipNumber", e.target.value)}
@@ -215,6 +226,7 @@ export default function Register() {
                 <FormField label="University Name" required error={fieldErrors.universityName}>
                   <input
                     required
+                    maxLength={LIMITS.universityName}
                     className={inputClasses}
                     value={form.universityName}
                     onChange={(e) => set("universityName", e.target.value)}
@@ -224,6 +236,7 @@ export default function Register() {
                   <input
                     type="email"
                     required
+                    maxLength={LIMITS.email}
                     className={inputClasses}
                     value={form.universityEmail}
                     onChange={(e) => set("universityEmail", e.target.value)}

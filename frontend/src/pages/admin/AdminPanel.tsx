@@ -143,6 +143,7 @@ export default function AdminPanel() {
             type="text"
             placeholder="Search by Application ID, name, email, or project name…"
             value={search}
+            maxLength={200}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full max-w-md rounded-lg border border-navy-deep/15 px-4 py-2.5 text-sm focus:border-accent-cyan focus:outline-none"
           />

@@ -129,6 +129,7 @@ export default function AdminUsers() {
           type="text"
           placeholder="Search by name, email, IEB number, or university…"
           value={search}
+          maxLength={200}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full max-w-md rounded-lg border border-navy-deep/15 px-4 py-2.5 text-sm focus:border-accent-cyan focus:outline-none"
         />

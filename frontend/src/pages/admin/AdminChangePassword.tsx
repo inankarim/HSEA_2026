@@ -82,6 +82,7 @@ export default function AdminChangePassword() {
               type="password"
               required
               minLength={10}
+              maxLength={200}
               autoComplete="new-password"
               className="mt-1.5 w-full rounded-lg border border-navy-deep/15 px-4 py-2.5 text-sm focus:border-accent-cyan focus:outline-none"
               value={newPassword}

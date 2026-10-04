@@ -19,6 +19,7 @@ import {
 } from "../lib/api";
 import { documents } from "../lib/Documents";
 import { trackPixelEvent } from "../lib/pixel";
+import { NAME_PATTERN, NAME_TITLE, LIMITS, COMPLETION_YEAR_MIN, COMPLETION_YEAR_MAX } from "../lib/validation";
 import { useUploadGate } from "../lib/useUploadGate";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -645,6 +646,9 @@ const completedSections = useMemo(() => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <FormField label="Full Name" required error={fieldErrors.fullName}>
                       <input
+                        maxLength={LIMITS.fullName}
+                        pattern={NAME_PATTERN}
+                        title={NAME_TITLE}
                         className={inputClasses}
                         value={draft.fullName || ""}
                         onChange={(e) => update("fullName", e.target.value)}
@@ -653,6 +657,7 @@ const completedSections = useMemo(() => {
                     <FormField label="Email" required error={fieldErrors.email}>
                       <input
                         type="email"
+                        maxLength={LIMITS.email}
                         className={inputClasses}
                         value={draft.email || ""}
                         onChange={(e) => update("email", e.target.value)}
@@ -660,6 +665,8 @@ const completedSections = useMemo(() => {
                     </FormField>
                     <FormField label="Phone">
                       <input
+                        type="tel"
+                        maxLength={LIMITS.phone}
                         className={inputClasses}
                         value={draft.phone || ""}
                         onChange={(e) => update("phone", e.target.value)}
@@ -667,6 +674,7 @@ const completedSections = useMemo(() => {
                     </FormField>
                     <FormField label="Organization">
                       <input
+                        maxLength={LIMITS.organization}
                         className={inputClasses}
                         value={draft.organization || ""}
                         onChange={(e) => update("organization", e.target.value)}
@@ -674,6 +682,7 @@ const completedSections = useMemo(() => {
                     </FormField>
                     <FormField label="Designation">
                       <input
+                        maxLength={LIMITS.designation}
                         className={inputClasses}
                         value={draft.designation || ""}
                         onChange={(e) => update("designation", e.target.value)}
@@ -683,6 +692,7 @@ const completedSections = useMemo(() => {
                 {isIabApplicant ? (
                   <FormField label="IEB Membership Number" required error={fieldErrors.iabMembershipNumber}>
                     <input
+                      maxLength={LIMITS.iabMembershipNumber}
                       className={inputClasses}
                       value={draft.iabMembershipNumber || ""}
                       onChange={(e) => update("iabMembershipNumber", e.target.value)}
@@ -697,6 +707,7 @@ const completedSections = useMemo(() => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <FormField label="University Name" required error={fieldErrors.universityName}>
                         <input
+                          maxLength={LIMITS.universityName}
                           className={inputClasses}
                           value={draft.universityName || ""}
                           onChange={(e) => update("universityName", e.target.value)}
@@ -705,6 +716,7 @@ const completedSections = useMemo(() => {
                       <FormField label="University Email" required error={fieldErrors.universityEmail}>
                         <input
                           type="email"
+                          maxLength={LIMITS.email}
                           className={inputClasses}
                           value={draft.universityEmail || ""}
                           onChange={(e) => update("universityEmail", e.target.value)}
@@ -764,7 +776,7 @@ const completedSections = useMemo(() => {
                   <h2 className="text-2xl font-bold uppercase tracking-wide text-navy-deep">Project</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <FormField label="Project Name" required error={fieldErrors.projectName}>
-                      <input className={inputClasses} value={draft.projectName || ""} onChange={(e) => update("projectName", e.target.value)} />
+                      <input maxLength={LIMITS.projectName} className={inputClasses} value={draft.projectName || ""} onChange={(e) => update("projectName", e.target.value)} />
                     </FormField>
                     <FormField label="Project Category" required error={fieldErrors.projectCategory}>
                       <select
@@ -783,19 +795,19 @@ const completedSections = useMemo(() => {
                       </select>
                     </FormField>
                     <FormField label="Project Location">
-                      <input className={inputClasses} value={draft.projectLocation || ""} onChange={(e) => update("projectLocation", e.target.value)} />
+                      <input maxLength={LIMITS.projectLocation} className={inputClasses} value={draft.projectLocation || ""} onChange={(e) => update("projectLocation", e.target.value)} />
                     </FormField>
                     <FormField label="Project Status">
-                      <input className={inputClasses} value={draft.projectStatus || ""} onChange={(e) => update("projectStatus", e.target.value)} placeholder="e.g. Completed, Under Construction" />
+                      <input maxLength={LIMITS.projectStatus} className={inputClasses} value={draft.projectStatus || ""} onChange={(e) => update("projectStatus", e.target.value)} placeholder="e.g. Completed, Under Construction" />
                     </FormField>
                     <FormField label="Client Project / Own Project">
-                      <input className={inputClasses} value={draft.clientOwner || ""} onChange={(e) => update("clientOwner", e.target.value)} />
+                      <input maxLength={LIMITS.clientOwner} className={inputClasses} value={draft.clientOwner || ""} onChange={(e) => update("clientOwner", e.target.value)} />
                     </FormField>
                     <FormField label="Lead Engineer">
-                      <input className={inputClasses} value={draft.leadEngineer || ""} onChange={(e) => update("leadEngineer", e.target.value)} />
+                      <input maxLength={LIMITS.leadEngineer} className={inputClasses} value={draft.leadEngineer || ""} onChange={(e) => update("leadEngineer", e.target.value)} />
                     </FormField>
                     <FormField label="Completion Year">
-                      <input type="number" className={inputClasses} value={draft.completionYear ?? ""} onChange={(e) => update("completionYear", e.target.value ? Number(e.target.value) : undefined)} />
+                      <input type="number" min={COMPLETION_YEAR_MIN} max={COMPLETION_YEAR_MAX} step={1} className={inputClasses} value={draft.completionYear ?? ""} onChange={(e) => update("completionYear", e.target.value ? Number(e.target.value) : undefined)} />
                     </FormField>
                   </div>
 
@@ -805,16 +817,16 @@ const completedSections = useMemo(() => {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <FormField label="Client Name" required error={fieldErrors.clientName}>
-                      <input className={inputClasses} value={draft.clientName || ""} onChange={(e) => update("clientName", e.target.value)} />
+                      <input maxLength={LIMITS.clientName} className={inputClasses} value={draft.clientName || ""} onChange={(e) => update("clientName", e.target.value)} />
                     </FormField>
                     <FormField label="Contact Number">
-                      <input className={inputClasses} value={draft.clientContactNumber || ""} onChange={(e) => update("clientContactNumber", e.target.value)} />
+                      <input type="tel" maxLength={LIMITS.clientContactNumber} className={inputClasses} value={draft.clientContactNumber || ""} onChange={(e) => update("clientContactNumber", e.target.value)} />
                     </FormField>
                     <FormField label="Email">
-                      <input type="email" className={inputClasses} value={draft.clientEmail || ""} onChange={(e) => update("clientEmail", e.target.value)} />
+                      <input type="email" maxLength={LIMITS.email} className={inputClasses} value={draft.clientEmail || ""} onChange={(e) => update("clientEmail", e.target.value)} />
                     </FormField>
                     <FormField label="Address">
-                      <input className={inputClasses} value={draft.clientAddress || ""} onChange={(e) => update("clientAddress", e.target.value)} />
+                      <input maxLength={LIMITS.clientAddress} className={inputClasses} value={draft.clientAddress || ""} onChange={(e) => update("clientAddress", e.target.value)} />
                     </FormField>
                   </div>
 
@@ -841,6 +853,7 @@ const completedSections = useMemo(() => {
 
                   <FormField label="Executive Summary" hint="1 page">
                     <textarea
+                      maxLength={LIMITS.longText}
                       className={textareaClasses}
                       value={draft.executiveSummary || ""}
                       onChange={(e) => update("executiveSummary", e.target.value)}
@@ -863,6 +876,7 @@ const completedSections = useMemo(() => {
                     hint={`${countWords(draft.projectDescription)} / ${PROJECT_DESCRIPTION_WORD_LIMIT} words`}
                   >
                     <textarea
+                      maxLength={LIMITS.longText}
                       className={textareaClasses}
                       value={draft.projectDescription || ""}
                       onChange={(e) => update("projectDescription", e.target.value)}
@@ -887,6 +901,7 @@ const completedSections = useMemo(() => {
                   {/* MOVED HERE — Covering Letter, same either/or pattern as Costing */}
                   <FormField label="Covering Letter">
                     <textarea
+                      maxLength={LIMITS.longText}
                       className={textareaClasses}
                       value={draft.coveringLetter || ""}
                       onChange={(e) => update("coveringLetter", e.target.value)}
@@ -914,6 +929,7 @@ const completedSections = useMemo(() => {
 
                   <FormField label="Design Demonstration" hint="max 5 pages">
                     <textarea
+                      maxLength={LIMITS.longText}
                       className={textareaClasses}
                       value={draft.designDemonstration || ""}
                       onChange={(e) => update("designDemonstration", e.target.value)}
@@ -932,6 +948,7 @@ const completedSections = useMemo(() => {
 
                   <FormField label="Material Specifications">
                     <textarea
+                      maxLength={LIMITS.longText}
                       className={textareaClasses}
                       value={draft.materialSpecifications || ""}
                       onChange={(e) => update("materialSpecifications", e.target.value)}
@@ -939,6 +956,7 @@ const completedSections = useMemo(() => {
                   </FormField>
                   <FormField label="Construction Technology">
                     <textarea
+                      maxLength={LIMITS.longText}
                       className={textareaClasses}
                       value={draft.constructionTechnology || ""}
                       onChange={(e) => update("constructionTechnology", e.target.value)}
@@ -946,6 +964,7 @@ const completedSections = useMemo(() => {
                   </FormField>
                   <FormField label="Costing" hint="required where applicable, particularly for low-cost design solutions">
                     <textarea
+                      maxLength={LIMITS.longText}
                       className={textareaClasses}
                       value={draft.costing || ""}
                       onChange={(e) => update("costing", e.target.value)}
@@ -1039,6 +1058,8 @@ const completedSections = useMemo(() => {
                   error={fieldErrors.googleDriveUrl}
                 >
                   <input
+                    type="url"
+                    maxLength={LIMITS.googleDriveUrl}
                     className={inputClasses}
                     value={draft.googleDriveUrl || ""}
                     onChange={(e) => update("googleDriveUrl", e.target.value)}

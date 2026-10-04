@@ -6,6 +6,7 @@ import { memberDocuments } from "../lib/Documents";
 import { MEMBER_DOCUMENT_TYPE_DEFS } from "../types/Document";
 import type { SubmissionMember, MemberInput } from "../types/Submission";
 import type { SubmissionDocument } from "../types/Document";
+import { NAME_PATTERN, NAME_TITLE, LIMITS } from "../lib/validation";
 
 const MAX_CONCURRENT_UPLOADS = 3;
 
@@ -289,6 +290,9 @@ export default function TeamMembersSection({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Full Name" required>
               <input
+                maxLength={LIMITS.fullName}
+                pattern={NAME_PATTERN}
+                title={NAME_TITLE}
                 className={inputClasses}
                 value={draft.fullName}
                 onChange={(e) => setDraft((d) => ({ ...d, fullName: e.target.value }))}
@@ -313,6 +317,8 @@ export default function TeamMembersSection({
             </FormField>
             <FormField label="Email">
               <input
+                type="email"
+                maxLength={LIMITS.email}
                 className={inputClasses}
                 value={draft.email || ""}
                 onChange={(e) => setDraft((d) => ({ ...d, email: e.target.value }))}
@@ -320,6 +326,8 @@ export default function TeamMembersSection({
             </FormField>
             <FormField label="Phone">
               <input
+                type="tel"
+                maxLength={LIMITS.phone}
                 className={inputClasses}
                 value={draft.phone || ""}
                 onChange={(e) => setDraft((d) => ({ ...d, phone: e.target.value }))}
@@ -349,6 +357,7 @@ export default function TeamMembersSection({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField label="University Name">
                 <input
+                  maxLength={LIMITS.universityName}
                   className={inputClasses}
                   value={draft.universityName || ""}
                   onChange={(e) => setDraft((d) => ({ ...d, universityName: e.target.value }))}
@@ -356,6 +365,8 @@ export default function TeamMembersSection({
               </FormField>
               <FormField label="University Email">
                 <input
+                  type="email"
+                  maxLength={LIMITS.email}
                   className={inputClasses}
                   value={draft.universityEmail || ""}
                   onChange={(e) => setDraft((d) => ({ ...d, universityEmail: e.target.value }))}
@@ -365,6 +376,7 @@ export default function TeamMembersSection({
           ) : draft.applicantType === "IAB_MEMBER" ? (
             <FormField label="IEB Membership Number" required>
               <input
+                maxLength={LIMITS.iabMembershipNumber}
                 className={inputClasses}
                 value={draft.iabMembershipNumber || ""}
                 onChange={(e) => setDraft((d) => ({ ...d, iabMembershipNumber: e.target.value }))}
