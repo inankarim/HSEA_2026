@@ -8,16 +8,25 @@ import { logger } from "../utils/logger.js";
 const BCRYPT_ROUNDS = 12;
 const GENERIC_AUTH_FAILURE = "Invalid email or password.";
 
+// `sv` (session_version) is bumped server-side on login/logout/password
+// change. Every token embeds the value current at signing time; requests
+// compare it against the live DB value (auth.middleware.js) so a token
+// from a since-superseded session stops working immediately, regardless
+// of its own expiry — fixes "multiple concurrent sessions allowed" (VAPT 3.5).
 function signAccessToken(user) {
-  return jwt.sign({ sub: user.id, email: user.email }, env.JWT_SECRET, {
-    expiresIn: env.JWT_ACCESS_TOKEN_TTL,
-  });
+  return jwt.sign(
+    { sub: user.id, email: user.email, sv: user.session_version },
+    env.JWT_SECRET,
+    { expiresIn: env.JWT_ACCESS_TOKEN_TTL },
+  );
 }
 
 function signRefreshToken(user) {
-  return jwt.sign({ sub: user.id, type: "refresh" }, env.JWT_SECRET, {
-    expiresIn: env.JWT_REFRESH_TOKEN_TTL,
-  });
+  return jwt.sign(
+    { sub: user.id, type: "refresh", sv: user.session_version },
+    env.JWT_SECRET,
+    { expiresIn: env.JWT_REFRESH_TOKEN_TTL },
+  );
 }
 
 function toPublicUser(row) {
@@ -104,12 +113,21 @@ export async function loginUser({ email, password }) {
     throw new ApiError(GENERIC_AUTH_FAILURE, 401);
   }
 
-  logger.info("User logged in", { userId: row.id });
+  // Bump session_version so any token from a previous session (e.g. a
+  // still-open browser elsewhere) stops working as soon as this new
+  // login's tokens are issued — single-session enforcement.
+  const bumped = await pool.query(
+    "UPDATE users SET session_version = session_version + 1 WHERE id = $1 RETURNING *",
+    [row.id],
+  );
+  const user = bumped.rows[0];
+
+  logger.info("User logged in", { userId: user.id });
 
   return {
-    user: toPublicUser(row),
-    accessToken: signAccessToken(row),
-    refreshToken: signRefreshToken(row),
+    user: toPublicUser(user),
+    accessToken: signAccessToken(user),
+    refreshToken: signRefreshToken(user),
   };
 }
 
@@ -150,10 +168,30 @@ export async function refreshAccessToken(refreshToken) {
   }
 
   const user = result.rows[0];
+  if (payload.sv !== user.session_version) {
+    throw new ApiError(
+      "Refresh token expired or invalid. Please log in again.",
+      401,
+    );
+  }
+
   return {
     user: toPublicUser(user),
     accessToken: signAccessToken(user),
   };
+}
+
+/**
+ * Bumps session_version so the access/refresh token pair just cleared
+ * client-side also stops being independently usable — logout previously
+ * only cleared the cookie, leaving a copied/stolen token valid until its
+ * own expiry (15min access / 30 days refresh).
+ */
+export async function logoutUser(userId) {
+  await pool.query(
+    "UPDATE users SET session_version = session_version + 1 WHERE id = $1",
+    [userId],
+  );
 }
 
 export { signAccessToken, signRefreshToken, toPublicUser };

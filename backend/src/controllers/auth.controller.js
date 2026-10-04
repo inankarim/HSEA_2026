@@ -5,6 +5,7 @@ import {
   loginUser,
   getUserById,
   refreshAccessToken,
+  logoutUser,
 } from "../services/auth.service.js";
 import { ACCESS_COOKIE_NAME } from "../middleware/auth.middleware.js";
 import { env } from "../config/env.js";
@@ -51,6 +52,9 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
+  if (req.user) {
+    await logoutUser(req.user.id);
+  }
   clearAuthCookies(res);
   return ok(res, {}, "Logged out.");
 });

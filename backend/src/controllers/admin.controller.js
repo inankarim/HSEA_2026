@@ -8,6 +8,7 @@ import {
 } from "../middleware/adminAuth.middleware.js";
 import {
   loginAdmin,
+  logoutAdmin,
   changeAdminPassword,
   listSubmissions,
   getSubmissionFull,
@@ -45,6 +46,7 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
+  await logoutAdmin(req.admin.id);
   res.clearCookie(ADMIN_COOKIE_NAME, { path: "/" });
   return ok(res, {}, "Logged out.");
 });
@@ -59,7 +61,16 @@ export const me = asyncHandler(async (req, res) => {
 export const changePassword = asyncHandler(async (req, res) => {
   // req.body already validated by changePasswordSchema via the shared
   // validate() middleware (admin.routes.js) — no need to re-parse here.
-  await changeAdminPassword(req.admin.id, req.body);
+  // changeAdminPassword() bumps session_version (invalidating other
+  // sessions), so this admin's own cookie needs a freshly re-signed
+  // token with the new version or their very next request would also
+  // get rejected as stale.
+  const admin = await changeAdminPassword(req.admin.id, req.body);
+  const token = signAdminToken(admin);
+  res.cookie(ADMIN_COOKIE_NAME, token, {
+    ...adminCookieOptions,
+    maxAge: 8 * 60 * 60 * 1000,
+  });
   return ok(res, {}, "Password changed.");
 });
 

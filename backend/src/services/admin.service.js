@@ -17,6 +17,7 @@ function toPublicAdmin(row) {
     email: row.email,
     fullName: row.full_name,
     mustChangePassword: row.must_change_password,
+    sessionVersion: row.session_version,
   };
 }
 
@@ -49,10 +50,18 @@ export async function loginAdmin({ email, password }) {
     throw new ApiError("Invalid credentials.", 401);
   }
 
-  await logAdminAction(row.id, "LOGIN");
-  logger.info("Admin logged in", { adminId: row.id, email: row.email });
+  // Bump session_version so any token from a previous admin session
+  // (e.g. a still-open browser elsewhere) stops working immediately.
+  const bumped = await pool.query(
+    "UPDATE admin_users SET session_version = session_version + 1 WHERE id = $1 RETURNING *",
+    [row.id],
+  );
+  const admin = bumped.rows[0];
 
-  return toPublicAdmin(row);
+  await logAdminAction(admin.id, "LOGIN");
+  logger.info("Admin logged in", { adminId: admin.id, email: admin.email });
+
+  return toPublicAdmin(admin);
 }
 
 export async function changeAdminPassword(
@@ -73,14 +82,32 @@ export async function changeAdminPassword(
   }
 
   const newHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
-  await pool.query(
+  // Bump session_version too — a password change should invalidate any
+  // other active session for this account, not just the one making the
+  // change (that one gets a freshly re-signed token, see
+  // admin.controller.js's changePassword handler).
+  const updated = await pool.query(
     `UPDATE admin_users
-        SET password_hash = $1, must_change_password = FALSE, updated_at = now()
-      WHERE id = $2`,
+        SET password_hash = $1, must_change_password = FALSE,
+            session_version = session_version + 1, updated_at = now()
+      WHERE id = $2
+      RETURNING *`,
     [newHash, adminId],
   );
 
   logger.info("Admin changed password", { adminId });
+  return toPublicAdmin(updated.rows[0]);
+}
+
+/**
+ * Bumps session_version so the admin cookie just cleared client-side
+ * also stops being independently usable server-side.
+ */
+export async function logoutAdmin(adminId) {
+  await pool.query(
+    "UPDATE admin_users SET session_version = session_version + 1 WHERE id = $1",
+    [adminId],
+  );
 }
 export async function listSubmissions({
   status,
