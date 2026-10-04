@@ -121,7 +121,7 @@ export default function Login() {
           <div className="w-full max-w-sm rounded-2xl bg-white p-6">
             <h3 className="text-lg font-bold text-navy-deep">Forgot your password?</h3>
             <p className="mt-2 text-sm text-gray-600">
-              Please call us and we will assist you:
+              Sorry for the inconvenience. Please call us and we will assist you:
             </p>
             <a
               href="tel:+8801755514180"
