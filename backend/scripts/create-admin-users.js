@@ -5,30 +5,31 @@ import { strongPasswordSchema } from "../src/validators/auth.validators.js";
 
 const BCRYPT_ROUNDS = 12;
 
-// --- EDIT THIS LIST before running -----------------------------------
-// Add only the admins you haven't created yet — existing emails are
-// skipped automatically, so it's safe to re-run this file later with a
-// longer list if you need an 11th admin down the line (just bump past 10
-// deliberately, don't silently exceed the intended cap).
+// --- Mode 1: single account via environment variables, no code edit ---
+// For a one-off new admin, just run:
+//   ADMIN_EMAIL='someone@hsea2026.org' ADMIN_PASSWORD='their-password' node scripts/create-admin-users.js
+// ADMIN_FULL_NAME is optional and defaults to "admin" if omitted.
+// ADMIN_PASSWORD is optional too — omit it to auto-generate a random one.
 //
-// Optional `password` field: set it to a specific password if you need
-// one (e.g. one someone already picked), or omit it to auto-generate a
-// random one like before. Never hardcode a real password as a literal
-// string here — this file gets committed. Reference an environment
-// variable instead (set only in the shell when you actually run this,
-// never written to disk) — e.g. `password: process.env.ADMIN4_PASSWORD`
-// — and run it like:
-//   ADMIN4_PASSWORD='the-password' node scripts/create-admin-users.js
-const ADMINS_TO_CREATE = [
-  { email: "admin1@hsea2026.org", fullName: "Admin One" },
-  { email: "admin2@hsea2026.org", fullName: "Admin Two" },
-  { email: "admin3@hsea2026.org", fullName: "Admin Three" },
-  {
-    email: "admin4@hsea2026.org",
-    fullName: "munmunhasan",
-    password: process.env.ADMIN4_PASSWORD,
-  },
-];
+// --- Mode 2: batch list below, for creating several at once -----------
+// Only used when ADMIN_EMAIL isn't set. Add only the admins you haven't
+// created yet — existing emails are skipped automatically. Never
+// hardcode a real password as a literal string here (this file gets
+// committed) — reference an environment variable instead, same as
+// ADMIN_PASSWORD above but with your own variable name per entry.
+const ADMINS_TO_CREATE = process.env.ADMIN_EMAIL
+  ? [
+      {
+        email: process.env.ADMIN_EMAIL,
+        fullName: process.env.ADMIN_FULL_NAME || "admin",
+        password: process.env.ADMIN_PASSWORD,
+      },
+    ]
+  : [
+      { email: "admin1@hsea2026.org", fullName: "Admin One" },
+      { email: "admin2@hsea2026.org", fullName: "Admin Two" },
+      { email: "admin3@hsea2026.org", fullName: "Admin Three" },
+    ];
 // -----------------------------------------------------------------------
 
 function generatePassword() {
