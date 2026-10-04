@@ -18,6 +18,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const redirectTo = (location.state as { from?: string } | null)?.from || "/submit";
 
@@ -79,6 +80,14 @@ export default function Login() {
               />
             </FormField>
 
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-sm font-semibold text-accent-cyan hover:underline"
+            >
+              Forgot password?
+            </button>
+
             {error && (
               <p className="text-sm font-semibold text-red-600" role="alert">
                 {error}
@@ -106,6 +115,29 @@ export default function Login() {
       </section>
 
       <Footer />
+
+      {showForgotPassword && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/60 px-6">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6">
+            <h3 className="text-lg font-bold text-navy-deep">Forgot your password?</h3>
+            <p className="mt-2 text-sm text-gray-600">
+              Please call us and we will assist you:
+            </p>
+            <a
+              href="tel:+8801755514180"
+              className="mt-3 block rounded-lg bg-gray-100 px-4 py-3 text-center font-mono text-sm font-semibold text-navy-deep hover:bg-gray-200"
+            >
+              +880 1755-514180
+            </a>
+            <button
+              onClick={() => setShowForgotPassword(false)}
+              className="mt-6 w-full rounded-lg bg-navy-deep py-2.5 text-sm font-bold uppercase tracking-wide text-white"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
