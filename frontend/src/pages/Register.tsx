@@ -157,7 +157,7 @@ export default function Register() {
               <FormField
                 label="Password"
                 required
-                hint="min 10 characters"
+                hint="Min 10 characters, with upper/lowercase letters, a number, and a symbol"
                 error={fieldErrors.password}
               >
                 <input

@@ -56,16 +56,10 @@ export const me = asyncHandler(async (req, res) => {
   return ok(res, { admin: req.admin });
 });
 
-const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1),
-    newPassword: z.string().min(10, "Password must be at least 10 characters."),
-  })
-  .strict();
-
 export const changePassword = asyncHandler(async (req, res) => {
-  const parsed = changePasswordSchema.parse(req.body);
-  await changeAdminPassword(req.admin.id, parsed);
+  // req.body already validated by changePasswordSchema via the shared
+  // validate() middleware (admin.routes.js) — no need to re-parse here.
+  await changeAdminPassword(req.admin.id, req.body);
   return ok(res, {}, "Password changed.");
 });
 

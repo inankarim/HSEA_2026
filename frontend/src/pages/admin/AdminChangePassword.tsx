@@ -21,6 +21,17 @@ export default function AdminChangePassword() {
       setError("New password must be at least 10 characters.");
       return;
     }
+    if (
+      !/[a-z]/.test(newPassword) ||
+      !/[A-Z]/.test(newPassword) ||
+      !/[0-9]/.test(newPassword) ||
+      !/[^A-Za-z0-9]/.test(newPassword)
+    ) {
+      setError(
+        "New password must include an uppercase letter, a lowercase letter, a number, and a symbol."
+      );
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setError("New passwords don't match.");
       return;
@@ -65,7 +76,7 @@ export default function AdminChangePassword() {
           </div>
           <div>
             <label className="text-xs font-bold uppercase tracking-wide text-navy-deep/70">
-              New password (min 10 characters)
+              New password (min 10 characters, with upper/lowercase, a number, and a symbol)
             </label>
             <input
               type="password"

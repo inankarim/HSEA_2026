@@ -5,6 +5,7 @@ import { validate } from "../middleware/validation.middleware.js";
 import { requireAdmin } from "../middleware/adminAuth.middleware.js";
 import { globalApiLimiter } from "../middleware/rateLimit.middleware.js";
 import { fail } from "../utils/apiResponse.js";
+import { strongPasswordSchema } from "../validators/auth.validators.js";
 import {
   login,
   logout,
@@ -63,7 +64,7 @@ const loginSchema = z
 const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1),
-    newPassword: z.string().min(10, "Password must be at least 10 characters."),
+    newPassword: strongPasswordSchema,
   })
   .strict();
 
