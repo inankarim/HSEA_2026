@@ -28,7 +28,38 @@ export function createApp() {
 
   app.use(hostValidation);
   app.use(requestId);
-  app.use(helmet());
+  // Explicit values (not just helmet's defaults) so these are easy to audit
+  // against the report's recommendations. Note: these only cover /api/*
+  // and /uploads/* responses — the actual HTML pages/static assets are
+  // served directly by Apache from public_html and never reach this
+  // process at all, so the matching headers for those live in .htaccess.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'"],
+          imgSrc: ["'self'", "data:"],
+          connectSrc: ["'self'"],
+          frameAncestors: ["'self'"],
+          objectSrc: ["'none'"],
+          baseUri: ["'self'"],
+        },
+      },
+      hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+      },
+      referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    }),
+  );
+  // Deprecated/no-op in modern browsers (CSP supersedes it), but costs
+  // nothing to set and satisfies the literal "X-XSS-Protection" check.
+  app.use((req, res, next) => {
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    next();
+  });
   app.use(
     cors({
       origin: env.CORS_ORIGIN,
