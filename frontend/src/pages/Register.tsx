@@ -8,7 +8,7 @@ import FormField, { inputClasses } from "../components/Formfield";
 import { ApiError, auth } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { ApplicantType } from "../types/Submission";
-import { NAME_PATTERN, NAME_TITLE, LIMITS } from "../lib/validation";
+import { NAME_PATTERN, NAME_TITLE, LIMITS, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
 
 type FormState = {
   fullName: string;
@@ -179,10 +179,13 @@ export default function Register() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <FormField label="Phone">
+              <FormField label="Phone" hint="Bangladesh number, e.g. 01XXXXXXXXX">
                 <input
                   type="tel"
                   maxLength={LIMITS.phone}
+                  pattern={BD_PHONE_PATTERN}
+                  title={BD_PHONE_TITLE}
+                  placeholder={BD_PHONE_PLACEHOLDER}
                   className={inputClasses}
                   value={form.phone}
                   onChange={(e) => set("phone", e.target.value)}

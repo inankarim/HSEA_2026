@@ -19,7 +19,7 @@ import {
 } from "../lib/api";
 import { documents } from "../lib/Documents";
 import { trackPixelEvent } from "../lib/pixel";
-import { NAME_PATTERN, NAME_TITLE, LIMITS, COMPLETION_YEAR_MIN, COMPLETION_YEAR_MAX } from "../lib/validation";
+import { NAME_PATTERN, NAME_TITLE, LIMITS, COMPLETION_YEAR_MIN, COMPLETION_YEAR_MAX, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
 import { useUploadGate } from "../lib/useUploadGate";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -663,10 +663,13 @@ const completedSections = useMemo(() => {
                         onChange={(e) => update("email", e.target.value)}
                       />
                     </FormField>
-                    <FormField label="Phone">
+                    <FormField label="Phone" hint="Bangladesh number, e.g. 01XXXXXXXXX">
                       <input
                         type="tel"
                         maxLength={LIMITS.phone}
+                        pattern={BD_PHONE_PATTERN}
+                        title={BD_PHONE_TITLE}
+                        placeholder={BD_PHONE_PLACEHOLDER}
                         className={inputClasses}
                         value={draft.phone || ""}
                         onChange={(e) => update("phone", e.target.value)}

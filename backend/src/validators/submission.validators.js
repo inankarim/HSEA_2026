@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { isValidApplicationIdFormat } from "../utils/applicationId.js";
 import { isValidGoogleDriveFolderUrl } from "../utils/googleDrive.js";
+import { bangladeshPhoneSchema } from "./auth.validators.js";
 
 export const applicationIdParamSchema = z
   .object({
@@ -36,7 +37,7 @@ export const submissionDraftSchema = z
       })
       .optional(),
     email: z.string().trim().toLowerCase().email().max(320).optional(),
-    phone: z.string().trim().max(30).optional(),
+    phone: bangladeshPhoneSchema.optional(),
     organization: z.string().trim().max(200).optional(),
     designation: z.string().trim().max(150).optional(),
     applicantIsTeamLeader: z.boolean().optional(),
@@ -98,7 +99,7 @@ export const memberSchema = z
       .max(200)
       .regex(namePattern, "Name contains invalid characters."),
     position: z.string().trim().max(150).optional(),
-    phone: z.string().trim().max(30).optional(),
+    phone: bangladeshPhoneSchema.optional(),
     email: z.string().trim().toLowerCase().email().max(320).optional(),
     applicantType: z.enum(["IAB_MEMBER", "STUDENT"]).optional(),
     iabMembershipNumber: z.string().trim().max(50).optional(),

@@ -41,12 +41,27 @@ const nameSchema = z
   .max(200)
   .regex(/^[\p{L}\p{M}][\p{L}\p{M}\s'.-]*$/u, "Name contains invalid characters.");
 
+// Bangladesh mobile numbers only: 11-digit local (01XXXXXXXXX) or with
+// the +880/880 country code, operator prefix 013-019. Tolerates spaces/
+// hyphens/parens as typed, strips them before matching.
+export const BANGLADESH_PHONE_REGEX = /^(?:\+?880|0)1[3-9]\d{8}$/;
+function isValidBangladeshPhone(value) {
+  return BANGLADESH_PHONE_REGEX.test(value.replace(/[\s\-()]/g, ""));
+}
+export const bangladeshPhoneSchema = z
+  .string()
+  .trim()
+  .max(30)
+  .refine((val) => val === "" || isValidBangladeshPhone(val), {
+    message: "Please provide a valid Bangladesh phone number (e.g. 01XXXXXXXXX or +8801XXXXXXXXX).",
+  });
+
 export const registerSchema = z
   .object({
     fullName: nameSchema,
     email: z.string().trim().toLowerCase().email().max(320),
     password: strongPasswordSchema,
-    phone: z.string().trim().max(30).optional(),
+    phone: bangladeshPhoneSchema.optional(),
     organization: z.string().trim().max(200).optional(),
     designation: z.string().trim().max(150).optional(),
     applicantType: applicantTypeEnum,

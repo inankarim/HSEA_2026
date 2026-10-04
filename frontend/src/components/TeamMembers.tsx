@@ -6,7 +6,7 @@ import { memberDocuments } from "../lib/Documents";
 import { MEMBER_DOCUMENT_TYPE_DEFS } from "../types/Document";
 import type { SubmissionMember, MemberInput } from "../types/Submission";
 import type { SubmissionDocument } from "../types/Document";
-import { NAME_PATTERN, NAME_TITLE, LIMITS } from "../lib/validation";
+import { NAME_PATTERN, NAME_TITLE, LIMITS, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
 
 const MAX_CONCURRENT_UPLOADS = 3;
 
@@ -324,10 +324,13 @@ export default function TeamMembersSection({
                 onChange={(e) => setDraft((d) => ({ ...d, email: e.target.value }))}
               />
             </FormField>
-            <FormField label="Phone">
+            <FormField label="Phone" hint="Bangladesh number, e.g. 01XXXXXXXXX">
               <input
                 type="tel"
                 maxLength={LIMITS.phone}
+                pattern={BD_PHONE_PATTERN}
+                title={BD_PHONE_TITLE}
+                placeholder={BD_PHONE_PLACEHOLDER}
                 className={inputClasses}
                 value={draft.phone || ""}
                 onChange={(e) => setDraft((d) => ({ ...d, phone: e.target.value }))}
