@@ -6,6 +6,7 @@ import CookieConsentBanner from "./components/CookieConsentBanner";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Detailsawards = lazy(() => import("./components/Detailsawards"));
 const Awardcategories = lazy(() => import("./components/AwardCat"));
+const EligibilityCriteria = lazy(() => import("./components/EligibilityCriteria"));
 const JuryPage = lazy(() => import("./pages/JuryPage"));
 const SubmissionInstructions = lazy(() => import("./pages/Submissioninstructions"));
 const SubmissionPortal = lazy(() => import("./pages/Submissionportal"));
@@ -60,6 +61,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/awards/about" element={<Detailsawards />} />
         <Route path="/awards/categories" element={<Awardcategories />} />
+        <Route path="/awards/eligibility" element={<EligibilityCriteria />} />
         <Route path="/jury" element={<JuryPage />} />
         <Route path="/about" element={<Navigate to="/dashboard" replace />} />
         <Route path="/submit" element={<SubmissionInstructions />} />

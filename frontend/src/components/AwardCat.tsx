@@ -1,4 +1,5 @@
 import { motion, useScroll } from "framer-motion";
+import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import bg2 from "../assets/awardcart.webp";
 
@@ -159,8 +160,11 @@ function AwardCategory({
 
         {/* CTA */}
         <RevealUp delay={0.2}>
-          <span className="group inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[2px] text-slate-900 cursor-default">
-            Explore category
+          <Link
+            to="/awards/eligibility"
+            className="group inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[2px] text-slate-900"
+          >
+            Eligibility Criteria
 
             <span className="relative h-px w-6 bg-slate-300 overflow-hidden">
               <span
@@ -172,7 +176,7 @@ function AwardCategory({
             <span className="transition-transform duration-300 group-hover:translate-x-1">
               →
             </span>
-          </span>
+          </Link>
         </RevealUp>
       </div>
 
@@ -294,8 +298,11 @@ const AwardCat = () => {
 
               {/* CTA */}
               <RevealUp delay={0.2}>
-                <span className="group inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[2px] text-slate-300 cursor-default">
-                  Explore category
+                <Link
+                  to="/awards/eligibility"
+                  className="group inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[2px] text-slate-300"
+                >
+                  Eligibility Criteria
 
                   <span className="relative h-px w-6 bg-slate-300 overflow-hidden">
                     <span
@@ -307,7 +314,7 @@ const AwardCat = () => {
                   <span className="transition-transform duration-300 group-hover:translate-x-1">
                     →
                   </span>
-                </span>
+                </Link>
               </RevealUp>
             </div>
 
@@ -401,7 +408,7 @@ const AwardCat = () => {
               {/* CTA */}
               <RevealUp delay={0.35} className="mt-8">
                 <span className="group inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[2px] text-slate-300 cursor-default">
-                  Explore category
+                  Eligibility Criteria
 
                   <span className="relative h-px w-6 bg-slate-300 overflow-hidden">
                     <span
