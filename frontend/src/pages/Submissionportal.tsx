@@ -123,6 +123,11 @@ export default function SubmissionPortal() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  // Gates the draft form behind a one-time data-usage acknowledgment each
+  // time this page loads — resets naturally on navigation/reload, doesn't
+  // need to persist beyond the current visit.
+  const [disclaimerAcknowledged, setDisclaimerAcknowledged] = useState(false);
+
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingPatch = useRef<Draft>({});
   const idempotencyKeyRef = useRef<string>(newIdempotencyKey());
@@ -572,6 +577,57 @@ const completedSections = useMemo(() => {
 
   return (
     <div className="min-h-screen bg-white">
+      {!disclaimerAcknowledged && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/60 px-4 py-6 backdrop-blur-sm sm:px-6">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-navy-deep sm:h-12 sm:w-12">
+              <svg viewBox="0 0 24 24" className="h-5 w-5 sm:h-6 sm:w-6" fill="none">
+                <path
+                  d="M12 3l7 3v5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6l7-3Z"
+                  stroke="#4dfbe4"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M9 12l2 2 4-4"
+                  stroke="#4dfbe4"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            <span className="mt-4 block text-xs font-bold uppercase tracking-[2px] text-accent-cyan sm:mt-5">
+              Before You Continue
+            </span>
+            <h2 className="mt-2 text-lg font-bold text-navy-deep sm:text-xl">
+            Disclaimer
+            </h2>
+
+            <p className="mt-4 text-sm leading-relaxed text-gray-600">
+              By submitting your project to the Holcim Structural Excellence
+              Award, you acknowledge and agree that all uploaded files,
+              drawings, text, and supporting documents will be used
+              exclusively for internal evaluation by the appointed Jury Panel
+              and for LafargeHolcim marketing and promotional campaigns
+              related to the awards. LafargeHolcim is committed to data
+              security and will store and manage all submitted materials
+              safely in accordance with internal corporate confidentiality
+              standards.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => setDisclaimerAcknowledged(true)}
+              className="mt-6 w-full rounded-lg bg-navy-deep py-3 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-navy-deep/90 sm:mt-7"
+            >
+              I Understand, Continue
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="brand-surface">
         <Header />
       </div>
@@ -1217,12 +1273,12 @@ const completedSections = useMemo(() => {
                       <div>
                         <p className="font-semibold text-navy-deep">Completion &amp; Compliance</p>
                         <p className="mt-1">
-                          The project has been fully completed and complies with all
+                          The project has been fully completed or at least ≥ 50% construction completed that complies with all
                           applicable building codes, structural safety standards, and award criteria.
                         </p>
                       </div>
                       <div>
-                        <p className="font-semibold text-navy-deep">Finality of Jury Decision</p>
+                        <p className="font-semibold text-navy-deep">Final  Jury Decision</p>
                         <p className="mt-1">
                           I/We acknowledge and agree that the decision of the Jury Panel is final, binding, and not subject to appeal.
                         </p>

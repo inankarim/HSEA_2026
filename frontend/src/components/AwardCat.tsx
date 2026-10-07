@@ -117,6 +117,7 @@ function AwardCategory({
   heading,
   description,
   image,
+  categorySlug,
   reverse = false,
 }: {
   number: string;
@@ -127,6 +128,7 @@ function AwardCategory({
     label: string;
     meta: string;
   };
+  categorySlug: string;
   reverse?: boolean;
 }) {
   return (
@@ -161,7 +163,7 @@ function AwardCategory({
         {/* CTA */}
         <RevealUp delay={0.2}>
           <Link
-            to="/awards/eligibility"
+            to={`/awards/eligibility?category=${categorySlug}`}
             className="group inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[2px] text-slate-900"
           >
             Eligibility Criteria
@@ -258,6 +260,7 @@ const AwardCat = () => {
               label: "High Performance Concrete Structure",
               meta: "Structural Detail",
             }}
+            categorySlug="high-performance"
           />
         </div>
       </section>
@@ -299,7 +302,7 @@ const AwardCat = () => {
               {/* CTA */}
               <RevealUp delay={0.2}>
                 <Link
-                  to="/awards/eligibility"
+                  to="/awards/eligibility?category=advanced-construction"
                   className="group inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[2px] text-slate-300"
                 >
                   Eligibility Criteria
@@ -345,6 +348,7 @@ const AwardCat = () => {
               label: "Visionary Design",
               meta: "Visionary Structure",
             }}
+            categorySlug="visionary-design"
           />
         </div>
       </section>
@@ -403,24 +407,6 @@ const AwardCat = () => {
                     This category does not require direct submissions; the recipient is selected directly by the Jury through a dedicated nomination and evaluation process.
                   </p>
                 </div>
-              </RevealUp>
-
-              {/* CTA */}
-              <RevealUp delay={0.35} className="mt-8">
-                <span className="group inline-flex items-center gap-3 text-xs font-bold uppercase tracking-[2px] text-slate-300 cursor-default">
-                  Eligibility Criteria
-
-                  <span className="relative h-px w-6 bg-slate-300 overflow-hidden">
-                    <span
-                      className="absolute inset-0 bg-blue-900 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"
-                      style={{ backgroundColor: ACCENT_BLUE }}
-                    />
-                  </span>
-
-                  <span className="transition-transform duration-300 group-hover:translate-x-1">
-                    →
-                  </span>
-                </span>
               </RevealUp>
             </div>
 

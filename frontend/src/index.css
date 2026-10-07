@@ -15,6 +15,10 @@
   --color-navy-mid: #1a3a63;
   --color-navy-ink: #14202e;    /* header logo glyph on white */
 
+  --color-gold: #d4af37;
+  --color-gold-light: #f3d581;
+  --color-gold-deep: #9a7b0a;
+
   --font-heading: "Montserrat", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Open Sans", Arial, Helvetica, sans-serif;
 }
