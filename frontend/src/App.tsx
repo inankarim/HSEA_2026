@@ -1,6 +1,7 @@
-import { useEffect, Suspense, lazy } from "react";
+import { useEffect, useRef, Suspense, lazy } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import CookieConsentBanner from "./components/CookieConsentBanner";
+import { trackPixelEvent } from "./lib/pixel";
 
 // --- Public site pages: lazy-loaded, each becomes its own chunk ---
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -31,7 +32,13 @@ declare global {
 
 function usePageViews() {
   const location = useLocation();
+  const isFirstRoute = useRef(true);
   useEffect(() => {
+    // The pixel loader already sends PageView for the landing page, so only
+    // in-app navigations need one here.
+    if (isFirstRoute.current) isFirstRoute.current = false;
+    else trackPixelEvent("PageView");
+
     if (!import.meta.env.VITE_GA_MEASUREMENT_ID) return;
     if (typeof window.gtag === "function") {
       window.gtag("event", "page_view", {

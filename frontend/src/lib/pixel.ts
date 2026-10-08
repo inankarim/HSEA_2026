@@ -8,7 +8,12 @@ declare global {
   }
 }
 
-export function trackPixelEvent(eventName: string, isCustom = false) {
+export function trackPixelEvent(
+  eventName: string,
+  isCustom = false,
+  params?: Record<string, unknown>
+) {
   if (typeof window === "undefined" || typeof window.fbq !== "function") return;
-  window.fbq(isCustom ? "trackCustom" : "track", eventName);
+  if (params) window.fbq(isCustom ? "trackCustom" : "track", eventName, params);
+  else window.fbq(isCustom ? "trackCustom" : "track", eventName);
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../components/Header";
@@ -103,6 +103,10 @@ export default function SubmissionInstructions() {
   const { user, isAuthenticated, loading: authLoading } = useAuth();
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
+
+  useEffect(() => {
+    trackPixelEvent("ViewContent", false, { content_name: "Submission Page" });
+  }, []);
 
   async function beginSubmission() {
     setStarting(true);
