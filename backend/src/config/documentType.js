@@ -95,6 +95,8 @@ export const DOCUMENT_TYPES = {
     label: "Client / Owner Authorization Form",
     kind: "pdf",
     required: true,
+    // Next Generation entries have no real client, so no authorization.
+    optionalForCategories: ["Visionary Design"],
   },
   DESIGN_DEMONSTRATION: {
     label: "Design Demonstration (PDF)",
@@ -107,6 +109,7 @@ export const DOCUMENT_TYPES = {
     kind: "pdf",
     required: false,
     orTextField: "costing",
+    optionalForCategories: ["Visionary Design"],
   },
   SUSTAINABILITY_METRICS: {
     label: "Sustainability Metrics / CO\u2082 Reduction Support",
@@ -121,7 +124,7 @@ export const DOCUMENT_TYPES = {
   },
   EXECUTIVE_SUMMARY: {
     label: "Executive Summary (PDF)",
-    kind: "pdf_or_image",
+    kind: "pdf",
     required: false,
     orTextField: "executiveSummary",
   },

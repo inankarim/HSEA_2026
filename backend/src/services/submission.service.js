@@ -476,6 +476,17 @@ export async function addMember(applicationId, input, auth) {
       );
     }
 
+    const positionTaken = await client.query(
+      "SELECT 1 FROM submission_members WHERE application_id = $1 AND position = $2",
+      [applicationId, input.position],
+    );
+    if (positionTaken.rowCount > 0) {
+      throw new ApiError(
+        `Position ${input.position} is already taken by another team member.`,
+        422,
+      );
+    }
+
     // Enforce only one team leader among members
     if (input.isTeamLeader) {
       const leaderResult = await client.query(
@@ -564,25 +575,78 @@ export async function removeMember(applicationId, memberId, auth) {
 // getMissingDocumentDescriptions() below via conditionallyRequiredDocumentTypes().
 // Hard-requiring them here as well was the bug: it forced BOTH the text
 // AND the upload to be present instead of either one.
-const REQUIRED_COMMON_FIELDS = [
-  "full_name",
-  "email",
-  "project_name",
-  "project_category",
-  "google_drive_url",
-];
+// column -> applicant-facing label, used in the "what's missing" list.
+const REQUIRED_COMMON_FIELDS = {
+  full_name: "Applicant full name",
+  email: "Applicant email",
+  project_name: "Project name",
+  project_category: "Project category",
+  google_drive_url: "Google Drive folder link",
+};
+
+// Categories 1 & 2 (practicing engineers) eligibility: the project must be
+// under construction, or completed within the last 5 years, and needs client
+// details. Visionary Design (Next Generation) has neither rule. Keep in sync
+// with frontend/src/lib/validation.ts and Submissionportal.tsx.
+const COMPLETION_YEAR_RULE_CATEGORIES = new Set([
+  "High Performance Concrete Structure",
+  "Advanced Construction Technology & Circularity",
+]);
+const PROJECT_STATUS_COMPLETED = "Completed";
+const PROJECT_STATUS_UNDER_CONSTRUCTION = "Under Construction";
+
+function validateEligibility(row) {
+  if (!COMPLETION_YEAR_RULE_CATEGORIES.has(row.project_category)) return [];
+
+  const missing = [];
+  if (!row.client_name) {
+    missing.push(`Client name is required for the ${row.project_category} category`);
+  }
+
+  if (row.project_status === PROJECT_STATUS_COMPLETED) {
+    const maxYear = new Date().getFullYear();
+    const minYear = maxYear - 5;
+    const year = row.completion_year;
+    if (year == null) {
+      missing.push("Completion year is required for completed projects");
+    } else if (year < minYear || year > maxYear) {
+      missing.push(
+        `Completion year ${year} is not eligible: completed projects must have been completed between ${minYear} and ${maxYear}`,
+      );
+    }
+  } else if (row.project_status !== PROJECT_STATUS_UNDER_CONSTRUCTION) {
+    missing.push("Project status must be set to Completed or Under Construction");
+  }
+  return missing;
+}
+
+function validateApplicantType(row) {
+  const missing = [];
+  if (row.applicant_type === "IAB_MEMBER") {
+    if (!row.iab_membership_number) missing.push("IEB membership number is required");
+  } else if (row.applicant_type === "STUDENT") {
+    if (!row.university_name) missing.push("University name is required");
+    if (!row.university_email) missing.push("University email is required");
+  }
+  return missing;
+}
 
 function validateRequiredFields(row) {
-  const missing = REQUIRED_COMMON_FIELDS.filter((f) => !row[f]);
+  const missing = Object.entries(REQUIRED_COMMON_FIELDS)
+    .filter(([column]) => !row[column])
+    .map(([, label]) => `${label} is required`);
+  missing.push(...validateApplicantType(row));
+  missing.push(...validateEligibility(row));
 
-  if (
-    !row.information_confirmed ||
-    !row.files_uploaded_confirmed ||
-    !row.naming_convention_confirmed ||
-    !row.authenticity_confirmed ||
-    !row.terms_accepted
-  ) {
-    missing.push("all declarations must be confirmed");
+  const declarations = {
+    information_confirmed: "Confirm your information is accurate",
+    files_uploaded_confirmed: "Confirm all files are uploaded",
+    naming_convention_confirmed: "Confirm your files follow the naming convention",
+    authenticity_confirmed: "Confirm the work is authentic",
+    terms_accepted: "Accept the terms and conditions",
+  };
+  for (const [column, label] of Object.entries(declarations)) {
+    if (!row[column]) missing.push(`Declaration: ${label}`);
   }
 
   if (
@@ -590,7 +654,7 @@ function validateRequiredFields(row) {
     countWords(row.project_description) > PROJECT_DESCRIPTION_WORD_LIMIT
   ) {
     missing.push(
-      `project_description exceeds ${PROJECT_DESCRIPTION_WORD_LIMIT} words`,
+      `Project description exceeds ${PROJECT_DESCRIPTION_WORD_LIMIT} words`,
     );
   }
 
@@ -618,13 +682,17 @@ async function getMissingDocumentDescriptions(client, applicationId, row) {
   const missing = [];
 
   for (const type of requiredDocumentTypes()) {
-    if (!uploadedTypes.has(type)) {
+    const optionalHere = DOCUMENT_TYPES[type].optionalForCategories?.includes(
+      row.project_category,
+    );
+    if (!optionalHere && !uploadedTypes.has(type)) {
       missing.push(`${DOCUMENT_TYPES[type].label} must be uploaded`);
     }
   }
 
   for (const type of conditionallyRequiredDocumentTypes()) {
     const def = DOCUMENT_TYPES[type];
+    if (def.optionalForCategories?.includes(row.project_category)) continue;
     const textColumn = CAMEL_TO_COLUMN[def.orTextField] || def.orTextField;
     const textSatisfied = Boolean(row[textColumn]);
     if (!uploadedTypes.has(type) && !textSatisfied) {
@@ -646,10 +714,30 @@ async function getMissingDocumentDescriptions(client, applicationId, row) {
  */
 async function getMissingMemberDocumentDescriptions(client, applicationId) {
   const membersResult = await client.query(
-    "SELECT id, full_name FROM submission_members WHERE application_id = $1",
+    `SELECT id, full_name, position, phone, email, applicant_type,
+            iab_membership_number, university_name, university_email
+       FROM submission_members WHERE application_id = $1`,
     [applicationId],
   );
   if (membersResult.rowCount === 0) return [];
+
+  // Members added before every field became required can still have gaps.
+  const missing = [];
+  for (const m of membersResult.rows) {
+    const gaps = [];
+    if (!m.position) gaps.push("position");
+    if (!m.phone) gaps.push("phone number");
+    if (!m.email) gaps.push("email");
+    if (m.applicant_type === "IAB_MEMBER" && !m.iab_membership_number) gaps.push("IEB membership number");
+    if (m.applicant_type === "STUDENT" && !m.university_name) gaps.push("university name");
+    if (m.applicant_type === "STUDENT" && !m.university_email) gaps.push("university email");
+    if (!m.applicant_type) gaps.push("member type (IEB Member or Student)");
+    if (gaps.length > 0) {
+      missing.push(
+        `Team member "${m.full_name}" is missing: ${gaps.join(", ")}. Remove and re-add them with all details`,
+      );
+    }
+  }
 
   const docsResult = await client.query(
     `SELECT submission_member_id, document_type FROM submission_documents
@@ -665,13 +753,12 @@ async function getMissingMemberDocumentDescriptions(client, applicationId) {
   }
 
   const requiredTypes = requiredMemberDocumentTypes();
-  const missing = [];
   for (const member of membersResult.rows) {
     const uploaded = uploadedByMember.get(member.id) || new Set();
     for (const type of requiredTypes) {
       if (!uploaded.has(type)) {
         missing.push(
-          `team member "${member.full_name}"'s ${MEMBER_DOCUMENT_TYPES[type].label} must be uploaded`,
+          `Team member "${member.full_name}": ${MEMBER_DOCUMENT_TYPES[type].label} must be uploaded`,
         );
       }
     }
@@ -825,14 +912,14 @@ export async function finalizeSubmission(
       [applicationId],
     );
     if (leaderCheck.rows[0].count === 0 && !row.applicant_is_team_leader) {
-      missing.push("a team leader must be designated");
+      missing.push("A team leader must be designated (you or one of your team members)");
     }
 
     if (missing.length > 0) {
       throw new ApiError(
-        "Submission is incomplete. Please fill in all required fields and confirm all declarations.",
+        "Submission is incomplete. Please fix the items below and try again.",
         422,
-        missing.map((field) => ({ field, message: "Required" })),
+        missing.map((message) => ({ message })),
       );
     }
 

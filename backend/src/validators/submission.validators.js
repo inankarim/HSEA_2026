@@ -61,7 +61,7 @@ export const submissionDraftSchema = z
     clientContactNumber: z.string().trim().max(30).optional(),
     clientEmail: z.string().trim().toLowerCase().email().max(320).optional(),
     leadEngineer: z.string().trim().max(200).optional(),
-    completionYear: z.number().int().min(1900).max(2100).optional(),
+    completionYear: z.number().int().min(1900).max(2100).nullable().optional(),
 
     executiveSummary: z.string().max(20000).optional(),
     projectDescription: z.string().max(20000).optional(),
@@ -90,6 +90,8 @@ export const submissionDraftSchema = z
   })
   .strict();
 
+// Every field is required for a team member; the type-specific details
+// (IEB number, or university name + email) depend on applicantType.
 export const memberSchema = z
   .object({
     fullName: z
@@ -98,10 +100,24 @@ export const memberSchema = z
       .min(1)
       .max(200)
       .regex(namePattern, "Name contains invalid characters."),
-    position: z.string().trim().max(150).optional(),
-    phone: bangladeshPhoneSchema.optional(),
-    email: z.string().trim().toLowerCase().email().max(320).optional(),
-    applicantType: z.enum(["IAB_MEMBER", "STUDENT"]).optional(),
+    position: z.enum(["1", "2", "3", "4", "5"], {
+      message: "Select the team member's position (1–5).",
+    }),
+    phone: z
+      .string({ required_error: "Team member's phone number is required." })
+      .pipe(bangladeshPhoneSchema)
+      .refine((val) => val !== "", {
+        message: "Team member's phone number is required.",
+      }),
+    email: z
+      .string({ required_error: "Team member's email is required." })
+      .trim()
+      .toLowerCase()
+      .email("Enter a valid email for the team member.")
+      .max(320),
+    applicantType: z.enum(["IAB_MEMBER", "STUDENT"], {
+      message: "Choose whether the team member is an IEB Member or a Student.",
+    }),
     iabMembershipNumber: z.string().trim().max(50).optional(),
     universityName: z.string().trim().max(200).optional(),
     universityEmail: z
@@ -113,7 +129,32 @@ export const memberSchema = z
       .optional(),
     isTeamLeader: z.boolean().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((m, ctx) => {
+    if (m.applicantType === "IAB_MEMBER" && !m.iabMembershipNumber) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["iabMembershipNumber"],
+        message: "Team member's IEB membership number is required.",
+      });
+    }
+    if (m.applicantType === "STUDENT") {
+      if (!m.universityName) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["universityName"],
+          message: "Team member's university name is required.",
+        });
+      }
+      if (!m.universityEmail) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["universityEmail"],
+          message: "Team member's university email is required.",
+        });
+      }
+    }
+  });
 
 export const memberIdParamSchema = z
   .object({

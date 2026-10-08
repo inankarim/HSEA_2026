@@ -19,7 +19,7 @@ import {
 } from "../lib/api";
 import { documents } from "../lib/Documents";
 import { trackPixelEvent } from "../lib/pixel";
-import { NAME_PATTERN, NAME_TITLE, LIMITS, COMPLETION_YEAR_MIN, COMPLETION_YEAR_MAX, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
+import { NAME_PATTERN, NAME_TITLE, LIMITS, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_OPTIONS, COMPLETION_YEAR_RULE_CATEGORIES, completionYearRange, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
 import { useUploadGate } from "../lib/useUploadGate";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -121,6 +121,7 @@ export default function SubmissionPortal() {
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitIssues, setSubmitIssues] = useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   // Gates the draft form behind a one-time data-usage acknowledgment each
@@ -319,8 +320,28 @@ export default function SubmissionPortal() {
 const completedSections = useMemo(() => {
   const done = new Set<SectionId>();
 
-  if (draft.fullName && draft.email) done.add("applicant");
-  if (draft.projectName && draft.projectCategory) done.add("project");
+  const applicantTypeDetails =
+    draft.applicantType === "IAB_MEMBER"
+      ? Boolean(draft.iabMembershipNumber?.trim())
+      : Boolean(draft.universityName?.trim() && draft.universityEmail?.trim());
+  if (
+    draft.fullName &&
+    draft.email &&
+    applicantTypeDetails &&
+    existingDocuments.APPLICANT_PHOTO?.uploadStatus === "UPLOADED"
+  )
+    done.add("applicant");
+  const projectEligible = (() => {
+    if (!COMPLETION_YEAR_RULE_CATEGORIES.includes(draft.projectCategory ?? "")) return true;
+    if (!draft.clientName?.trim()) return false;
+    if (existingDocuments.OWNER_AUTHORIZATION?.uploadStatus !== "UPLOADED") return false;
+    if (draft.projectStatus === PROJECT_STATUS_COMPLETED) {
+      const { min, max } = completionYearRange();
+      return draft.completionYear != null && draft.completionYear >= min && draft.completionYear <= max;
+    }
+    return (PROJECT_STATUS_OPTIONS as readonly string[]).includes(draft.projectStatus ?? "");
+  })();
+  if (draft.projectName && draft.projectCategory && projectEligible) done.add("project");
 
   const hasExecutiveSummary =
     Boolean(draft.executiveSummary?.trim()) ||
@@ -328,7 +349,10 @@ const completedSections = useMemo(() => {
   const hasProjectDescription =
     Boolean(draft.projectDescription?.trim()) ||
     existingDocuments.PROJECT_DESCRIPTION?.uploadStatus === "UPLOADED";
-  if (hasExecutiveSummary && hasProjectDescription) done.add("description");
+  const hasCoveringLetter =
+    Boolean(draft.coveringLetter?.trim()) ||
+    existingDocuments.COVERING_LETTER?.uploadStatus === "UPLOADED";
+  if (hasExecutiveSummary && hasProjectDescription && hasCoveringLetter) done.add("description");
 
   const hasDesignDemonstration =
     Boolean(draft.designDemonstration?.trim()) ||
@@ -336,9 +360,18 @@ const completedSections = useMemo(() => {
   const hasCosting =
     Boolean(draft.costing?.trim()) ||
     existingDocuments.COSTING?.uploadStatus === "UPLOADED";
-  if (hasDesignDemonstration && hasCosting) done.add("technical");
+  const costingRequired = draft.projectCategory !== "Visionary Design";
+  if (hasDesignDemonstration && (hasCosting || !costingRequired)) done.add("technical");
+
+  if (draft.applicantIsTeamLeader || teamMembers.some((m) => m.isTeamLeader)) done.add("team");
 
   if (draft.googleDriveUrl) done.add("drive");
+
+  if (
+    existingDocuments.SUSTAINABILITY_METRICS?.uploadStatus === "UPLOADED" &&
+    existingDocuments.ARCHITECTURAL_DRAWINGS?.uploadStatus === "UPLOADED"
+  )
+    done.add("documents");
 
   if (
     draft.informationConfirmed &&
@@ -350,7 +383,7 @@ const completedSections = useMemo(() => {
     done.add("declaration");
 
   return done;
-}, [draft, existingDocuments]);
+}, [draft, existingDocuments, teamMembers]);
 
   function goToSection(id: SectionId) {
     saveNow();
@@ -361,6 +394,7 @@ const completedSections = useMemo(() => {
 
   async function handleFinalSubmit() {
     setSubmitError(null);
+    setSubmitIssues([]);
     setSubmitting(true);
     saveNow();
     try {
@@ -378,6 +412,11 @@ const completedSections = useMemo(() => {
           ? err.message
           : "We couldn't complete your submission. Your information has not been lost."
       );
+      setSubmitIssues(
+        err instanceof ApiError ? err.errors.map((e) => e.message).filter(Boolean) : []
+      );
+      // Close the confirm dialog so the list of missing items is visible.
+      setConfirmOpen(false);
       // Fresh key for a genuinely new attempt after a hard failure.
       idempotencyKeyRef.current = newIdempotencyKey();
     } finally {
@@ -385,122 +424,111 @@ const completedSections = useMemo(() => {
     }
   }
 
-  // Validates all required fields before allowing submission.
-  //
-  // NOTE: Executive Summary, Project Description, Design Demonstration are
-  // "either/or" fields — satisfied by EITHER the text box OR an uploaded
-  // PDF (see existingDocuments[...].uploadStatus). Previously this only
-  // checked draft.<field>?.trim(), which wrongly blocked submission when
-  // the applicant had uploaded a PDF instead of typing the text. Costing
-  // and Covering Letter are fully optional-either/or (no hard requirement
-  // at all) to match the backend's conditionallyRequiredDocumentTypes().
-  function validateBeforeSubmit(): { valid: boolean; error?: string } {
-    // Check all required applicant fields
-    if (!draft.fullName?.trim()) {
-      return { valid: false, error: "Please enter your full name." };
-    }
-    if (!draft.email?.trim()) {
-      return { valid: false, error: "Please enter your email." };
-    }
+  const yearRuleApplies = COMPLETION_YEAR_RULE_CATEGORIES.includes(draft.projectCategory ?? "");
+  const yearRange = completionYearRange();
+  const clientInfoRequired = draft.projectCategory !== "Visionary Design";
 
-    // Check applicant type-specific fields
+  // Collects every missing item before submission; mirrors the backend's
+  // finalize checks. Executive Summary, Project Description, Covering Letter,
+  // Design Demonstration and Costing are either/or: text OR an uploaded PDF.
+  // Costing and client details are optional for Visionary Design only.
+  function validateBeforeSubmit(): string[] {
+    const issues: string[] = [];
+    const uploaded = (type: DocumentType) => existingDocuments[type]?.uploadStatus === "UPLOADED";
+
+    // Applicant
+    if (!draft.fullName?.trim()) issues.push("Applicant: enter your full name.");
+    if (!draft.email?.trim()) issues.push("Applicant: enter your email.");
     if (draft.applicantType === "IAB_MEMBER") {
-      if (!draft.iabMembershipNumber?.trim()) {
-        return { valid: false, error: "Please enter your IAB membership number." };
-      }
+      if (!draft.iabMembershipNumber?.trim()) issues.push("Applicant: enter your IEB membership number.");
     } else {
-      if (!draft.universityName?.trim()) {
-        return { valid: false, error: "Please enter your university name." };
+      if (!draft.universityName?.trim()) issues.push("Applicant: enter your university name.");
+      if (!draft.universityEmail?.trim()) issues.push("Applicant: enter your university email.");
+    }
+    if (!uploaded("APPLICANT_PHOTO")) issues.push("Applicant: upload your photo.");
+
+    // Project (category-specific eligibility)
+    if (!draft.projectName?.trim()) issues.push("Project: enter your project name.");
+    if (!draft.projectCategory?.trim()) issues.push("Project: select a project category.");
+    if (yearRuleApplies) {
+      if (!draft.projectStatus || !(PROJECT_STATUS_OPTIONS as readonly string[]).includes(draft.projectStatus)) {
+        issues.push("Project: select the project status (Completed or Under Construction).");
+      } else if (draft.projectStatus === PROJECT_STATUS_COMPLETED) {
+        const year = draft.completionYear;
+        if (year == null) {
+          issues.push("Project: enter the completion year.");
+        } else if (year < yearRange.min || year > yearRange.max) {
+          issues.push(
+            `Project: completion year ${year} is not eligible. Completed projects must have been completed between ${yearRange.min} and ${yearRange.max}.`,
+          );
+        }
       }
-      if (!draft.universityEmail?.trim()) {
-        return { valid: false, error: "Please enter your university email." };
+    }
+    if (clientInfoRequired) {
+      if (!draft.clientName?.trim()) issues.push("Project: enter the client name.");
+      if (!uploaded("OWNER_AUTHORIZATION")) issues.push("Project: upload the Client / Owner Authorization Form (PDF).");
+    }
+
+    // Team
+    if (!draft.applicantIsTeamLeader && !teamMembers.some((m) => m.isTeamLeader)) {
+      issues.push("Team Members: choose a team leader (you or one of your team members).");
+    }
+    for (const m of teamMembers) {
+      const gaps = [
+        !m.position && "position",
+        !m.phone && "phone number",
+        !m.email && "email",
+        !m.applicantType && "member type",
+        m.applicantType === "IAB_MEMBER" && !m.iabMembershipNumber && "IEB membership number",
+        m.applicantType === "STUDENT" && !m.universityName && "university name",
+        m.applicantType === "STUDENT" && !m.universityEmail && "university email",
+      ].filter(Boolean);
+      if (gaps.length > 0) {
+        issues.push(
+          `Team Members: "${m.fullName}" is missing ${gaps.join(", ")}. Remove and re-add them with all details.`,
+        );
       }
-    }
-
-    // Check project fields
-    if (!draft.projectName?.trim()) {
-      return { valid: false, error: "Please enter your project name." };
-    }
-    if (!draft.projectCategory?.trim()) {
-      return { valid: false, error: "Please enter your project category." };
-    }
-
-    // Check client information
-    if (!draft.clientName?.trim()) {
-      return { valid: false, error: "Please enter the client name." };
-    }
-
-    // Executive Summary — either text or uploaded PDF
-    const hasExecutiveSummary =
-      Boolean(draft.executiveSummary?.trim()) ||
-      existingDocuments.EXECUTIVE_SUMMARY?.uploadStatus === "UPLOADED";
-    if (!hasExecutiveSummary) {
-      return {
-        valid: false,
-        error: "Please provide an executive summary — as text or an uploaded PDF.",
-      };
     }
 
     // Project Description — either text or uploaded PDF
-    const hasProjectDescription =
-      Boolean(draft.projectDescription?.trim()) ||
-      existingDocuments.PROJECT_DESCRIPTION?.uploadStatus === "UPLOADED";
-    if (!hasProjectDescription) {
-      return {
-        valid: false,
-        error: "Please provide a project description — as text or an uploaded PDF.",
-      };
+    if (!draft.executiveSummary?.trim() && !uploaded("EXECUTIVE_SUMMARY")) {
+      issues.push("Project Description: add an executive summary, as text or a PDF.");
     }
-    if (
+    if (!draft.projectDescription?.trim() && !uploaded("PROJECT_DESCRIPTION")) {
+      issues.push("Project Description: add a project description, as text or a PDF.");
+    } else if (
       draft.projectDescription?.trim() &&
       countWords(draft.projectDescription) > PROJECT_DESCRIPTION_WORD_LIMIT
     ) {
-      return {
-        valid: false,
-        error: `Project description exceeds ${PROJECT_DESCRIPTION_WORD_LIMIT} words.`,
-      };
+      issues.push(`Project Description: shorten the project description to ${PROJECT_DESCRIPTION_WORD_LIMIT} words or fewer.`);
+    }
+    if (!draft.coveringLetter?.trim() && !uploaded("COVERING_LETTER")) {
+      issues.push("Project Description: add a covering letter, as text or a PDF.");
     }
 
-    // Design Demonstration — either text or uploaded PDF
-    const hasDesignDemonstration =
-      Boolean(draft.designDemonstration?.trim()) ||
-      existingDocuments.DESIGN_DEMONSTRATION?.uploadStatus === "UPLOADED";
-    if (!hasDesignDemonstration) {
-      return {
-        valid: false,
-        error: "Please provide a design demonstration — as text or an uploaded PDF.",
-      };
+    // Technical Information
+    if (!draft.designDemonstration?.trim() && !uploaded("DESIGN_DEMONSTRATION")) {
+      issues.push("Technical Information: add a design demonstration, as text or a PDF.");
+    }
+    if (clientInfoRequired && !draft.costing?.trim() && !uploaded("COSTING")) {
+      issues.push("Technical Information: add costing, as text or a PDF.");
     }
 
-    // Costing and Covering Letter are fully optional — no check here,
-    // matching conditionallyRequiredDocumentTypes() on the backend not
-    // being enforced as hard-required in REQUIRED_COMMON_FIELDS.
-    // (If you want Costing/Covering Letter to be mandatory-either-or too,
-    // add the same either/or check pattern used above.)
+    // Google Drive
+    if (!draft.googleDriveUrl?.trim()) issues.push("Google Drive: add your Google Drive folder link.");
 
-    // Check Google Drive URL
-    if (!draft.googleDriveUrl?.trim()) {
-      return { valid: false, error: "Please provide a Google Drive folder link." };
-    }
+    // Documents
+    if (!uploaded("SUSTAINABILITY_METRICS")) issues.push("Documents: upload the Sustainability Metrics / CO₂ Reduction Support PDF.");
+    if (!uploaded("ARCHITECTURAL_DRAWINGS")) issues.push("Documents: upload the Architectural Drawings PDF.");
 
-    // Check all declarations
-    if (!draft.informationConfirmed) {
-      return { valid: false, error: "Please confirm your information is accurate." };
-    }
-    if (!draft.filesUploadedConfirmed) {
-      return { valid: false, error: "Please confirm all files are uploaded." };
-    }
-    if (!draft.namingConventionConfirmed) {
-      return { valid: false, error: "Please confirm files follow naming convention." };
-    }
-    if (!draft.authenticityConfirmed) {
-      return { valid: false, error: "Please confirm the work is authentic." };
-    }
-    if (!draft.termsAccepted) {
-      return { valid: false, error: "Please accept the terms and conditions." };
-    }
+    // Declaration
+    if (!draft.informationConfirmed) issues.push("Declaration: confirm your information is accurate.");
+    if (!draft.filesUploadedConfirmed) issues.push("Declaration: confirm all files are uploaded.");
+    if (!draft.namingConventionConfirmed) issues.push("Declaration: confirm your files follow the naming convention.");
+    if (!draft.authenticityConfirmed) issues.push("Declaration: confirm the work is authentic.");
+    if (!draft.termsAccepted) issues.push("Declaration: accept the terms and conditions.");
 
-    return { valid: true };
+    return issues;
   }
 
   // --- render: loading / error states -------------------------------------
@@ -856,8 +884,26 @@ const completedSections = useMemo(() => {
                     <FormField label="Project Location">
                       <input maxLength={LIMITS.projectLocation} className={inputClasses} value={draft.projectLocation || ""} onChange={(e) => update("projectLocation", e.target.value)} />
                     </FormField>
-                    <FormField label="Project Status">
-                      <input maxLength={LIMITS.projectStatus} className={inputClasses} value={draft.projectStatus || ""} onChange={(e) => update("projectStatus", e.target.value)} placeholder="e.g. Completed, Under Construction" />
+                    <FormField label="Project Status" required={yearRuleApplies}>
+                      <select
+                        className={inputClasses}
+                        value={draft.projectStatus || ""}
+                        onChange={(e) => {
+                          update("projectStatus", e.target.value);
+                          if (e.target.value !== PROJECT_STATUS_COMPLETED && draft.completionYear != null) {
+                            update("completionYear", null);
+                          }
+                        }}
+                      >
+                        <option value="" disabled>
+                          Select project status
+                        </option>
+                        {PROJECT_STATUS_OPTIONS.map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
+                        ))}
+                      </select>
                     </FormField>
                     <FormField label="Client Project / Own Project">
                       <input maxLength={LIMITS.clientOwner} className={inputClasses} value={draft.clientOwner || ""} onChange={(e) => update("clientOwner", e.target.value)} />
@@ -865,17 +911,28 @@ const completedSections = useMemo(() => {
                     <FormField label="Lead Engineer">
                       <input maxLength={LIMITS.leadEngineer} className={inputClasses} value={draft.leadEngineer || ""} onChange={(e) => update("leadEngineer", e.target.value)} />
                     </FormField>
-                    <FormField label="Completion Year">
-                      <input type="number" min={COMPLETION_YEAR_MIN} max={COMPLETION_YEAR_MAX} step={1} className={inputClasses} value={draft.completionYear ?? ""} onChange={(e) => update("completionYear", e.target.value ? Number(e.target.value) : undefined)} />
-                    </FormField>
+                    {draft.projectStatus === PROJECT_STATUS_COMPLETED && (
+                      <FormField label="Completion Year" required={yearRuleApplies}>
+                        <input
+                          type="number"
+                          min={yearRuleApplies ? yearRange.min : undefined}
+                          max={yearRange.max}
+                          step={1}
+                          className={inputClasses}
+                          value={draft.completionYear ?? ""}
+                          onChange={(e) => update("completionYear", e.target.value ? Number(e.target.value) : null)}
+                          placeholder={yearRuleApplies ? `${yearRange.min}–${yearRange.max}` : undefined}
+                        />
+                      </FormField>
+                    )}
                   </div>
 
                   {/* Sibling of the fields grid, not nested inside it — spans full width */}
                   <h3 className="mt-2 text-sm font-bold uppercase tracking-wide text-navy-deep/60">
-                    Client Information
+                    Client Information{!clientInfoRequired && " (Optional)"}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <FormField label="Client Name" required error={fieldErrors.clientName}>
+                    <FormField label="Client Name" required={clientInfoRequired} error={fieldErrors.clientName}>
                       <input maxLength={LIMITS.clientName} className={inputClasses} value={draft.clientName || ""} onChange={(e) => update("clientName", e.target.value)} />
                     </FormField>
                     <FormField label="Contact Number">
@@ -893,7 +950,11 @@ const completedSections = useMemo(() => {
                     <DocumentUploadField
                       applicationId={submission.applicationId}
                       guestToken={guestToken}
-                      def={docDefByType.OWNER_AUTHORIZATION}
+                      def={
+                        docDefByType.OWNER_AUTHORIZATION.optionalForCategories?.includes(draft.projectCategory ?? "")
+                          ? { ...docDefByType.OWNER_AUTHORIZATION, required: false }
+                          : docDefByType.OWNER_AUTHORIZATION
+                      }
                       existingDoc={existingDocuments.OWNER_AUTHORIZATION}
                       concurrencyGate={uploadGate}
                       onUploaded={handleDocUploaded}
@@ -958,7 +1019,7 @@ const completedSections = useMemo(() => {
                   />
 
                   {/* MOVED HERE — Covering Letter, same either/or pattern as Costing */}
-                  <FormField label="Covering Letter">
+                  <FormField label="Covering Letter" hint="Required: type it here or upload a PDF below">
                     <textarea
                       maxLength={LIMITS.longText}
                       className={textareaClasses}
@@ -1021,7 +1082,14 @@ const completedSections = useMemo(() => {
                       onChange={(e) => update("constructionTechnology", e.target.value)}
                     />
                   </FormField>
-                  <FormField label="Costing" hint="required where applicable, particularly for low-cost design solutions">
+                  <FormField
+                    label="Costing"
+                    hint={
+                      clientInfoRequired
+                        ? "Required: type it here or upload a PDF below"
+                        : "Optional for Visionary Design"
+                    }
+                  >
                     <textarea
                       maxLength={LIMITS.longText}
                       className={textareaClasses}
@@ -1352,6 +1420,10 @@ const completedSections = useMemo(() => {
                         ["Project Name", draft.projectName],
                         ["Category", draft.projectCategory],
                         ["Location", draft.projectLocation],
+                        ["Status", draft.projectStatus],
+                        ...(draft.projectStatus === PROJECT_STATUS_COMPLETED
+                          ? [["Completion Year", draft.completionYear?.toString()]]
+                          : []),
                       ],
                     },
                    {
@@ -1441,8 +1513,15 @@ const completedSections = useMemo(() => {
                     <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
                       <p className="font-bold">We couldn't complete your submission.</p>
                       <p className="mt-1">{submitError}</p>
-                      <p className="mt-1 text-red-600/80">
-                        Your information has not been lost. Please review the highlighted items and try again.
+                      {submitIssues.length > 0 && (
+                        <ul className="mt-3 list-disc space-y-1 pl-5">
+                          {submitIssues.map((issue) => (
+                            <li key={issue}>{issue}</li>
+                          ))}
+                        </ul>
+                      )}
+                      <p className="mt-3 text-red-600/80">
+                        Your information has not been lost. Fix the items above and try again.
                       </p>
                     </div>
                   )}
@@ -1451,11 +1530,16 @@ const completedSections = useMemo(() => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      const validation = validateBeforeSubmit();
-                      if (!validation.valid) {
-                        setSubmitError(validation.error || "Please complete all required fields.");
+                      const issues = validateBeforeSubmit();
+                      if (issues.length > 0) {
+                        setSubmitError(
+                          `${issues.length} ${issues.length === 1 ? "item needs" : "items need"} your attention before you can submit:`
+                        );
+                        setSubmitIssues(issues);
                         return;
                       }
+                      setSubmitError(null);
+                      setSubmitIssues([]);
                       setConfirmOpen(true);
                     }}
                     className="w-full rounded-lg bg-navy-deep py-3.5 text-sm font-bold uppercase tracking-wide text-white hover:bg-navy-deep/90"

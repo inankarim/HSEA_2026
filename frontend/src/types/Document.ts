@@ -27,6 +27,8 @@ export interface DocumentTypeDef {
   label: string;
   kind: DocumentKind;
   required: boolean;
+  /** Project categories for which a `required` document becomes optional. */
+  optionalForCategories?: string[];
   /** If set, this document is satisfied by either the upload OR this
    *  SubmissionDraftPatch field being non-empty (costing / projectDescription /
    *  executiveSummary / designDemonstration / coveringLetter). */
@@ -65,6 +67,7 @@ export const DOCUMENT_TYPE_DEFS: DocumentTypeDef[] = [
     label: "Client / Owner Authorization Form(PDF)",
     kind: "pdf",
     required: true,
+    optionalForCategories: ["Visionary Design"],
   },
   {
     type: "DESIGN_DEMONSTRATION",
@@ -79,6 +82,7 @@ export const DOCUMENT_TYPE_DEFS: DocumentTypeDef[] = [
     kind: "pdf",
     required: false,
     orTextField: "costing",
+    optionalForCategories: ["Visionary Design"],
   },
   {
     type: "SUSTAINABILITY_METRICS",
@@ -96,7 +100,7 @@ export const DOCUMENT_TYPE_DEFS: DocumentTypeDef[] = [
   {
     type: "EXECUTIVE_SUMMARY",
     label: "Executive Summary (PDF)",
-    kind: "pdf_or_image",
+    kind: "pdf",
     required: false,
     orTextField: "executiveSummary",
   },

@@ -39,5 +39,18 @@ export const LIMITS = {
   googleDriveUrl: 2048,
 } as const;
 
-export const COMPLETION_YEAR_MIN = 1900;
-export const COMPLETION_YEAR_MAX = 2100;
+export const PROJECT_STATUS_COMPLETED = "Completed";
+export const PROJECT_STATUS_OPTIONS = [PROJECT_STATUS_COMPLETED, "Under Construction"] as const;
+
+// Categories 1 & 2 eligibility: completed projects must have finished within
+// the last 5 years (Visionary Design has no such rule). Keep in sync with
+// the backend's finalize check in submission.service.js.
+export const COMPLETION_YEAR_RULE_CATEGORIES: readonly string[] = [
+  "High Performance Concrete Structure",
+  "Advanced Construction Technology & Circularity",
+];
+
+export function completionYearRange() {
+  const max = new Date().getFullYear();
+  return { min: max - 5, max };
+}

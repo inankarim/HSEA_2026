@@ -112,7 +112,7 @@ export type SubmissionDraftPatch = Partial<{
 
   clientEmail: string;
   leadEngineer: string;
-  completionYear: number;
+  completionYear: number | null;
   executiveSummary: string;
   projectDescription: string;
   designDemonstration: string;
@@ -169,7 +169,7 @@ export const PROJECT_DESCRIPTION_WORD_LIMIT = 500;
 export const SUBMISSION_SECTIONS = [
   { id: "applicant", label: "Applicant" },
   { id: "project", label: "Project" },
-  { id: "team", label: "TeamMembers" },
+  { id: "team", label: "Team Members" },
   { id: "description", label: "Project Description" },
   { id: "technical", label: "Technical Information" },
   { id: "drive", label: "Google Drive" },

@@ -129,13 +129,13 @@ export default function DocumentUpload({
   }
 
   return (
-    <div className="rounded-lg border border-navy-deep/10 p-4">
+    <div className="flex-1 rounded-lg border border-navy-deep/10 p-4">
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-xs font-bold uppercase tracking-wide text-navy-deep/70">
           {label}
           {required && <span className="ml-1 text-accent-cyan">*</span>}
         </span>
-        <span className="text-[11px] font-medium text-navy-deep/40">Max 2MB</span>
+        <span className="shrink-0 whitespace-nowrap text-[11px] font-medium text-navy-deep/40">Max 2MB</span>
       </div>
 
       <div className="mt-2.5">

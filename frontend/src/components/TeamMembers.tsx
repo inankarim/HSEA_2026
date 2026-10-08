@@ -37,6 +37,31 @@ function useUploadGate(max: number) {
 
 type MemberDocsByType = Record<string, SubmissionDocument>;
 
+const BD_PHONE_REGEX = new RegExp(`^${BD_PHONE_PATTERN}$`);
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function missingMemberFields(d: MemberInput): string[] {
+  const issues: string[] = [];
+  if (!d.fullName.trim()) issues.push("Enter the full name.");
+  if (!d.position) issues.push("Select a position.");
+  if (!d.email?.trim()) issues.push("Enter an email.");
+  else if (!EMAIL_REGEX.test(d.email.trim())) issues.push("Enter a valid email.");
+  if (!d.phone?.trim()) issues.push("Enter a phone number.");
+  else if (!BD_PHONE_REGEX.test(d.phone.replace(/[\s-]/g, ""))) {
+    issues.push("Enter a valid Bangladesh phone number (e.g. 01XXXXXXXXX).");
+  }
+  if (!d.applicantType) {
+    issues.push("Choose IEB Member or Student.");
+  } else if (d.applicantType === "IAB_MEMBER") {
+    if (!d.iabMembershipNumber?.trim()) issues.push("Enter the IEB membership number.");
+  } else {
+    if (!d.universityName?.trim()) issues.push("Enter the university name.");
+    if (!d.universityEmail?.trim()) issues.push("Enter the university email.");
+    else if (!EMAIL_REGEX.test(d.universityEmail.trim())) issues.push("Enter a valid university email.");
+  }
+  return issues;
+}
+
 export default function TeamMembersSection({
   applicationId,
   guestToken,
@@ -54,6 +79,7 @@ export default function TeamMembersSection({
   const [memberDocs, setMemberDocs] = useState<Record<string, MemberDocsByType>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [addIssues, setAddIssues] = useState<string[]>([]);
   const [draft, setDraft] = useState<MemberInput>({ fullName: "" });
   const [saving, setSaving] = useState(false);
   const gate = useUploadGate(MAX_CONCURRENT_UPLOADS);
@@ -100,7 +126,13 @@ export default function TeamMembersSection({
   }, [applicationId, guestToken]);
 
   async function handleAdd() {
-    if (!draft.fullName.trim()) return;
+    const issues = missingMemberFields(draft);
+    if (issues.length > 0) {
+      setError(null);
+      setAddIssues(issues);
+      return;
+    }
+    setAddIssues([]);
 
     // Prevent adding another team leader if applicant is already team leader
     if (applicantIsTeamLeader && draft.isTeamLeader) {
@@ -116,7 +148,11 @@ export default function TeamMembersSection({
       setMemberDocs((prev) => ({ ...prev, [member.id]: {} }));
       setDraft({ fullName: "" });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't add team member.");
+      if (err instanceof ApiError && err.errors.length > 0) {
+        setAddIssues(err.errors.map((e) => e.message));
+      } else {
+        setError(err instanceof ApiError ? err.message : "Couldn't add team member.");
+      }
     } finally {
       setSaving(false);
     }
@@ -163,8 +199,8 @@ export default function TeamMembersSection({
     <section className="space-y-6">
       <h2 className="text-2xl font-bold uppercase tracking-wide text-navy-deep">Team Members</h2>
       <p className="text-sm text-gray-600">
-       Add additional team members (up to 5 total, including you as the team leader). Each
-        member needs a photo.
+       Add additional team members (up to 5 total, including you as the team leader). For each
+        member, every field below and a photo are required.
       </p>
 
       {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
@@ -298,7 +334,7 @@ export default function TeamMembersSection({
                 onChange={(e) => setDraft((d) => ({ ...d, fullName: e.target.value }))}
               />
             </FormField>
-            <FormField label="Position">
+            <FormField label="Position" required>
               <select
                 className={inputClasses}
                 value={draft.position || ""}
@@ -315,7 +351,7 @@ export default function TeamMembersSection({
                 })}
               </select>
             </FormField>
-            <FormField label="Email">
+            <FormField label="Email" required>
               <input
                 type="email"
                 maxLength={LIMITS.email}
@@ -324,7 +360,7 @@ export default function TeamMembersSection({
                 onChange={(e) => setDraft((d) => ({ ...d, email: e.target.value }))}
               />
             </FormField>
-            <FormField label="Phone" hint="Bangladesh number, e.g. 01XXXXXXXXX">
+            <FormField label="Phone" required hint="Bangladesh number, e.g. 01XXXXXXXXX">
               <input
                 type="tel"
                 maxLength={LIMITS.phone}
@@ -338,6 +374,9 @@ export default function TeamMembersSection({
             </FormField>
           </div>
 
+          <p className="text-xs font-bold uppercase tracking-wide text-navy-deep/70">
+            Member Type <span className="text-accent-cyan">*</span>
+          </p>
           <div className="flex gap-3">
             {(["IAB_MEMBER", "STUDENT"] as const).map((type) => (
               <button
@@ -358,7 +397,7 @@ export default function TeamMembersSection({
 
           {draft.applicantType === "STUDENT" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField label="University Name">
+              <FormField label="University Name" required>
                 <input
                   maxLength={LIMITS.universityName}
                   className={inputClasses}
@@ -366,7 +405,7 @@ export default function TeamMembersSection({
                   onChange={(e) => setDraft((d) => ({ ...d, universityName: e.target.value }))}
                 />
               </FormField>
-              <FormField label="University Email">
+              <FormField label="University Email" required>
                 <input
                   type="email"
                   maxLength={LIMITS.email}
@@ -406,9 +445,20 @@ export default function TeamMembersSection({
             </label>
           </div>
 
+          {addIssues.length > 0 && (
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
+              <p className="font-bold">Please complete this team member's details:</p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5">
+                {addIssues.map((issue) => (
+                  <li key={issue}>{issue}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           <button
             onClick={handleAdd}
-            disabled={saving || !draft.fullName.trim()}
+            disabled={saving}
             className="rounded-lg bg-navy-deep px-5 py-2 text-sm font-bold uppercase text-white disabled:opacity-60"
           >
             {saving ? "Adding…" : "Add Member"}

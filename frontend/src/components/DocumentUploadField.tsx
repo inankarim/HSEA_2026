@@ -26,7 +26,7 @@ export default function DocumentUploadField({
   const satisfiedByText = Boolean(def.orTextField && textValue?.trim());
 
   return (
-    <div>
+    <div className="flex h-full flex-col">
       <DocumentUpload
         applicationId={applicationId}
         documentType={def.type}

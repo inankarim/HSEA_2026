@@ -46,10 +46,10 @@ describe("documentTypes registry", () => {
     assert.equal(mimes.includes("application/pdf"), false);
   });
 
-  test("EXECUTIVE_SUMMARY accepts both PDF and image", () => {
+  test("EXECUTIVE_SUMMARY accepts PDF only", () => {
     const mimes = allowedMimeTypesFor("EXECUTIVE_SUMMARY");
     assert.ok(mimes.includes("application/pdf"));
-    assert.ok(mimes.includes("image/jpeg"));
+    assert.equal(mimes.includes("image/jpeg"), false);
   });
 
   test("COSTING and PROJECT_DESCRIPTION are conditionally required, not unconditionally", () => {
