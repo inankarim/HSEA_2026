@@ -1,4 +1,5 @@
-// Thin wrapper around the Meta Pixel's global fbq() (loaded in index.html).
+// Thin wrapper around the Meta Pixel's global fbq() (loaded by
+// analyticsLoader.ts only after cookie consent).
 // Guards against ad blockers / consent tools that strip window.fbq so
 // tracking calls never throw and break the actual user flow.
 declare global {
