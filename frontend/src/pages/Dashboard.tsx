@@ -10,6 +10,7 @@ import EventsSection from "../components/EventsSection";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import Brand from "../components/Brand";
+// import prizeBanner from "../assets/banners.png";
 
 export default function Dashboard() {
   const location = useLocation();
@@ -37,6 +38,14 @@ export default function Dashboard() {
       {/* New sections, following the reference layout */}
       <IntroSection />
       <KeyDates />
+      {/* <section className="bg-white">
+        <img
+          src={prizeBanner}
+          alt="Grand Winner BDT 5,00,000, category winners, Next Generation and Legendary Structural Engineer awards"
+          loading="lazy"
+          className="mx-auto block h-auto w-full max-w-7xl"
+        />
+      </section> */}
       <div id="about-us">
         <AboutSection />
       </div>

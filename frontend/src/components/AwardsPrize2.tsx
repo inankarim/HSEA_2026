@@ -1,7 +1,7 @@
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { EvaluationCriteria } from "./AwardsPrize";
-import prizeBanner from "../assets/banner2.png";
+import prizeBanner from "../assets/banners.png";
 
 const AwardsPrize2 = () => {
   return (
