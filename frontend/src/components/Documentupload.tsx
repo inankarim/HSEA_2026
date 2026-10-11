@@ -55,9 +55,6 @@ export default function DocumentUpload({
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const pendingFile = useRef<File | null>(null);
-  // True when the last failure was a server/network error, so Retry can resend
-  // the same file; false when the file itself was rejected (too large, wrong type).
-  const [canResend, setCanResend] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   function validateLocally(file: File): string | null {
@@ -88,7 +85,6 @@ export default function DocumentUpload({
       setFilename(doc.originalFilename);
       onUploaded?.(documentType, doc.originalFilename);
     } catch (err) {
-      setCanResend(true);
       setState("failed");
       setError(err instanceof ApiError ? err.message : "Upload failed. Please try again.");
     }
@@ -102,7 +98,6 @@ export default function DocumentUpload({
     const localError = validateLocally(file);
     if (localError) {
       pendingFile.current = null;
-      setCanResend(false);
       setState("failed");
       setError(localError);
       return;
@@ -208,7 +203,7 @@ export default function DocumentUpload({
               onClick={handleRetry}
               className="shrink-0 text-xs font-bold uppercase tracking-wide text-accent-cyan hover:underline"
             >
-              {canResend ? "Retry" : "Choose another file"}
+              Retry
             </button>
           </div>
         )}
