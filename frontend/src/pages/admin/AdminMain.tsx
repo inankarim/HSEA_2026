@@ -115,7 +115,7 @@ export default function AdminMain() {
         {error && <p className="mb-4 text-sm font-semibold text-red-600">{error}</p>}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-          <KpiCard label="Total Applicants" value={formatNumber(kpis?.totalApplicants ?? 0)} loading={loading} />
+          <KpiCard label="Total Submissions" value={formatNumber(kpis?.totalApplicants ?? 0)} loading={loading} />
           <KpiCard label="Total Submitted" value={formatNumber(kpis?.totalSubmitted ?? 0)} loading={loading} />
           <KpiCard label="Total Users" value={formatNumber(kpis?.totalUsers ?? 0)} loading={loading} />
           <KpiCard label="Total Views (GA4)" value={formatNumber(kpis?.totalViews ?? null)} loading={loading} />
