@@ -192,6 +192,11 @@ export default function DocumentUpload({
             )}
           </div>
         )}
+        {state === "uploaded" && error && (
+          <p className="mt-1.5 text-xs font-semibold text-red-600" role="alert">
+            {error}
+          </p>
+        )}
 
         {state === "failed" && (
           <div className="flex items-center justify-between gap-3">

@@ -23,10 +23,17 @@ async function jsonRequest<T>(
   const headers: Record<string, string> = {};
   if (opts.guestToken) headers[GUEST_TOKEN_HEADER] = opts.guestToken;
 
+  // The host blocks PUT/DELETE before they reach the app, so they travel as
+  // POST + X-HTTP-Method-Override (same workaround as lib/api.ts; app.js
+  // translates it back).
+  const realMethod = opts.method || "GET";
+  const wireMethod = realMethod === "PUT" || realMethod === "DELETE" ? "POST" : realMethod;
+  if (wireMethod !== realMethod) headers["X-HTTP-Method-Override"] = realMethod;
+
   let response: Response;
   try {
     response = await fetch(`${BASE_URL}${path}`, {
-      method: opts.method || "GET",
+      method: wireMethod,
       credentials: "include",
       headers,
     });
