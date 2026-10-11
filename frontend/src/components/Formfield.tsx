@@ -19,15 +19,15 @@ export default function FormField({
     <div>
       <label
         htmlFor={htmlFor}
-        className="flex items-baseline justify-between text-xs font-bold uppercase tracking-wide text-navy-deep/70"
+        className="block text-xs font-bold uppercase tracking-wide text-navy-deep/70"
       >
-        <span>
-          {label}
-          {required && <span className="ml-1 text-accent-cyan">*</span>}
-        </span>
-        {hint && <span className="text-[11px] font-medium normal-case text-navy-deep/40">{hint}</span>}
+        {label}
+        {required && <span className="ml-1 text-accent-cyan">*</span>}
       </label>
       <div className="mt-2">{children}</div>
+      {/* Below the input, not beside the label, so fields in the same row
+          keep their inputs aligned regardless of hint length. */}
+      {hint && <p className="mt-1.5 text-[11px] font-medium text-navy-deep/40">{hint}</p>}
       {error && (
         <p className="mt-1.5 text-xs font-semibold text-red-600" role="alert">
           {error}

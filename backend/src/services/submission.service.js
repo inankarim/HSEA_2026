@@ -149,13 +149,21 @@ const CAMEL_TO_COLUMN = {
  * The Application ID is generated before the applicant creates their
  * Google Drive folder, per the required workflow.
  */
+/**
+ * Starts a submission for the Start Submission button. A registered user
+ * gets back their most recently updated DRAFT if they already have one, so
+ * repeated clicks never pile up extra Application IDs; a new ID is only
+ * allocated when they have no draft. One finalized submission per account
+ * is still enforced here before anything else.
+ */
 export async function startSubmission({ userId, guestEmail }) {
-  // Enforce one finalized submission per registered account. Checked
-  // before we allocate an Application ID so we never hand out an ID that
-  // can never be finalized. Guests are exempt (no account to key off) —
-  // finalizeSubmission's own guard below is the real backstop regardless.
-  if (userId) {
-    const already = await pool.query(
+  if (!userId) return createDraft(pool, { userId: null, guestEmail });
+
+  return withTransaction(async (client) => {
+    // Serialise per user so a double-click can't create two drafts at once.
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [userId]);
+
+    const already = await client.query(
       `SELECT 1 FROM submissions WHERE user_id = $1 AND status != 'DRAFT' LIMIT 1`,
       [userId],
     );
@@ -165,8 +173,31 @@ export async function startSubmission({ userId, guestEmail }) {
         409,
       );
     }
-  }
 
+    const existing = await client.query(
+      `SELECT application_id, status FROM submissions
+        WHERE user_id = $1 AND status = 'DRAFT'
+        ORDER BY updated_at DESC
+        LIMIT 1`,
+      [userId],
+    );
+    if (existing.rowCount > 0) {
+      logger.info("Resumed existing draft", {
+        applicationId: existing.rows[0].application_id,
+        userId,
+      });
+      return {
+        applicationId: existing.rows[0].application_id,
+        status: existing.rows[0].status,
+        guestAccessToken: null,
+      };
+    }
+
+    return createDraft(client, { userId, guestEmail, inTransaction: true });
+  });
+}
+
+async function createDraft(db, { userId, guestEmail, inTransaction = false }) {
   let applicationId;
   let attempt = 0;
 
@@ -178,7 +209,7 @@ export async function startSubmission({ userId, guestEmail }) {
     applicantType: "STUDENT",
   };
   if (userId) {
-    const userResult = await pool.query("SELECT * FROM users WHERE id = $1", [
+    const userResult = await db.query("SELECT * FROM users WHERE id = $1", [
       userId,
     ]);
     if (userResult.rowCount === 0) {
@@ -208,8 +239,9 @@ export async function startSubmission({ userId, guestEmail }) {
   // Retry on the astronomically rare Application ID collision.
   while (attempt < MAX_APPLICATION_ID_RETRIES) {
     applicationId = generateApplicationId();
+    if (inTransaction) await db.query("SAVEPOINT create_draft");
     try {
-      const result = await pool.query(
+      const result = await db.query(
         `INSERT INTO submissions (
            application_id, user_id, guest_access_token_hash, applicant_type,
            full_name, email, phone, organization, designation,
@@ -250,6 +282,7 @@ export async function startSubmission({ userId, guestEmail }) {
       };
     } catch (err) {
       if (err.code === "23505") {
+        if (inTransaction) await db.query("ROLLBACK TO SAVEPOINT create_draft");
         attempt += 1;
         continue; // collision on application_id — regenerate and retry
       }
