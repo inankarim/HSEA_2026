@@ -381,6 +381,21 @@ export default function SubmissionInstructions() {
                 </p>
               )}
             </div>
+
+            <div className="mx-auto mt-10 max-w-2xl border-t border-gray-200 pt-6 text-xs leading-relaxed text-gray-500">
+              <p>
+                If you experience technical issues submitting online, hard-copy submissions are
+                accepted at our office. Please ensure all required documentation is complete and
+                properly organized before submission.
+              </p>
+              <p className="mt-2">
+                For support and inquiries, reach us at{" "}
+                <a href="tel:+8801755514180" className="font-semibold text-gray-600 hover:text-navy-deep">
+                  +8801755514180
+                </a>{" "}
+                between 10:00 AM and 5:00 PM.
+              </p>
+            </div>
           </FadeIn>
         </div>
       </section>
