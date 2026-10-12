@@ -618,7 +618,7 @@ const REQUIRED_COMMON_FIELDS = {
 };
 
 // Categories 1 & 2 (practicing engineers) eligibility: the project must be
-// under construction, or completed within the last 5 years, and needs client
+// under construction, or completed in EARLIEST_COMPLETION_YEAR or later, and needs client
 // details. Visionary Design (Next Generation) has neither rule. Keep in sync
 // with frontend/src/lib/validation.ts and Submissionportal.tsx.
 const COMPLETION_YEAR_RULE_CATEGORIES = new Set([
@@ -626,6 +626,7 @@ const COMPLETION_YEAR_RULE_CATEGORIES = new Set([
   "Advanced Construction Technology & Circularity",
 ]);
 const PROJECT_STATUS_COMPLETED = "Completed";
+const EARLIEST_COMPLETION_YEAR = 2020;
 const PROJECT_STATUS_UNDER_CONSTRUCTION = "Under Construction";
 
 function validateEligibility(row) {
@@ -638,7 +639,7 @@ function validateEligibility(row) {
 
   if (row.project_status === PROJECT_STATUS_COMPLETED) {
     const maxYear = new Date().getFullYear();
-    const minYear = maxYear - 5;
+    const minYear = EARLIEST_COMPLETION_YEAR;
     const year = row.completion_year;
     if (year == null) {
       missing.push("Completion year is required for completed projects");

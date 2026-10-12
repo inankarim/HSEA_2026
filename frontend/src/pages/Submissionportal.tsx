@@ -889,7 +889,14 @@ const completedSections = useMemo(() => {
                       <select
                         className={inputClasses}
                         value={draft.projectCategory || ""}
-                        onChange={(e) => update("projectCategory", e.target.value)}
+                        onChange={(e) => {
+                          update("projectCategory", e.target.value);
+                          // Status and completion year don't apply to Visionary Design.
+                          if (!COMPLETION_YEAR_RULE_CATEGORIES.includes(e.target.value)) {
+                            if (draft.projectStatus) update("projectStatus", "");
+                            if (draft.completionYear != null) update("completionYear", null);
+                          }
+                        }}
                       >
                         <option value="" disabled>
                           Select a category
@@ -904,7 +911,8 @@ const completedSections = useMemo(() => {
                     <FormField label="Project Location">
                       <input maxLength={LIMITS.projectLocation} className={inputClasses} value={draft.projectLocation || ""} onChange={(e) => update("projectLocation", e.target.value)} />
                     </FormField>
-                    <FormField label="Project Status" required={yearRuleApplies}>
+                    {yearRuleApplies && (
+                    <FormField label="Project Status" required>
                       <select
                         className={inputClasses}
                         value={draft.projectStatus || ""}
@@ -925,23 +933,24 @@ const completedSections = useMemo(() => {
                         ))}
                       </select>
                     </FormField>
+                    )}
                     <FormField label="Client Project / Own Project">
                       <input maxLength={LIMITS.clientOwner} className={inputClasses} value={draft.clientOwner || ""} onChange={(e) => update("clientOwner", e.target.value)} />
                     </FormField>
                     <FormField label="Lead Engineer">
                       <input maxLength={LIMITS.leadEngineer} className={inputClasses} value={draft.leadEngineer || ""} onChange={(e) => update("leadEngineer", e.target.value)} />
                     </FormField>
-                    {draft.projectStatus === PROJECT_STATUS_COMPLETED && (
-                      <FormField label="Completion Year" required={yearRuleApplies}>
+                    {yearRuleApplies && draft.projectStatus === PROJECT_STATUS_COMPLETED && (
+                      <FormField label="Completion Year" required>
                         <input
                           type="number"
-                          min={yearRuleApplies ? yearRange.min : undefined}
+                          min={yearRange.min}
                           max={yearRange.max}
                           step={1}
                           className={inputClasses}
                           value={draft.completionYear ?? ""}
                           onChange={(e) => update("completionYear", e.target.value ? Number(e.target.value) : null)}
-                          placeholder={yearRuleApplies ? `${yearRange.min}–${yearRange.max}` : undefined}
+                          placeholder={`${yearRange.min}–${yearRange.max}`}
                         />
                       </FormField>
                     )}
@@ -1440,8 +1449,8 @@ const completedSections = useMemo(() => {
                         ["Project Name", draft.projectName],
                         ["Category", draft.projectCategory],
                         ["Location", draft.projectLocation],
-                        ["Status", draft.projectStatus],
-                        ...(draft.projectStatus === PROJECT_STATUS_COMPLETED
+                        ...(yearRuleApplies ? [["Status", draft.projectStatus]] : []),
+                        ...(yearRuleApplies && draft.projectStatus === PROJECT_STATUS_COMPLETED
                           ? [["Completion Year", draft.completionYear?.toString()]]
                           : []),
                       ],
