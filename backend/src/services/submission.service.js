@@ -791,7 +791,7 @@ async function getMissingMemberDocumentDescriptions(client, applicationId) {
     for (const type of requiredTypes) {
       if (!uploaded.has(type)) {
         missing.push(
-          `Team member "${member.full_name}": ${MEMBER_DOCUMENT_TYPES[type].label} must be uploaded`,
+          `Team member at position ${member.position || "?"} ("${member.full_name}"): ${MEMBER_DOCUMENT_TYPES[type].label} must be uploaded`,
         );
       }
     }

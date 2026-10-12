@@ -17,7 +17,7 @@ import {
   members,
   newIdempotencyKey,
 } from "../lib/api";
-import { documents } from "../lib/Documents";
+import { documents, memberDocuments } from "../lib/Documents";
 import { trackPixelEvent } from "../lib/pixel";
 import { NAME_PATTERN, NAME_TITLE, LIMITS, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_OPTIONS, COMPLETION_YEAR_RULE_CATEGORIES, completionYearRange, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
 import { useUploadGate } from "../lib/useUploadGate";
@@ -106,6 +106,9 @@ export default function SubmissionPortal() {
   const [draft, setDraft] = useState<Draft>({});
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [teamMembers, setTeamMembers] = useState<SubmissionMember[]>([]);
+  // IDs of team members with an uploaded photo; null until loaded (then the
+  // pre-submit check skips photos and the backend's check still applies).
+  const [membersWithPhoto, setMembersWithPhoto] = useState<Set<string> | null>(null);
 
   const [activeSection, setActiveSection] = useState<SectionId>("applicant");
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -210,6 +213,18 @@ export default function SubmissionPortal() {
           const result = await members.list(applicationId, guestToken);
           if (!cancelled) {
             setTeamMembers(result.members);
+          }
+          const withPhoto = await Promise.all(
+            result.members.map(async (m) => {
+              const { documents: docs } = await memberDocuments.list(applicationId, m.id, guestToken);
+              const hasPhoto = docs.some(
+                (d) => d.documentType === "APPLICANT_PHOTO" && d.uploadStatus === "UPLOADED",
+              );
+              return hasPhoto ? m.id : null;
+            }),
+          );
+          if (!cancelled) {
+            setMembersWithPhoto(new Set(withPhoto.filter((id): id is string => id !== null)));
           }
         } catch (err) {
           console.warn("Failed to reload team members:", err);
@@ -486,6 +501,11 @@ const completedSections = useMemo(() => {
       if (gaps.length > 0) {
         issues.push(
           `Team Members: "${m.fullName}" is missing ${gaps.join(", ")}. Remove and re-add them with all details.`,
+        );
+      }
+      if (membersWithPhoto && !membersWithPhoto.has(m.id)) {
+        issues.push(
+          `Team Members: position ${m.position || "?"} member "${m.fullName}" — upload their photo.`,
         );
       }
     }
