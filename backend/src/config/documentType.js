@@ -150,12 +150,8 @@ export const DOCUMENT_TYPE_KEYS = Object.keys(DOCUMENT_TYPES);
  * purpose (see module doc comment) — they're disambiguated in the
  * database by submission_member_id, never by a different enum value.
  */
+// Team members only provide a photo; NID/Passport is not collected for them.
 export const MEMBER_DOCUMENT_TYPES = {
-  APPLICANT_NID: {
-    label: "NID / Passport",
-    kind: "pdf",
-    required: false,
-  },
   APPLICANT_PHOTO: {
     label: "Member Photo",
     kind: "image",

@@ -3,7 +3,7 @@ import FormField, { inputClasses } from "./Formfield";
 import MemberDocumentUpload from "./MemberDocumentUpload";
 import { members, ApiError } from "../lib/api";
 import { memberDocuments } from "../lib/Documents";
-import { MEMBER_DOCUMENT_TYPE_DEFS } from "../types/Document";
+import { MEMBER_DOCUMENT_TYPE_DEFS, MAX_DOCUMENT_SIZE_BYTES, acceptAttrFor } from "../types/Document";
 import type { SubmissionMember, MemberInput } from "../types/Submission";
 import type { SubmissionDocument } from "../types/Document";
 import { NAME_PATTERN, NAME_TITLE, LIMITS, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
@@ -40,7 +40,15 @@ type MemberDocsByType = Record<string, SubmissionDocument>;
 const BD_PHONE_REGEX = new RegExp(`^${BD_PHONE_PATTERN}$`);
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function missingMemberFields(d: MemberInput): string[] {
+const PHOTO_ACCEPT = acceptAttrFor("image");
+
+function photoProblem(file: File): string | null {
+  if (!PHOTO_ACCEPT.split(",").includes(file.type)) return "Choose a JPEG, PNG, or WebP photo.";
+  if (file.size > MAX_DOCUMENT_SIZE_BYTES) return "That photo is too large. Maximum size is 2MB.";
+  return null;
+}
+
+function missingMemberFields(d: MemberInput, photo: File | null): string[] {
   const issues: string[] = [];
   if (!d.fullName.trim()) issues.push("Enter the full name.");
   if (!d.position) issues.push("Select a position.");
@@ -58,6 +66,11 @@ function missingMemberFields(d: MemberInput): string[] {
     if (!d.universityName?.trim()) issues.push("Enter the university name.");
     if (!d.universityEmail?.trim()) issues.push("Enter the university email.");
     else if (!EMAIL_REGEX.test(d.universityEmail.trim())) issues.push("Enter a valid university email.");
+  }
+  if (!photo) issues.push("Upload the member's photo.");
+  else {
+    const problem = photoProblem(photo);
+    if (problem) issues.push(problem);
   }
   return issues;
 }
@@ -80,6 +93,9 @@ export default function TeamMembersSection({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [addIssues, setAddIssues] = useState<string[]>([]);
+  const [photo, setPhoto] = useState<File | null>(null);
+  // Bumped after each successful add to reset the (uncontrolled) file input.
+  const [photoInputKey, setPhotoInputKey] = useState(0);
   const [draft, setDraft] = useState<MemberInput>({ fullName: "" });
   const [saving, setSaving] = useState(false);
   const gate = useUploadGate(MAX_CONCURRENT_UPLOADS);
@@ -126,7 +142,7 @@ export default function TeamMembersSection({
   }, [applicationId, guestToken]);
 
   async function handleAdd() {
-    const issues = missingMemberFields(draft);
+    const issues = missingMemberFields(draft, photo);
     if (issues.length > 0) {
       setError(null);
       setAddIssues(issues);
@@ -144,9 +160,21 @@ export default function TeamMembersSection({
     setError(null);
     try {
       const { member } = await members.add(applicationId, draft, guestToken);
+      let photoDoc: SubmissionDocument;
+      try {
+        photoDoc = await memberDocuments.upload(applicationId, member.id, "APPLICANT_PHOTO", photo as File, {
+          guestToken,
+        });
+      } catch (uploadErr) {
+        // A member must never exist without a photo, so undo the add.
+        await members.remove(applicationId, member.id, guestToken).catch(() => {});
+        throw uploadErr;
+      }
       setList((prev) => [...prev, member]);
-      setMemberDocs((prev) => ({ ...prev, [member.id]: {} }));
+      setMemberDocs((prev) => ({ ...prev, [member.id]: { APPLICANT_PHOTO: photoDoc } }));
       setDraft({ fullName: "" });
+      setPhoto(null);
+      setPhotoInputKey((k) => k + 1);
     } catch (err) {
       if (err instanceof ApiError && err.errors.length > 0) {
         setAddIssues(err.errors.map((e) => e.message));
@@ -426,6 +454,17 @@ export default function TeamMembersSection({
             </FormField>
           ) : null}
 
+          <FormField label="Member Photo" required hint="JPEG, PNG, or WebP, up to 2MB">
+            <input
+              key={photoInputKey}
+              type="file"
+              accept={PHOTO_ACCEPT}
+              disabled={disabled}
+              onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+              className="block w-full text-sm text-navy-deep/70 file:mr-3 file:rounded-md file:border-0 file:bg-navy-deep file:px-4 file:py-2 file:text-xs file:font-bold file:uppercase file:tracking-wide file:text-white hover:file:bg-navy-deep/90"
+            />
+          </FormField>
+
           <div className="flex items-start gap-2 text-sm text-navy-deep">
             <input
               type="checkbox"
@@ -463,9 +502,6 @@ export default function TeamMembersSection({
           >
             {saving ? "Adding…" : "Add Member"}
           </button>
-          <p className="text-xs text-gray-400">
-              You'll be able to upload this member's photo right after adding them.
-          </p>
         </div>
       )}
     </section>

@@ -70,7 +70,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function DocStatus({ label, doc }: { label: string; doc?: { uploadStatus: string; originalFilename: string; fileSize: number } }) {
+function DocStatus({ label, doc, optional }: { label: string; doc?: { uploadStatus: string; originalFilename: string; fileSize: number }; optional?: boolean }) {
   const uploaded = doc?.uploadStatus === "UPLOADED";
   return (
     <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
@@ -79,6 +79,8 @@ function DocStatus({ label, doc }: { label: string; doc?: { uploadStatus: string
         <span className="text-xs font-semibold text-emerald-600">
           ✓ {doc!.originalFilename} ({Math.round(doc!.fileSize / 1024)} KB)
         </span>
+      ) : optional ? (
+        <span className="text-xs font-semibold text-gray-400">Not provided (optional)</span>
       ) : (
         <span className="text-xs font-semibold text-red-500">✗ Missing</span>
       )}
@@ -276,7 +278,12 @@ export default function AdminSubmissionDetail() {
           <h2 className="text-sm font-bold uppercase tracking-wide text-navy-deep">Documents</h2>
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
             {APPLICANT_DOC_TYPES.map((type) => (
-              <DocStatus key={type} label={APPLICANT_DOC_LABELS[type]} doc={docByType[type]} />
+              <DocStatus
+                key={type}
+                label={APPLICANT_DOC_LABELS[type]}
+                doc={docByType[type]}
+                optional={type === "APPLICANT_NID"}
+              />
             ))}
           </div>
         </section>
@@ -304,7 +311,6 @@ export default function AdminSubmissionDetail() {
                       : `Univ: ${m.university_name || "—"} (${m.university_verification_status})`}
                   </p>
                   <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <DocStatus label="NID / Passport" doc={memberDocsByMember[m.id]?.APPLICANT_NID} />
                     <DocStatus label="Member Photo" doc={memberDocsByMember[m.id]?.APPLICANT_PHOTO} />
                   </div>
                 </div>
