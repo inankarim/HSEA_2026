@@ -41,7 +41,7 @@ const CRITERIA_SETS: Record<CriteriaKey, { intro: string; items: CriteriaItem[] 
       "Projects must be physically located within Bangladesh.",
       {
         primary: "Real-world projects fully completed within the last 5 years",
-        or: "Ongoing projects that have reached at least ≥ 50% construction completion",
+        or: "Ongoing projects that have reached at least ≥ 20% construction completion",
       },
       "The project must be led by a full member of The Institution of Engineers, Bangladesh (IEB).",
       "The structural design and execution must strictly comply with the Bangladesh National Building Code (BNBC) and possess all necessary regulatory approvals.",
