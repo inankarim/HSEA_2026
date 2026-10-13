@@ -17,6 +17,21 @@ const applicantTypeEnum = z.enum(["IAB_MEMBER", "STUDENT"]);
 // like input in name fields at the validation layer.
 const namePattern = /^[\p{L}\p{M}][\p{L}\p{M}\s'.-]*$/u;
 
+// Draft email fields: a cleared box ("") means "not provided" and is stored
+// as NULL, instead of failing validation and blocking every later autosave.
+// Whether an email is required is decided at final submit, not here.
+const draftEmailSchema = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? null : value),
+  z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Enter a valid email address.")
+    .max(320)
+    .nullable()
+    .optional(),
+);
+
 /**
  * Fields a client may set when starting or updating a draft submission.
  * Deliberately excludes: id, application_id, user_id, status, created_at,
@@ -36,20 +51,14 @@ export const submissionDraftSchema = z
         message: "Name contains invalid characters.",
       })
       .optional(),
-    email: z.string().trim().toLowerCase().email().max(320).optional(),
+    email: draftEmailSchema,
     phone: bangladeshPhoneSchema.optional(),
     organization: z.string().trim().max(200).optional(),
     designation: z.string().trim().max(150).optional(),
     applicantIsTeamLeader: z.boolean().optional(),
     iabMembershipNumber: z.string().trim().max(50).optional(),
     universityName: z.string().trim().max(200).optional(),
-    universityEmail: z
-      .string()
-      .trim()
-      .toLowerCase()
-      .email()
-      .max(320)
-      .optional(),
+    universityEmail: draftEmailSchema,
 
     projectName: z.string().trim().max(250).optional(),
     projectCategory: z.string().trim().max(100).optional(),
@@ -59,7 +68,7 @@ export const submissionDraftSchema = z
     clientName: z.string().trim().max(200).optional(),
     clientAddress: z.string().trim().max(400).optional(),
     clientContactNumber: z.string().trim().max(30).optional(),
-    clientEmail: z.string().trim().toLowerCase().email().max(320).optional(),
+    clientEmail: draftEmailSchema,
     leadEngineer: z.string().trim().max(200).optional(),
     completionYear: z.number().int().min(1900).max(2100).nullable().optional(),
 

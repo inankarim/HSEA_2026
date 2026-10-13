@@ -52,6 +52,8 @@ const PROJECT_CATEGORY_OPTIONS = [
   "Visionary Design",
 ] as const;
 const MAX_CONCURRENT_UPLOADS = 3;
+const EMAIL_FIELDS = new Set<string>(["email", "universityEmail", "clientEmail"]);
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Draft = SubmissionDraftPatch;
 
@@ -134,6 +136,9 @@ export default function SubmissionPortal() {
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingPatch = useRef<Draft>({});
+  // Email fields currently holding an incomplete address; kept out of autosave
+  // so they can't block the rest of the draft from saving.
+  const invalidEmailFields = useRef<Set<string>>(new Set());
   const idempotencyKeyRef = useRef<string>(newIdempotencyKey());
 
   const docDefByType = useMemo(() => {
@@ -251,7 +256,9 @@ export default function SubmissionPortal() {
     try {
       const { submission: updated } = await submissions.updateDraft(applicationId, patch, guestToken);
       setSubmission(updated);
-      setFieldErrors({});
+      setFieldErrors((prev) =>
+        Object.fromEntries(Object.entries(prev).filter(([k]) => invalidEmailFields.current.has(k))),
+      );
       setSaveState("saved");
       setLastSavedAt(new Date());
       if (patch.universityEmail !== undefined) {
@@ -263,13 +270,23 @@ export default function SubmissionPortal() {
       } else {
         setSaveState("error");
       }
+      const retry: Draft = { ...patch };
       if (err instanceof ApiError && err.errors.length > 0) {
         const map: Record<string, string> = {};
-        for (const e of err.errors) if (e.field) map[e.field] = e.message;
+        for (const e of err.errors) {
+          if (!e.field) continue;
+          map[e.field] = e.message;
+          // The backend's email check is stricter than ours: treat a rejected
+          // email like one we caught ourselves, so it stops blocking autosave.
+          if (EMAIL_FIELDS.has(e.field)) {
+            invalidEmailFields.current.add(e.field);
+            delete retry[e.field as keyof Draft];
+          }
+        }
         setFieldErrors(map);
       }
       // Put the failed patch back so the next change or manual save retries it.
-      pendingPatch.current = { ...patch, ...pendingPatch.current };
+      pendingPatch.current = { ...retry, ...pendingPatch.current };
     }
   }, [applicationId, guestToken]);
 
@@ -281,6 +298,23 @@ export default function SubmissionPortal() {
 
   function update<K extends keyof Draft>(key: K, value: Draft[K]) {
     setDraft((prev) => ({ ...prev, [key]: value }));
+
+    if (EMAIL_FIELDS.has(key)) {
+      const typed = typeof value === "string" ? value.trim() : "";
+      if (typed && !EMAIL_REGEX.test(typed)) {
+        invalidEmailFields.current.add(key);
+        delete pendingPatch.current[key];
+        setFieldErrors((prev) => ({ ...prev, [key]: "Enter a valid email address." }));
+        return;
+      }
+      invalidEmailFields.current.delete(key);
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
+
     scheduleSave({ [key]: value } as Draft);
   }
 
@@ -452,6 +486,9 @@ const completedSections = useMemo(() => {
     const uploaded = (type: DocumentType) => existingDocuments[type]?.uploadStatus === "UPLOADED";
 
     // Applicant
+    if (invalidEmailFields.current.has("email")) issues.push("Applicant: enter a valid email address.");
+    if (invalidEmailFields.current.has("universityEmail")) issues.push("Applicant: enter a valid university email address.");
+    if (invalidEmailFields.current.has("clientEmail")) issues.push("Project: enter a valid client email, or leave it empty.");
     if (!draft.fullName?.trim()) issues.push("Applicant: enter your full name.");
     if (!draft.email?.trim()) issues.push("Applicant: enter your email.");
     if (draft.applicantType === "IAB_MEMBER") {
@@ -967,7 +1004,7 @@ const completedSections = useMemo(() => {
                     <FormField label="Contact Number">
                       <input type="tel" maxLength={LIMITS.clientContactNumber} className={inputClasses} value={draft.clientContactNumber || ""} onChange={(e) => update("clientContactNumber", e.target.value)} />
                     </FormField>
-                    <FormField label="Email">
+                    <FormField label="Email" error={fieldErrors.clientEmail}>
                       <input type="email" maxLength={LIMITS.email} className={inputClasses} value={draft.clientEmail || ""} onChange={(e) => update("clientEmail", e.target.value)} />
                     </FormField>
                     <FormField label="Address">
