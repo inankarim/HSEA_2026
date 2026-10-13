@@ -50,7 +50,7 @@ export const loginLimiter = buildLimiter({
 
 export const registerLimiter = buildLimiter({
   windowMs: 60 * 60 * 1000,
-  max: 10,
+  max: 30,
   message:
     "Too many registration attempts from this connection. Please try again later.",
 });
