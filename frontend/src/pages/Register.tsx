@@ -52,6 +52,7 @@ export default function Register() {
   const [form, setForm] = useState<FormState>(INITIAL);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorItems, setErrorItems] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -62,6 +63,7 @@ export default function Register() {
     e.preventDefault();
     setSubmitting(true);
     setError(null);
+    setErrorItems([]);
     setFieldErrors({});
     try {
       // registerSchema is .strict() — only send the fields the applicant type needs.
@@ -82,11 +84,18 @@ export default function Register() {
       navigate(redirectTo, { replace: true });
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message);
         if (err.errors.length > 0) {
+          // A field can fail several rules at once (e.g. password), so keep them all.
           const map: Record<string, string> = {};
-          for (const e2 of err.errors) if (e2.field) map[e2.field] = e2.message;
+          for (const e2 of err.errors) {
+            if (!e2.field) continue;
+            map[e2.field] = map[e2.field] ? `${map[e2.field]} ${e2.message}` : e2.message;
+          }
           setFieldErrors(map);
+          setError("Please fix the following and try again:");
+          setErrorItems([...new Set(err.errors.map((e2) => e2.message))]);
+        } else {
+          setError(err.message);
         }
       } else {
         setError("Something went wrong. Please try again.");
@@ -179,7 +188,7 @@ export default function Register() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <FormField label="Phone" hint="Bangladesh number, e.g. 01XXXXXXXXX">
+              <FormField label="Phone" hint="Bangladesh number, e.g. 01XXXXXXXXX" error={fieldErrors.phone}>
                 <input
                   type="tel"
                   maxLength={LIMITS.phone}
@@ -191,7 +200,7 @@ export default function Register() {
                   onChange={(e) => set("phone", e.target.value)}
                 />
               </FormField>
-              <FormField label="Organization">
+              <FormField label="Organization" error={fieldErrors.organization}>
                 <input
                   maxLength={LIMITS.organization}
                   className={inputClasses}
@@ -201,7 +210,7 @@ export default function Register() {
               </FormField>
             </div>
 
-            <FormField label="Designation">
+            <FormField label="Designation" error={fieldErrors.designation}>
               <input
                 maxLength={LIMITS.designation}
                 className={inputClasses}
@@ -249,9 +258,16 @@ export default function Register() {
             )}
 
             {error && (
-              <p className="text-sm font-semibold text-red-600" role="alert">
-                {error}
-              </p>
+              <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
+                <p className="font-semibold">{error}</p>
+                {errorItems.length > 0 && (
+                  <ul className="mt-2 list-disc space-y-1 pl-5">
+                    {errorItems.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             )}
 
             <motion.button

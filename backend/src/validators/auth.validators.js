@@ -59,7 +59,7 @@ export const bangladeshPhoneSchema = z
 export const registerSchema = z
   .object({
     fullName: nameSchema,
-    email: z.string().trim().toLowerCase().email().max(320),
+    email: z.string().trim().toLowerCase().email("Please enter a valid email address.").max(320),
     password: strongPasswordSchema,
     phone: bangladeshPhoneSchema.optional(),
     organization: z.string().trim().max(200).optional(),
@@ -67,7 +67,13 @@ export const registerSchema = z
     applicantType: applicantTypeEnum,
     iabMembershipNumber: z.string().trim().max(50).optional(),
     universityName: z.string().trim().max(200).optional(),
-    universityEmail: z.string().trim().toLowerCase().email().max(320).optional(),
+    universityEmail: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email("Please enter a valid university email address.")
+      .max(320)
+      .optional(),
   })
   .strict()
   .superRefine((data, ctx) => {
@@ -75,7 +81,7 @@ export const registerSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["iabMembershipNumber"],
-        message: "IAB membership number is required for IAB members.",
+        message: "IEB membership number is required for IEB members.",
       });
     }
     if (data.applicantType === "STUDENT") {
