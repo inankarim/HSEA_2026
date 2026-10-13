@@ -44,7 +44,7 @@ const PHOTO_ACCEPT = acceptAttrFor("image");
 
 function photoProblem(file: File): string | null {
   if (!PHOTO_ACCEPT.split(",").includes(file.type)) return "Choose a JPEG, PNG, or WebP photo.";
-  if (file.size > MAX_DOCUMENT_SIZE_BYTES) return "That photo is too large. Maximum size is 2MB.";
+  if (file.size > MAX_DOCUMENT_SIZE_BYTES) return "That photo is too large. Maximum size is 5MB.";
   return null;
 }
 
@@ -454,7 +454,7 @@ export default function TeamMembersSection({
             </FormField>
           ) : null}
 
-          <FormField label="Member Photo" required hint="JPEG, PNG, or WebP, up to 2MB">
+          <FormField label="Member Photo" required hint="JPEG, PNG, or WebP, up to 5MB">
             <input
               key={photoInputKey}
               type="file"

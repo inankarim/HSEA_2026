@@ -8,10 +8,10 @@ import { useAuth } from "../context/AuthContext";
 import { ApiError, profile, resolveMediaUrl, submissions } from "../lib/api";
 import type { Submission, SubmissionStatus } from "../types/Submission";
 
-// Mirrors the backend's 2MB ceiling (see pictureUpload.service.js). This
+// Mirrors the backend's 5MB ceiling (see pictureUpload.service.js). This
 // is only a fast, friendly pre-check — the backend is always the final
 // authority on what's actually accepted.
-const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -152,7 +152,7 @@ export default function Profile() {
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
-      setPhotoError("That photo is too large. Maximum size is 2MB.");
+      setPhotoError("That photo is too large. Maximum size is 5MB.");
       return;
     }
 
@@ -247,7 +247,7 @@ export default function Profile() {
             </div>
 
             <div className="shrink-0 sm:text-right">
-              <p className="text-xs text-gray-400">JPEG, PNG, or WebP, up to 2MB.</p>
+              <p className="text-xs text-gray-400">JPEG, PNG, or WebP, up to 5MB.</p>
               {photoError && (
                 <p className="mt-1 text-xs font-semibold text-red-600" role="alert">
                   {photoError}

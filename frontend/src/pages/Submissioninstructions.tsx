@@ -17,7 +17,7 @@ const PROCESS_STEPS = [
   {
     n: "02",
     title: "Fill & Upload",
-    body: "Complete the online form and upload most of your project documents directly here — executive summary, project description, design demonstration, drawings, authorization forms, and identification — each as a PDF under 2MB.",
+    body: "Complete the online form and upload most of your project documents directly here — executive summary, project description, design demonstration, drawings, authorization forms, and identification — each as a PDF under 5MB.",
   },
   {
     n: "03",
@@ -35,7 +35,7 @@ const REQUIREMENT_GROUPS = [
   {
     channel: "Uploaded directly in the portal",
     title: "Project Presentation",
-    items: ["Maximum 2 A0 sheets", "Landscape format", "Combined into one PDF, min. 300 DPI", "PDF upload, max 2MB"],
+    items: ["Maximum 2 A0 sheets", "Landscape format", "Combined into one PDF, min. 300 DPI", "PDF upload, max 5MB"],
   },
   {
     channel: "Uploaded directly in the portal",
@@ -53,9 +53,9 @@ const REQUIREMENT_GROUPS = [
     channel: "Uploaded directly in the portal",
     title: "Drawings & Authorizations",
     items: [
-      "Architectural drawings (PDF, max 2MB)",
-      "Client / Owner Authorization Form (PDF, max 2MB)",
-      "Sustainability Metrics / CO₂ Reduction Support (PDF, max 2MB)",
+      "Architectural drawings (PDF, max 5MB)",
+      "Client / Owner Authorization Form (PDF, max 5MB)",
+      "Sustainability Metrics / CO₂ Reduction Support (PDF, max 5MB)",
     ],
   },
   {
@@ -63,7 +63,7 @@ const REQUIREMENT_GROUPS = [
     title: "Applicant & Team Documents",
     items: [
       "IEB membership number, or university name & email",
-      "Photograph for every team member (max 2MB each)",
+      "Photograph for every team member (max 5MB each)",
     ],
   },
   {
@@ -91,7 +91,7 @@ const CHECKLIST = [
   "IEB membership number, or a university email",
   "Project information",
   "Team member details, with a photo for each",
-  "Project documents ready to upload directly (PDF, under 2MB each)",
+  "Project documents ready to upload directly (PDF, under 5MB each)",
   "Photographs, structural drawings, CAD and CDR files ready for Google Drive",
   "Your Google Drive folder, already created and shared",
   "Google Drive files renamed to the required convention",

@@ -237,7 +237,7 @@ export const auth = {
 
 // --- profile ---------------------------------------------------------------
 
-const PROFILE_PHOTO_MAX_BYTES = 2 * 1024 * 1024; // 2MB — mirrors the backend
+const PROFILE_PHOTO_MAX_BYTES = 5 * 1024 * 1024; // 5MB — mirrors the backend
 // limit. This is a fast, friendly client-side pre-check only; the backend
 // (multer + pictureUpload.service.js) is always the source of truth.
 
@@ -264,7 +264,7 @@ export const profile = {
     }
     if (file.size > PROFILE_PHOTO_MAX_BYTES) {
       return Promise.reject(
-        new ApiError("That photo is too large. Maximum size is 2MB.", 0),
+        new ApiError("That photo is too large. Maximum size is 5MB.", 0),
       );
     }
     const formData = new FormData();

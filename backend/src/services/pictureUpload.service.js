@@ -20,7 +20,7 @@ import { env } from "../config/env.js";
  *   1. Route-level rate limiting (see `profilePhotoUploadLimiter` in
  *      middleware/rateLimit.middleware.js).
  *   2. multer rejects anything outside the JPEG/PNG/WebP allowlist and
- *      anything over 2MB before the body is fully buffered.
+ *      anything over 5MB before the body is fully buffered.
  *   3. This service re-checks size and magic bytes on the raw buffer —
  *      a client-supplied mimetype is never trusted alone.
  *   4. The buffer is fully DECODED and RE-ENCODED through sharp. This is
@@ -40,7 +40,7 @@ import { env } from "../config/env.js";
  *      original filename — eliminating path traversal / overwrite risk.
  */
 
-const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB — re-checked here on purpose.
+const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB — re-checked here on purpose.
 const MAX_DIMENSION = 4096;
 const MIN_DIMENSION = 64;
 const OUTPUT_DIMENSION = 512; // square avatar; generous for any UI size
@@ -90,7 +90,7 @@ function detectFormat(buffer) {
     throw new ApiError("The uploaded file is empty.", 422);
   }
   if (buffer.length > MAX_SIZE_BYTES) {
-    throw new ApiError("File is too large. Maximum size is 2MB.", 413);
+    throw new ApiError("File is too large. Maximum size is 5MB.", 413);
   }
   const match = SIGNATURES.find((s) => s.test(buffer));
   if (!match) {

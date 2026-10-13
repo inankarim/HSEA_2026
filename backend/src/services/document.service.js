@@ -256,9 +256,9 @@ async function uploadDocumentInternal({
     }
     // Also enforced by multer's `limits.fileSize`, checked again here in
     // case a caller ever constructs `file` outside that middleware.
-    if (stat.size > 2 * 1024 * 1024) {
+    if (stat.size > 5 * 1024 * 1024) {
       await safeDiscardTemp(file);
-      throw new ApiError("File is too large. Maximum size is 2MB.", 413);
+      throw new ApiError("File is too large. Maximum size is 5MB.", 413);
     }
 
     if (!allowedMimes.includes(file.mimetype)) {

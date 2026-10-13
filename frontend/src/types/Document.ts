@@ -134,7 +134,7 @@ export const MEMBER_DOCUMENT_TYPE_DEFS: {
   },
 ];
 
-export const MAX_DOCUMENT_SIZE_BYTES = 2 * 1024 * 1024;
+export const MAX_DOCUMENT_SIZE_BYTES = 5 * 1024 * 1024;
 
 export function acceptAttrFor(kind: DocumentKind): string {
   if (kind === "pdf") return "application/pdf";

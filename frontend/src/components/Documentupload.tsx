@@ -59,7 +59,7 @@ export default function DocumentUpload({
 
   function validateLocally(file: File): string | null {
     if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
-      return "That file is too large. Maximum size is 2MB.";
+      return "That file is too large. Maximum size is 5MB.";
     }
     const allowed = acceptAttrFor(kind).split(",");
     if (!allowed.includes(file.type)) {
@@ -136,7 +136,7 @@ export default function DocumentUpload({
           {label}
           {required && <span className="ml-1 text-accent-cyan">*</span>}
         </span>
-        <span className="shrink-0 whitespace-nowrap text-[11px] font-medium text-navy-deep/40">Max 2MB</span>
+        <span className="shrink-0 whitespace-nowrap text-[11px] font-medium text-navy-deep/40">Max 5MB</span>
       </div>
 
       <div className="mt-2.5">

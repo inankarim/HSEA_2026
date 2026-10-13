@@ -36,7 +36,7 @@ export default function DocumentsSection({
         Supporting Documents
       </h2>
       <p className="text-sm leading-relaxed text-gray-600">
-        Upload these remaining supporting documents. Each file must be under 2MB. You can
+        Upload these remaining supporting documents. Each file must be under 5MB. You can
         replace a file any time before you submit.
       </p>
 

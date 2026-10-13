@@ -15,7 +15,7 @@ import { logger } from "../utils/logger.js";
  *   1. Route-level rate limiting (see middleware/rateLimit.middleware.js —
  *      `pdfUploadLimiter`) caps how often any one user/IP can call this.
  *   2. multer (middleware/upload.middleware.js) rejects non-"application/pdf"
- *      Content-Type and anything over 2MB before the body is even buffered.
+ *      Content-Type and anything over 5MB before the body is even buffered.
  *   3. This service re-validates size AND inspects the actual bytes: a
  *      client-supplied mimetype/extension is never trusted on its own.
  *   4. The file is never written to disk under a client-supplied name —
@@ -27,7 +27,7 @@ import { logger } from "../utils/logger.js";
  *      first filter, not a guarantee.
  */
 
-const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB — re-checked here on purpose.
+const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB — re-checked here on purpose.
 
 const PDF_MAGIC = Buffer.from("%PDF-", "ascii");
 
@@ -53,7 +53,7 @@ function assertValidPdfBuffer(buffer) {
     throw new ApiError("The uploaded file is empty.", 422);
   }
   if (buffer.length > MAX_SIZE_BYTES) {
-    throw new ApiError("File is too large. Maximum size is 2MB.", 413);
+    throw new ApiError("File is too large. Maximum size is 5MB.", 413);
   }
   if (!buffer.subarray(0, 5).equals(PDF_MAGIC)) {
     throw new ApiError(

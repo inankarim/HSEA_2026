@@ -6,8 +6,8 @@ import { MAX_DOCUMENT_SIZE_BYTES } from "../config/documentType.js";
 
 /**
  * Deliberately NOT multer.memoryStorage(). Applicant documents are
- * capped at 2MB each, but at ~1,000 concurrent applicants near the
- * deadline, memoryStorage would mean up to ~2GB of request bodies live
+ * capped at 5MB each, but at ~1,000 concurrent applicants near the
+ * deadline, memoryStorage would mean up to ~5GB of request bodies live
  * in the Node.js heap simultaneously in the worst case, plus GC p ressure
  * from all those buffers. diskStorage streams the multipart body
  * straight to a temp file on STORAGE_TEMP_DIR as it arrives — Node's
@@ -47,7 +47,7 @@ export const receiveDocumentUpload = (req, res) =>
       if (err instanceof ApiError) return reject(err);
       if (err.code === "LIMIT_FILE_SIZE") {
         return reject(
-          new ApiError("File is too large. Maximum size is 2MB.", 413),
+          new ApiError("File is too large. Maximum size is 5MB.", 413),
         );
       }
       if (

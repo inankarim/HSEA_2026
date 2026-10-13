@@ -4,7 +4,7 @@ import { ApiError } from "./error.middleware.js";
 // Hard ceiling enforced at the very first layer a file passes through.
 // Both upload services re-check this again on the raw buffer — never
 // trust that every caller went through this exact middleware chain.
-export const UPLOAD_MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+export const UPLOAD_MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
 const ALLOWED_PICTURE_MIME_TYPES = [
   "image/jpeg",
@@ -61,7 +61,7 @@ function wrapSingle(multerInstance, fieldName) {
         if (err instanceof ApiError) return reject(err);
         if (err.code === "LIMIT_FILE_SIZE") {
           return reject(
-            new ApiError("File is too large. Maximum size is 2MB.", 413),
+            new ApiError("File is too large. Maximum size is 5MB.", 413),
           );
         }
         if (
