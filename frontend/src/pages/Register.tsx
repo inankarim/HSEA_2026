@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -54,6 +54,7 @@ export default function Register() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [errorItems, setErrorItems] = useState<string[]>([]);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -65,6 +66,7 @@ export default function Register() {
     setSubmitting(true);
     setError(null);
     setErrorItems([]);
+    setAlreadyRegistered(false);
     setFieldErrors({});
     try {
       // registerSchema is .strict() — only send the fields the applicant type needs.
@@ -85,7 +87,10 @@ export default function Register() {
       navigate(redirectTo, { replace: true });
     } catch (err) {
       if (err instanceof ApiError) {
-        if (err.errors.length > 0) {
+        if (err.status === 409) {
+          setAlreadyRegistered(true);
+          setError("It looks like an account with this email already exists.");
+        } else if (err.errors.length > 0) {
           // A field can fail several rules at once (e.g. password), so keep them all.
           const map: Record<string, string> = {};
           for (const e2 of err.errors) {
@@ -265,6 +270,18 @@ export default function Register() {
                       <li key={item}>{item}</li>
                     ))}
                   </ul>
+                )}
+                {alreadyRegistered && (
+                  <p className="mt-2">
+                    <Link
+                      to="/login"
+                      state={{ from: redirectTo }}
+                      className="font-semibold text-navy-deep underline hover:text-navy-deep/80"
+                    >
+                      Sign in instead
+                    </Link>
+                    . If you don't remember your password, use "Forgot password?" on the sign-in page.
+                  </p>
                 )}
               </div>
             )}

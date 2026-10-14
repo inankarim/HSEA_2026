@@ -30,11 +30,11 @@ import memberDocumentRoutes from "./memberDocument.routes.js";
 
 const router = Router();
 
-// optionalAuth: a logged-in applicant gets user_id attached automatically;
-// a guest proceeds without an account.
+// Only signed-in applicants can start a submission (the website sends
+// visitors to Register first), so no anonymous empty drafts get created.
 router.post(
   "/start",
-  optionalAuth,
+  requireAuth,
   startSubmissionLimiter,
   validate(guestStartSubmissionSchema),
   start,
