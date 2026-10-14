@@ -39,7 +39,7 @@ async function jsonRequest<T>(
     });
   } catch {
     throw new ApiError(
-      "Couldn't reach the server. Check your connection and try again.",
+      "Couldn't connect to the server. Please check your internet connection and try again. If you opened this link inside Facebook, Messenger or WhatsApp, try opening it in Chrome or Safari instead.",
       0,
     );
   }
@@ -93,7 +93,7 @@ function xhrUpload<T>(
     xhr.onerror = () => {
       reject(
         new ApiError(
-          "Couldn't reach the server. Check your connection and try again.",
+          "Couldn't connect to the server. Please check your internet connection and try again. If you opened this link inside Facebook, Messenger or WhatsApp, try opening it in Chrome or Safari instead.",
           0,
         ),
       );

@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import FadeIn from "../components/FadeIn";
 import FormField, { inputClasses } from "../components/Formfield";
+import PasswordInput from "../components/PasswordInput";
 import { ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { auth } from "../lib/api";
@@ -69,12 +70,10 @@ export default function Login() {
             </FormField>
 
             <FormField label="Password" required htmlFor="login-password">
-              <input
+              <PasswordInput
                 id="login-password"
-                type="password"
                 required
                 autoComplete="current-password"
-                className={inputClasses}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />

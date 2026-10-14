@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import FadeIn from "../components/FadeIn";
 import FormField, { inputClasses } from "../components/Formfield";
+import PasswordInput from "../components/PasswordInput";
 import { ApiError, auth } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { ApplicantType } from "../types/Submission";
@@ -175,12 +176,10 @@ export default function Register() {
                 hint="Min 10 characters, with upper/lowercase letters, a number, and a symbol"
                 error={fieldErrors.password}
               >
-                <input
-                  type="password"
+                <PasswordInput
                   required
                   minLength={10}
                   autoComplete="new-password"
-                  className={inputClasses}
                   value={form.password}
                   onChange={(e) => set("password", e.target.value)}
                 />

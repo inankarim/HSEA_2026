@@ -139,7 +139,7 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
     });
   } catch (err) {
     throw new ApiError(
-      "Couldn't reach the server. Check your connection and try again.",
+      "Couldn't connect to the server. Please check your internet connection and try again. If you opened this link inside Facebook, Messenger or WhatsApp, try opening it in Chrome or Safari instead.",
       0,
     );
   }
@@ -179,7 +179,7 @@ async function uploadRequest<T>(path: string, formData: FormData): Promise<T> {
     });
   } catch {
     throw new ApiError(
-      "Couldn't reach the server. Check your connection and try again.",
+      "Couldn't connect to the server. Please check your internet connection and try again. If you opened this link inside Facebook, Messenger or WhatsApp, try opening it in Chrome or Safari instead.",
       0,
     );
   }
