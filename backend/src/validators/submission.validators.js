@@ -84,10 +84,11 @@ export const submissionDraftSchema = z
 
     googleDriveUrl: z
       .string()
+      .trim()
       .max(2048)
       .refine(isValidGoogleDriveFolderUrl, {
         message:
-          "Google Drive URL must look like https://drive.google.com/drive/folders/...",
+          "Please paste your Google Drive folder link. It should look like https://drive.google.com/drive/folders/...",
       })
       .optional(),
 

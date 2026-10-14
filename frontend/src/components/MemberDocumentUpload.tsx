@@ -5,6 +5,7 @@ import { ApiError } from "../lib/api";
 import {
   MAX_DOCUMENT_SIZE_BYTES,
   acceptAttrFor,
+  isAcceptedFile,
   type DocumentKind,
   type DocumentUiState,
   type MemberDocumentType,
@@ -54,10 +55,9 @@ export default function MemberDocumentUpload({
 
   function validateLocally(file: File): string | null {
     if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
-      return "That file is too large. Maximum size is 5MB.";
+      return "That file is too large. Please upload a smaller file.";
     }
-    const allowed = acceptAttrFor(kind).split(",");
-    if (!allowed.includes(file.type)) {
+    if (!isAcceptedFile(file, kind)) {
       return kind === "image"
         ? "Please choose a JPEG, PNG, or WebP file."
         : kind === "pdf"
@@ -137,7 +137,6 @@ export default function MemberDocumentUpload({
           {label}
           {required && <span className="ml-1 text-accent-cyan">*</span>}
         </span>
-        <span className="shrink-0 whitespace-nowrap text-[11px] font-medium text-navy-deep/40">Max 5MB</span>
       </div>
 
       <div>

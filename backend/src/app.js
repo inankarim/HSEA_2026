@@ -79,10 +79,11 @@ export function createApp() {
   // treated as failed rather than tying up a worker indefinitely.
   // NOTE: document upload/download routes set their own longer timeout
   // (see routes/document.routes.js callers / reverse-proxy config in
-  // HANDOFF.md) since a slow applicant connection uploading a 5MB file
+  // HANDOFF.md) since a slow applicant connection uploading a 100MB file
   // legitimately needs more than 15s.
   app.use((req, res, next) => {
-    if (req.path.includes("/documents")) return next();
+    // Uploads can be large on slow connections, so they skip this timeout.
+    if (req.path.includes("/documents") || req.path === "/api/profile/photo") return next();
     res.setTimeout(15_000, () => {
       logger.warn("Request timed out", {
         requestId: req.requestId,

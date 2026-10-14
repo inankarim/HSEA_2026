@@ -5,7 +5,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import FadeIn from "../components/FadeIn";
 import SubmissionProgress from "../components/SubmissionProgress";
-import SaveStatus, { type SaveState } from "../components/SaveStatus";
+import SaveStatus, { SaveProblemBanner, type SaveState } from "../components/SaveStatus";
 import VerificationBadge from "../components/Verificationbadge";
 import FormField, { inputClasses, textareaClasses } from "../components/Formfield";
 import DocumentUploadField from "../components/DocumentUploadField";
@@ -291,6 +291,13 @@ export default function SubmissionPortal() {
       pendingPatch.current = { ...retry, ...pendingPatch.current };
     }
   }, [applicationId, guestToken]);
+
+  // While saving is failing, keep retrying in the background.
+  useEffect(() => {
+    if (saveState !== "error" && saveState !== "offline") return;
+    const timer = setInterval(() => flushSave(), 15_000);
+    return () => clearInterval(timer);
+  }, [saveState, flushSave]);
 
   function scheduleSave(patch: Draft) {
     pendingPatch.current = { ...pendingPatch.current, ...patch };
@@ -734,6 +741,8 @@ const completedSections = useMemo(() => {
           </div>
         </div>
       </div>
+
+      <SaveProblemBanner state={saveState} onRetry={saveNow} />
 
       <div className="mx-auto max-w-6xl px-6 py-10 grid grid-cols-1 md:grid-cols-[220px_1fr] gap-10">
         <SubmissionProgress
@@ -1244,6 +1253,41 @@ const completedSections = useMemo(() => {
                   </ul>
                   <p className="text-xs text-navy-deep/60 leading-relaxed mt-3">
                     Follow the naming convention shown below when saving files to your folder.
+                  </p>
+                </div>
+
+                <div className="rounded-xl border border-navy-deep/10 bg-white p-5">
+                  <h3 className="text-sm font-bold uppercase tracking-wide text-navy-deep">
+                    How to get your Google Drive folder link
+                  </h3>
+                  <p className="mt-3 text-xs font-bold uppercase tracking-wide text-navy-deep/60">On a computer</p>
+                  <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-gray-700">
+                    <li>
+                      Open{" "}
+                      <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-navy-deep underline">
+                        drive.google.com
+                      </a>{" "}
+                      and find your project folder.
+                    </li>
+                    <li>Right-click the folder and choose <span className="font-semibold">Share</span>, then <span className="font-semibold">Share</span> again.</li>
+                    <li>
+                      Under <span className="font-semibold">General access</span>, change "Restricted" to{" "}
+                      <span className="font-semibold">Anyone with the link</span>, and keep the role as <span className="font-semibold">Viewer</span>.
+                    </li>
+                    <li>Click <span className="font-semibold">Copy link</span>, then <span className="font-semibold">Done</span>.</li>
+                    <li>Paste the link in the box below.</li>
+                  </ol>
+                  <p className="mt-4 text-xs font-bold uppercase tracking-wide text-navy-deep/60">On a phone (Google Drive app)</p>
+                  <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm text-gray-700">
+                    <li>Tap the <span className="font-semibold">⋮</span> (three dots) next to your project folder.</li>
+                    <li>Tap <span className="font-semibold">Share</span>, then <span className="font-semibold">Manage access</span>.</li>
+                    <li>Under <span className="font-semibold">General access</span>, choose <span className="font-semibold">Anyone with the link</span> (Viewer).</li>
+                    <li>Tap <span className="font-semibold">Copy link</span> and paste it below.</li>
+                  </ol>
+                  <p className="mt-4 rounded-lg bg-navy-deep/5 px-3 py-2 text-xs text-gray-600">
+                    Your link should look like{" "}
+                    <span className="font-mono text-navy-deep">https://drive.google.com/drive/folders/…</span>
+                    . Share the <span className="font-semibold">whole folder</span>, not a single file.
                   </p>
                 </div>
 

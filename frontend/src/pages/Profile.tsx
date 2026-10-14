@@ -1,3 +1,4 @@
+import { isAcceptedFile } from "../types/Document";
 import { useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,10 +9,10 @@ import { useAuth } from "../context/AuthContext";
 import { ApiError, profile, resolveMediaUrl, submissions } from "../lib/api";
 import type { Submission, SubmissionStatus } from "../types/Submission";
 
-// Mirrors the backend's 5MB ceiling (see pictureUpload.service.js). This
+// Mirrors the backend's 100MB ceiling (see pictureUpload.service.js). This
 // is only a fast, friendly pre-check — the backend is always the final
 // authority on what's actually accepted.
-const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const MAX_PHOTO_BYTES = 100 * 1024 * 1024;
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -144,15 +145,13 @@ export default function Profile() {
 
     setPhotoError(null);
 
-    const isAcceptedType = ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
-      file.type
-    );
+    const isAcceptedType = isAcceptedFile(file, "image");
     if (!isAcceptedType) {
       setPhotoError("Please choose a JPEG, PNG, or WebP photo.");
       return;
     }
     if (file.size > MAX_PHOTO_BYTES) {
-      setPhotoError("That photo is too large. Maximum size is 5MB.");
+      setPhotoError("That photo is too large. Please upload a smaller photo.");
       return;
     }
 
@@ -247,7 +246,7 @@ export default function Profile() {
             </div>
 
             <div className="shrink-0 sm:text-right">
-              <p className="text-xs text-gray-400">JPEG, PNG, or WebP, up to 5MB.</p>
+              <p className="text-xs text-gray-400">JPEG, PNG, or WebP.</p>
               {photoError && (
                 <p className="mt-1 text-xs font-semibold text-red-600" role="alert">
                   {photoError}

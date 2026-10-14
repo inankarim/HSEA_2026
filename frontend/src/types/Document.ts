@@ -134,12 +134,32 @@ export const MEMBER_DOCUMENT_TYPE_DEFS: {
   },
 ];
 
-export const MAX_DOCUMENT_SIZE_BYTES = 5 * 1024 * 1024;
+export const MAX_DOCUMENT_SIZE_BYTES = 100 * 1024 * 1024;
 
+const KIND_MIME_TYPES: Record<DocumentKind, string[]> = {
+  pdf: ["application/pdf"],
+  image: ["image/jpeg", "image/png", "image/webp"],
+  pdf_or_image: ["application/pdf", "image/jpeg", "image/png", "image/webp"],
+};
+
+const KIND_EXTENSIONS: Record<DocumentKind, string[]> = {
+  pdf: [".pdf"],
+  image: [".jpg", ".jpeg", ".png", ".webp"],
+  pdf_or_image: [".pdf", ".jpg", ".jpeg", ".png", ".webp"],
+};
+
+// Extensions are listed too, so file pickers still show PDFs/photos that a
+// phone or Windows labels with a generic type.
 export function acceptAttrFor(kind: DocumentKind): string {
-  if (kind === "pdf") return "application/pdf";
-  if (kind === "image") return "image/jpeg,image/png,image/webp";
-  return "application/pdf,image/jpeg,image/png,image/webp";
+  return [...KIND_MIME_TYPES[kind], ...KIND_EXTENSIONS[kind]].join(",");
+}
+
+// Accept by reported type OR by file extension; the server checks the
+// actual contents either way.
+export function isAcceptedFile(file: File, kind: DocumentKind): boolean {
+  if (KIND_MIME_TYPES[kind].includes(file.type)) return true;
+  const name = file.name.toLowerCase();
+  return KIND_EXTENSIONS[kind].some((ext) => name.endsWith(ext));
 }
 
 export interface SubmissionDocument {

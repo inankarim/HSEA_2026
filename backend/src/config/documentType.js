@@ -43,7 +43,7 @@
  *   - COVERING_LETTER (NEW) follows the exact same either/or pattern.
  */
 
-export const MAX_DOCUMENT_SIZE_BYTES = 5 * 1024 * 1024; // 5MB, hard backend limit
+export const MAX_DOCUMENT_SIZE_BYTES = 100 * 1024 * 1024; // 100MB, hard backend limit
 
 const PDF_MIME_TYPES = ["application/pdf"];
 const IMAGE_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];

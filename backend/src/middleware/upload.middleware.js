@@ -4,7 +4,7 @@ import { ApiError } from "./error.middleware.js";
 // Hard ceiling enforced at the very first layer a file passes through.
 // Both upload services re-check this again on the raw buffer — never
 // trust that every caller went through this exact middleware chain.
-export const UPLOAD_MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+export const UPLOAD_MAX_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
 
 const ALLOWED_PICTURE_MIME_TYPES = [
   "image/jpeg",
@@ -13,9 +13,13 @@ const ALLOWED_PICTURE_MIME_TYPES = [
   "image/webp",
 ];
 
+// Real files often arrive with a generic type from phones/Windows; the
+// upload services verify the actual contents, so these are allowed through.
+const GENERIC_MIME_TYPES = ["application/octet-stream", "binary/octet-stream", ""];
+
 function fileFilterFor(allowedMimeTypes) {
   return (req, file, cb) => {
-    if (!allowedMimeTypes.includes(file.mimetype)) {
+    if (!allowedMimeTypes.includes(file.mimetype) && !GENERIC_MIME_TYPES.includes(file.mimetype)) {
       // Passing an ApiError here means multer surfaces it as-is via the
       // callback below, instead of a generic multer error we'd have to
       // re-interpret.
@@ -61,7 +65,7 @@ function wrapSingle(multerInstance, fieldName) {
         if (err instanceof ApiError) return reject(err);
         if (err.code === "LIMIT_FILE_SIZE") {
           return reject(
-            new ApiError("File is too large. Maximum size is 5MB.", 413),
+            new ApiError("File is too large. Please upload a smaller file.", 413),
           );
         }
         if (

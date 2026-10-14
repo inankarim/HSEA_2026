@@ -3,7 +3,7 @@ import FormField, { inputClasses } from "./Formfield";
 import MemberDocumentUpload from "./MemberDocumentUpload";
 import { members, ApiError } from "../lib/api";
 import { memberDocuments } from "../lib/Documents";
-import { MEMBER_DOCUMENT_TYPE_DEFS, MAX_DOCUMENT_SIZE_BYTES, acceptAttrFor } from "../types/Document";
+import { MEMBER_DOCUMENT_TYPE_DEFS, MAX_DOCUMENT_SIZE_BYTES, acceptAttrFor, isAcceptedFile } from "../types/Document";
 import type { SubmissionMember, MemberInput } from "../types/Submission";
 import type { SubmissionDocument } from "../types/Document";
 import { NAME_PATTERN, NAME_TITLE, LIMITS, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
@@ -43,8 +43,8 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHOTO_ACCEPT = acceptAttrFor("image");
 
 function photoProblem(file: File): string | null {
-  if (!PHOTO_ACCEPT.split(",").includes(file.type)) return "Choose a JPEG, PNG, or WebP photo.";
-  if (file.size > MAX_DOCUMENT_SIZE_BYTES) return "That photo is too large. Maximum size is 5MB.";
+  if (!isAcceptedFile(file, "image")) return "Choose a JPEG, PNG, or WebP photo.";
+  if (file.size > MAX_DOCUMENT_SIZE_BYTES) return "That photo is too large. Please upload a smaller photo.";
   return null;
 }
 
@@ -454,7 +454,7 @@ export default function TeamMembersSection({
             </FormField>
           ) : null}
 
-          <FormField label="Member Photo" required hint="JPEG, PNG, or WebP, up to 5MB">
+          <FormField label="Member Photo" required hint="JPEG, PNG, or WebP">
             <input
               key={photoInputKey}
               type="file"

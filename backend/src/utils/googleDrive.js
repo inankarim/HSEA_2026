@@ -7,8 +7,10 @@
  * format-validates the URL the applicant pastes in.
  */
 
+// "/u/<n>/" appears when the link is copied from the address bar while
+// signed in to more than one Google account — still a valid folder link.
 const DRIVE_URL_PATTERN =
-  /^https:\/\/drive\.google\.com\/drive\/folders\/[a-zA-Z0-9_-]+(\?.*)?$/;
+  /^https:\/\/drive\.google\.com\/drive\/(u\/\d+\/)?folders\/[a-zA-Z0-9_-]+(\?.*)?$/;
 
 // Some applicants paste a "shared link" style URL instead of the folder
 // URL — accept the common variant too rather than rejecting valid links.

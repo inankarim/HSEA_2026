@@ -69,12 +69,14 @@ async function readBytes(filePath, start, length) {
  * whole file, so this stays cheap even under concurrent load.
  */
 async function detectAndValidateSignature(tempPath, def) {
-  const head = await readBytes(tempPath, 0, 16);
+  const head = await readBytes(tempPath, 0, 1024);
 
   if (def.kind === "pdf" || def.kind === "pdf_or_image") {
-    if (head.subarray(0, 5).equals(PDF_MAGIC)) {
+    // PDF readers accept a header anywhere in the first 1KB and junk after
+    // %%EOF (common from scanner/phone apps), so be as tolerant here.
+    if (head.indexOf(PDF_MAGIC) !== -1) {
       const stat = await fsp.stat(tempPath);
-      const tailLen = Math.min(2048, stat.size);
+      const tailLen = Math.min(1024 * 1024, stat.size);
       const tail = await readBytes(
         tempPath,
         Math.max(0, stat.size - tailLen),
@@ -256,18 +258,15 @@ async function uploadDocumentInternal({
     }
     // Also enforced by multer's `limits.fileSize`, checked again here in
     // case a caller ever constructs `file` outside that middleware.
-    if (stat.size > 5 * 1024 * 1024) {
+    if (stat.size > 100 * 1024 * 1024) {
       await safeDiscardTemp(file);
-      throw new ApiError("File is too large. Maximum size is 5MB.", 413);
+      throw new ApiError("File is too large. Please upload a smaller file.", 413);
     }
 
-    if (!allowedMimes.includes(file.mimetype)) {
-      await safeDiscardTemp(file);
-      throw new ApiError(
-        `Only ${allowedMimes.join(", ")} files are accepted for this document.`,
-        422,
-      );
-    }
+    // The browser-reported type is unreliable (phones and Windows often send
+    // "application/octet-stream" or "application/x-pdf" for real PDFs), so
+    // the file's actual contents decide — see detectAndValidateSignature().
+    void allowedMimes;
 
     let signature;
     try {

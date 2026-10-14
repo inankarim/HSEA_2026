@@ -20,6 +20,15 @@ test("accepts a Drive folder URL with query params", () => {
   );
 });
 
+test("accepts a folder URL copied while signed in to several Google accounts", () => {
+  assert.equal(
+    isValidGoogleDriveFolderUrl(
+      "https://drive.google.com/drive/u/1/folders/1AbCdEfGhIjKlMnOpQrSt"
+    ),
+    true
+  );
+});
+
 test("rejects non-Drive URLs", () => {
   assert.equal(isValidGoogleDriveFolderUrl("https://dropbox.com/s/xyz"), false);
   assert.equal(isValidGoogleDriveFolderUrl("not a url"), false);

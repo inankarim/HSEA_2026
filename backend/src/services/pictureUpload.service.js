@@ -20,7 +20,7 @@ import { env } from "../config/env.js";
  *   1. Route-level rate limiting (see `profilePhotoUploadLimiter` in
  *      middleware/rateLimit.middleware.js).
  *   2. multer rejects anything outside the JPEG/PNG/WebP allowlist and
- *      anything over 5MB before the body is fully buffered.
+ *      anything over 100MB before the body is fully buffered.
  *   3. This service re-checks size and magic bytes on the raw buffer —
  *      a client-supplied mimetype is never trusted alone.
  *   4. The buffer is fully DECODED and RE-ENCODED through sharp. This is
@@ -40,7 +40,7 @@ import { env } from "../config/env.js";
  *      original filename — eliminating path traversal / overwrite risk.
  */
 
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB — re-checked here on purpose.
+const MAX_SIZE_BYTES = 100 * 1024 * 1024; // 100MB — re-checked here on purpose.
 const MAX_DIMENSION = 4096;
 const MIN_DIMENSION = 64;
 const OUTPUT_DIMENSION = 512; // square avatar; generous for any UI size
@@ -90,7 +90,7 @@ function detectFormat(buffer) {
     throw new ApiError("The uploaded file is empty.", 422);
   }
   if (buffer.length > MAX_SIZE_BYTES) {
-    throw new ApiError("File is too large. Maximum size is 5MB.", 413);
+    throw new ApiError("File is too large. Please upload a smaller file.", 413);
   }
   const match = SIGNATURES.find((s) => s.test(buffer));
   if (!match) {
@@ -114,9 +114,9 @@ export async function storeImageUpload(
   if (!file || !file.buffer) {
     throw new ApiError("No photo was uploaded.", 422);
   }
-  if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-    throw new ApiError("Only JPEG, PNG, or WebP photos are accepted.", 422);
-  }
+  // The reported type is only a hint (phones often send a generic one);
+  // detectFormat() + the sharp decode below check the real contents.
+  void ALLOWED_MIME_TYPES;
 
   const detectedFormat = detectFormat(file.buffer);
 
