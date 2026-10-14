@@ -1,4 +1,4 @@
-import { ApiError } from "./api";
+import { ApiError, SESSION_EXPIRED_MESSAGE, fetchWithSessionRetry, refreshSession } from "./api";
 import type { DocumentType, MemberDocumentType, SubmissionDocument } from "../types/Document";
 
 // Mirrors the BASE_URL / envelope conventions in lib/api.ts exactly —
@@ -31,12 +31,13 @@ async function jsonRequest<T>(
   if (wireMethod !== realMethod) headers["X-HTTP-Method-Override"] = realMethod;
 
   let response: Response;
+  let sessionExpired: boolean;
   try {
-    response = await fetch(`${BASE_URL}${path}`, {
+    ({ response, sessionExpired } = await fetchWithSessionRetry(path, {
       method: wireMethod,
       credentials: "include",
       headers,
-    });
+    }));
   } catch {
     throw new ApiError(
       "Couldn't connect to the server. Please check your internet connection and try again. If you opened this link inside Facebook, Messenger or WhatsApp, try opening it in Chrome or Safari instead.",
@@ -50,6 +51,8 @@ async function jsonRequest<T>(
   } catch {
     // handled by the check below
   }
+
+  if (sessionExpired) throw new ApiError(SESSION_EXPIRED_MESSAGE, 401);
 
   if (!response.ok || !json || json.success === false) {
     const message =
@@ -67,7 +70,27 @@ async function jsonRequest<T>(
  * `memberDocuments.upload`) so progress events, envelope handling, and
  * guest-token headers stay identical between the two.
  */
-function xhrUpload<T>(
+// Uploads with the same renew-once-and-retry behaviour as fetchWithSessionRetry.
+async function xhrUpload<T>(
+  url: string,
+  file: File,
+  opts: {
+    guestToken?: string | null;
+    onProgress?: (fraction: number) => void;
+    signal?: AbortSignal;
+  },
+): Promise<T> {
+  try {
+    return await xhrUploadOnce<T>(url, file, opts);
+  } catch (err) {
+    if (!(err instanceof ApiError) || (err.status !== 401 && err.status !== 403)) throw err;
+    if (!(await refreshSession())) throw new ApiError(SESSION_EXPIRED_MESSAGE, 401);
+    opts.onProgress?.(0);
+    return xhrUploadOnce<T>(url, file, opts);
+  }
+}
+
+function xhrUploadOnce<T>(
   url: string,
   file: File,
   opts: {

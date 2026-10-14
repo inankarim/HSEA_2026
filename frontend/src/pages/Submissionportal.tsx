@@ -267,6 +267,8 @@ export default function SubmissionPortal() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 0) {
         setSaveState("offline");
+      } else if (err instanceof ApiError && err.status === 401) {
+        setSaveState("expired");
       } else {
         setSaveState("error");
       }

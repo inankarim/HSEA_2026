@@ -92,6 +92,46 @@ export function clearGuestAccessToken(applicationId: string) {
   }
 }
 
+// --- session renewal ------------------------------------------------------
+//
+// The access cookie expires after ~15 minutes; the refresh cookie lasts much
+// longer. When a request is rejected as unauthenticated (401) or — because
+// submission routes treat an expired token as "no user" — forbidden (403),
+// renew the access cookie once and retry the request. Concurrent failures
+// share one renewal call.
+
+export const SESSION_EXPIRED_MESSAGE =
+  "Your session has expired. Please sign in again to continue.";
+
+const NO_RENEW_PATHS = ["/api/auth/login", "/api/auth/register", "/api/auth/refresh", "/api/auth/logout"];
+
+let renewal: Promise<boolean> | null = null;
+
+export function refreshSession(): Promise<boolean> {
+  if (!renewal) {
+    renewal = fetch(`${BASE_URL}/api/auth/refresh`, { method: "POST", credentials: "include" })
+      .then((r) => r.ok)
+      .catch(() => false)
+      .finally(() => {
+        renewal = null;
+      });
+  }
+  return renewal;
+}
+
+export async function fetchWithSessionRetry(
+  path: string,
+  init: RequestInit,
+): Promise<{ response: Response; sessionExpired: boolean }> {
+  const url = `${BASE_URL}${path}`;
+  const response = await fetch(url, init);
+  if ((response.status === 401 || response.status === 403) && !NO_RENEW_PATHS.some((p) => path.startsWith(p))) {
+    if (await refreshSession()) return { response: await fetch(url, init), sessionExpired: false };
+    return { response, sessionExpired: true };
+  }
+  return { response, sessionExpired: false };
+}
+
 // --- low-level request helper -------------------------------------------
 
 type RequestOptions = {
@@ -129,15 +169,16 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   }
 
   let response: Response;
+  let sessionExpired: boolean;
   try {
-    response = await fetch(`${BASE_URL}${path}`, {
+    ({ response, sessionExpired } = await fetchWithSessionRetry(path, {
       method: wireMethod,
       credentials: "include",
       headers,
       body,
       signal: opts.signal,
-    });
-  } catch (err) {
+    }));
+  } catch {
     throw new ApiError(
       "Couldn't connect to the server. Please check your internet connection and try again. If you opened this link inside Facebook, Messenger or WhatsApp, try opening it in Chrome or Safari instead.",
       0,
@@ -152,6 +193,8 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
     // No JSON body (e.g. a 503 from the timeout middleware could still be JSON,
     // but be defensive regardless).
   }
+
+  if (sessionExpired) throw new ApiError(SESSION_EXPIRED_MESSAGE, 401);
 
   if (!response.ok || !json || json.success === false) {
     const message =
@@ -171,12 +214,13 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
  */
 async function uploadRequest<T>(path: string, formData: FormData): Promise<T> {
   let response: Response;
+  let sessionExpired: boolean;
   try {
-    response = await fetch(`${BASE_URL}${path}`, {
+    ({ response, sessionExpired } = await fetchWithSessionRetry(path, {
       method: "POST",
       credentials: "include",
       body: formData,
-    });
+    }));
   } catch {
     throw new ApiError(
       "Couldn't connect to the server. Please check your internet connection and try again. If you opened this link inside Facebook, Messenger or WhatsApp, try opening it in Chrome or Safari instead.",
@@ -191,6 +235,8 @@ async function uploadRequest<T>(path: string, formData: FormData): Promise<T> {
   } catch {
     // no-op — handled by the !json check below
   }
+
+  if (sessionExpired) throw new ApiError(SESSION_EXPIRED_MESSAGE, 401);
 
   if (!response.ok || !json || json.success === false) {
     const message =

@@ -48,6 +48,14 @@ export const loginLimiter = buildLimiter({
   message: "Too many login attempts. Please try again in a few minutes.",
 });
 
+// Session renewal runs automatically every ~15 minutes per signed-in user,
+// so it needs far more headroom than login on shared office/campus IPs.
+export const refreshLimiter = buildLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  message: "Too many session refresh attempts. Please sign in again.",
+});
+
 export const registerLimiter = buildLimiter({
   windowMs: 60 * 60 * 1000,
   max: 30,
