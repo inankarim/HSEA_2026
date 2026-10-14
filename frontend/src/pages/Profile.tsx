@@ -187,7 +187,7 @@ export default function Profile() {
     ["Phone", user.phone],
     ["Organization", user.organization],
     ["Designation", user.designation],
-    ["Applicant Type", user.applicantType === "IAB_MEMBER" ? "IAB Member" : "Student"],
+    ["Applicant Type", user.applicantType === "IAB_MEMBER" ? "IEB Member" : "Student"],
   ];
   const fieldRows = chunk(fields, 2);
 

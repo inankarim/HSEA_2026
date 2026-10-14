@@ -224,7 +224,7 @@ function buildTextSummary(s, members) {
     `Application ID: ${s.application_id}`,
     `Status: ${s.status}`,
     `Applicant: ${s.full_name} <${s.email}> (${s.phone || "no phone"})`,
-    `Applicant Type: ${s.applicant_type}`,
+    `Applicant Type: ${s.applicant_type === "IAB_MEMBER" ? "IEB Member" : "Student"}`,
     s.applicant_type === "IAB_MEMBER"
       ? `IEB Membership: ${s.iab_membership_number || "—"} (${s.iab_verification_status})`
       : `University: ${s.university_name || "—"} <${s.university_email || "—"}> (${s.university_verification_status})`,
