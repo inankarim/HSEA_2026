@@ -66,7 +66,7 @@ export const DOCUMENT_TYPE_DEFS: DocumentTypeDef[] = [
     type: "OWNER_AUTHORIZATION",
     label: "Client / Owner Authorization Form(PDF)",
     kind: "pdf",
-    required: true,
+    required: false,
     optionalForCategories: ["Visionary Design"],
   },
   {
@@ -88,7 +88,7 @@ export const DOCUMENT_TYPE_DEFS: DocumentTypeDef[] = [
     type: "SUSTAINABILITY_METRICS",
     label: "Sustainability Metrics / CO\u2082 Reduction Support",
     kind: "pdf",
-    required: true,
+    required: false,
   },
   {
     type: "PROJECT_DESCRIPTION",
@@ -108,7 +108,7 @@ export const DOCUMENT_TYPE_DEFS: DocumentTypeDef[] = [
     type: "ARCHITECTURAL_DRAWINGS",
     label: "Architectural Drawings",
     kind: "pdf",
-    required: true,
+    required: false,
   },
   {
     type: "COVERING_LETTER",
@@ -130,7 +130,7 @@ export const MEMBER_DOCUMENT_TYPE_DEFS: {
     type: "APPLICANT_PHOTO",
     label: "Member Photo",
     kind: "image",
-    required: true,
+    required: false,
   },
 ];
 

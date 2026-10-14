@@ -67,8 +67,7 @@ function missingMemberFields(d: MemberInput, photo: File | null): string[] {
     if (!d.universityEmail?.trim()) issues.push("Enter the university email.");
     else if (!EMAIL_REGEX.test(d.universityEmail.trim())) issues.push("Enter a valid university email.");
   }
-  if (!photo) issues.push("Upload the member's photo.");
-  else {
+  if (photo) {
     const problem = photoProblem(photo);
     if (problem) issues.push(problem);
   }
@@ -160,18 +159,18 @@ export default function TeamMembersSection({
     setError(null);
     try {
       const { member } = await members.add(applicationId, draft, guestToken);
-      let photoDoc: SubmissionDocument;
-      try {
-        photoDoc = await memberDocuments.upload(applicationId, member.id, "APPLICANT_PHOTO", photo as File, {
-          guestToken,
-        });
-      } catch (uploadErr) {
-        // A member must never exist without a photo, so undo the add.
-        await members.remove(applicationId, member.id, guestToken).catch(() => {});
-        throw uploadErr;
-      }
       setList((prev) => [...prev, member]);
-      setMemberDocs((prev) => ({ ...prev, [member.id]: { APPLICANT_PHOTO: photoDoc } }));
+      setMemberDocs((prev) => ({ ...prev, [member.id]: {} }));
+      if (photo) {
+        try {
+          const photoDoc = await memberDocuments.upload(applicationId, member.id, "APPLICANT_PHOTO", photo, {
+            guestToken,
+          });
+          setMemberDocs((prev) => ({ ...prev, [member.id]: { APPLICANT_PHOTO: photoDoc } }));
+        } catch {
+          setError("The member was added, but their photo didn't upload. You can upload it on their card below.");
+        }
+      }
       setDraft({ fullName: "" });
       setPhoto(null);
       setPhotoInputKey((k) => k + 1);
@@ -228,7 +227,7 @@ export default function TeamMembersSection({
       <h2 className="text-2xl font-bold uppercase tracking-wide text-navy-deep">Team Members</h2>
       <p className="text-sm text-gray-600">
        Add additional team members (up to 5 total, including you as the team leader). For each
-        member, every field below and a photo are required.
+        member, fill in the details below and add their photo.
       </p>
 
       {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
@@ -454,7 +453,7 @@ export default function TeamMembersSection({
             </FormField>
           ) : null}
 
-          <FormField label="Member Photo" required hint="JPEG, PNG, or WebP">
+          <FormField label="Member Photo" hint="JPEG, PNG, or WebP">
             <input
               key={photoInputKey}
               type="file"
@@ -502,6 +501,12 @@ export default function TeamMembersSection({
           >
             {saving ? "Adding…" : "Add Member"}
           </button>
+          {saving && photo && (
+            <p className="flex items-start gap-1.5 text-xs font-bold text-red-600" role="alert">
+              <span aria-hidden>⚠</span>
+              Don't switch tabs, minimise the browser or close this page until the photo finishes uploading, or the upload may fail.
+            </p>
+          )}
         </div>
       )}
     </section>

@@ -1,7 +1,9 @@
 import { useEffect, useRef, Suspense, lazy } from "react";
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import { trackPixelEvent } from "./lib/pixel";
+import { SESSION_EXPIRED_EVENT } from "./lib/api";
+import { useAuth } from "./context/AuthContext";
 
 // --- Public site pages: lazy-loaded, each becomes its own chunk ---
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -48,6 +50,27 @@ function usePageViews() {
   }, [location]);
 }
 
+// Pages that need a signed-in user; if the session can't be renewed there,
+// send the user to Sign In and bring them back afterwards.
+const SIGNED_IN_PAGES = ["/submission/", "/profile", "/submit"];
+
+function useSessionExpiryRedirect() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { refresh } = useAuth();
+
+  useEffect(() => {
+    function onExpired() {
+      const path = location.pathname;
+      if (!SIGNED_IN_PAGES.some((p) => path.startsWith(p))) return;
+      refresh();
+      navigate("/login", { state: { from: path, reason: "expired" }, replace: true });
+    }
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+  }, [navigate, location.pathname, refresh]);
+}
+
 function PageFallback() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-white">
@@ -60,6 +83,7 @@ function PageFallback() {
 
 function App() {
   usePageViews();
+  useSessionExpiryRedirect();
 
   return (
     <>

@@ -44,8 +44,8 @@ export default function DocumentUploadField({
       {def.orTextField && (
         <p className="mt-1.5 text-[11px] text-navy-deep/40">
           {satisfiedByText
-            ? "Satisfied by the text you entered — uploading a file here is optional and will be used instead."
-            : "Optional if you've already filled in the text field above."}
+            ? "You've typed this above. Uploading a PDF here will be used instead."
+            : "You can type this in the box above or upload a PDF here."}
         </p>
       )}
     </div>

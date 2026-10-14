@@ -94,7 +94,7 @@ export const DOCUMENT_TYPES = {
   OWNER_AUTHORIZATION: {
     label: "Client / Owner Authorization Form",
     kind: "pdf",
-    required: true,
+    required: false,
     // Next Generation entries have no real client, so no authorization.
     optionalForCategories: ["Visionary Design"],
   },
@@ -114,7 +114,7 @@ export const DOCUMENT_TYPES = {
   SUSTAINABILITY_METRICS: {
     label: "Sustainability Metrics / CO\u2082 Reduction Support",
     kind: "pdf",
-    required: true,
+    required: false,
   },
   PROJECT_DESCRIPTION: {
     label: "Project Description (PDF)",
@@ -131,7 +131,7 @@ export const DOCUMENT_TYPES = {
   ARCHITECTURAL_DRAWINGS: {
     label: "Architectural Drawings",
     kind: "pdf",
-    required: true,
+    required: false,
   },
   COVERING_LETTER: {
     label: "Covering Letter (PDF)",
@@ -155,7 +155,7 @@ export const MEMBER_DOCUMENT_TYPES = {
   APPLICANT_PHOTO: {
     label: "Member Photo",
     kind: "image",
-    required: true,
+    required: false,
   },
 };
 

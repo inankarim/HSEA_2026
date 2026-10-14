@@ -107,6 +107,13 @@ const NO_RENEW_PATHS = ["/api/auth/login", "/api/auth/register", "/api/auth/refr
 
 let renewal: Promise<boolean> | null = null;
 
+export const SESSION_EXPIRED_EVENT = "hsea:session-expired";
+
+// Lets the app send the user to Sign In when their session can't be renewed.
+export function notifySessionExpired() {
+  window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+}
+
 export function refreshSession(): Promise<boolean> {
   if (!renewal) {
     renewal = fetch(`${BASE_URL}/api/auth/refresh`, { method: "POST", credentials: "include" })
@@ -127,6 +134,9 @@ export async function fetchWithSessionRetry(
   const response = await fetch(url, init);
   if ((response.status === 401 || response.status === 403) && !NO_RENEW_PATHS.some((p) => path.startsWith(p))) {
     if (await refreshSession()) return { response: await fetch(url, init), sessionExpired: false };
+    // /api/auth/me runs on every page load, including for visitors who were
+    // never signed in, so it must not trigger the redirect.
+    if (!path.startsWith("/api/auth/me")) notifySessionExpired();
     return { response, sessionExpired: true };
   }
   return { response, sessionExpired: false };

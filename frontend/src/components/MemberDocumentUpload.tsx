@@ -173,6 +173,10 @@ export default function MemberDocumentUpload({
             <p className="mt-1 text-[11px] font-semibold text-navy-deep/60">
               Uploading… {Math.round(progress * 100)}%
             </p>
+            <p className="mt-1.5 flex items-start gap-1.5 text-xs font-bold text-red-600" role="alert">
+              <span aria-hidden>⚠</span>
+              Don't switch tabs, minimise the browser or close this page until the upload finishes, or the upload may fail.
+            </p>
           </div>
         )}
 

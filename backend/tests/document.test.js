@@ -61,20 +61,8 @@ describe("documentTypes registry", () => {
     assert.ok(conditional.includes("PROJECT_DESCRIPTION"));
   });
 
-  test("NID/photos/drawings are unconditionally required", () => {
-    const required = requiredDocumentTypes();
-    for (const key of [
-      "APPLICANT_NID",
-      "APPLICANT_PHOTO",
-      "ENGINEER_PHOTO",
-      "OWNER_AUTHORIZATION",
-      "DESIGN_DEMONSTRATION",
-      "SUSTAINABILITY_METRICS",
-      "EXECUTIVE_SUMMARY",
-      "ARCHITECTURAL_DRAWINGS",
-    ]) {
-      assert.ok(required.includes(key), `${key} should be required`);
-    }
+  test("only the applicant photo is unconditionally required", () => {
+    assert.deepEqual(requiredDocumentTypes(), ["APPLICANT_PHOTO"]);
   });
 });
 

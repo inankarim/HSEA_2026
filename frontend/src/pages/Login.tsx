@@ -22,6 +22,7 @@ export default function Login() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const redirectTo = (location.state as { from?: string } | null)?.from || "/submit";
+  const sessionExpired = (location.state as { reason?: string } | null)?.reason === "expired";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,6 +56,16 @@ export default function Login() {
           <p className="mt-2 text-sm text-gray-600">
             Sign in to pick up a submission you already started, or check your entry status.
           </p>
+
+          {sessionExpired && (
+            <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700" role="alert">
+              <p className="font-bold">Your session has expired.</p>
+              <p className="mt-1">
+                Please sign in again to continue. You'll go straight back to where you were, and
+                everything already saved is kept.
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <FormField label="Email" required htmlFor="login-email">

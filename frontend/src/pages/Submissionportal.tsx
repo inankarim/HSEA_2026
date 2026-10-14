@@ -17,7 +17,7 @@ import {
   members,
   newIdempotencyKey,
 } from "../lib/api";
-import { documents, memberDocuments } from "../lib/Documents";
+import { documents } from "../lib/Documents";
 import { trackPixelEvent } from "../lib/pixel";
 import { NAME_PATTERN, NAME_TITLE, LIMITS, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_OPTIONS, COMPLETION_YEAR_RULE_CATEGORIES, completionYearRange, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
 import { useUploadGate } from "../lib/useUploadGate";
@@ -108,9 +108,6 @@ export default function SubmissionPortal() {
   const [draft, setDraft] = useState<Draft>({});
   const [guestToken, setGuestToken] = useState<string | null>(null);
   const [teamMembers, setTeamMembers] = useState<SubmissionMember[]>([]);
-  // IDs of team members with an uploaded photo; null until loaded (then the
-  // pre-submit check skips photos and the backend's check still applies).
-  const [membersWithPhoto, setMembersWithPhoto] = useState<Set<string> | null>(null);
 
   const [activeSection, setActiveSection] = useState<SectionId>("applicant");
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -218,18 +215,6 @@ export default function SubmissionPortal() {
           const result = await members.list(applicationId, guestToken);
           if (!cancelled) {
             setTeamMembers(result.members);
-          }
-          const withPhoto = await Promise.all(
-            result.members.map(async (m) => {
-              const { documents: docs } = await memberDocuments.list(applicationId, m.id, guestToken);
-              const hasPhoto = docs.some(
-                (d) => d.documentType === "APPLICANT_PHOTO" && d.uploadStatus === "UPLOADED",
-              );
-              return hasPhoto ? m.id : null;
-            }),
-          );
-          if (!cancelled) {
-            setMembersWithPhoto(new Set(withPhoto.filter((id): id is string => id !== null)));
           }
         } catch (err) {
           console.warn("Failed to reload team members:", err);
@@ -527,7 +512,6 @@ const completedSections = useMemo(() => {
     }
     if (clientInfoRequired) {
       if (!draft.clientName?.trim()) issues.push("Project: enter the client name.");
-      if (!uploaded("OWNER_AUTHORIZATION")) issues.push("Project: upload the Client / Owner Authorization Form (PDF).");
     }
 
     // Team
@@ -549,43 +533,16 @@ const completedSections = useMemo(() => {
           `Team Members: "${m.fullName}" is missing ${gaps.join(", ")}. Remove and re-add them with all details.`,
         );
       }
-      if (membersWithPhoto && !membersWithPhoto.has(m.id)) {
-        issues.push(
-          `Team Members: position ${m.position || "?"} member "${m.fullName}" — upload their photo.`,
-        );
-      }
     }
 
-    // Project Description — either text or uploaded PDF
-    if (!draft.executiveSummary?.trim() && !uploaded("EXECUTIVE_SUMMARY")) {
-      issues.push("Project Description: add an executive summary, as text or a PDF.");
-    }
-    if (!draft.projectDescription?.trim() && !uploaded("PROJECT_DESCRIPTION")) {
-      issues.push("Project Description: add a project description, as text or a PDF.");
-    } else if (
+    // Project description, covering letter, technical information, Google
+    // Drive link and the supporting PDFs are optional; only the word limit applies.
+    if (
       draft.projectDescription?.trim() &&
       countWords(draft.projectDescription) > PROJECT_DESCRIPTION_WORD_LIMIT
     ) {
       issues.push(`Project Description: shorten the project description to ${PROJECT_DESCRIPTION_WORD_LIMIT} words or fewer.`);
     }
-    if (!draft.coveringLetter?.trim() && !uploaded("COVERING_LETTER")) {
-      issues.push("Project Description: add a covering letter, as text or a PDF.");
-    }
-
-    // Technical Information
-    if (!draft.designDemonstration?.trim() && !uploaded("DESIGN_DEMONSTRATION")) {
-      issues.push("Technical Information: add a design demonstration, as text or a PDF.");
-    }
-    if (clientInfoRequired && !draft.costing?.trim() && !uploaded("COSTING")) {
-      issues.push("Technical Information: add costing, as text or a PDF.");
-    }
-
-    // Google Drive
-    if (!draft.googleDriveUrl?.trim()) issues.push("Google Drive: add your Google Drive folder link.");
-
-    // Documents
-    if (!uploaded("SUSTAINABILITY_METRICS")) issues.push("Documents: upload the Sustainability Metrics / CO₂ Reduction Support PDF.");
-    if (!uploaded("ARCHITECTURAL_DRAWINGS")) issues.push("Documents: upload the Architectural Drawings PDF.");
 
     // Declaration
     if (!draft.informationConfirmed) issues.push("Declaration: confirm your information is accurate.");
@@ -726,15 +683,16 @@ const completedSections = useMemo(() => {
         <Header />
       </div>
 
-      {/* Portal header */}
-      <div className="border-b border-gray-200 bg-gray-50">
-        <div className="mx-auto max-w-6xl px-6 py-6 flex flex-wrap items-center justify-between gap-4">
+      {/* Portal header — pinned so the save status stays visible while scrolling */}
+      <div className="sticky top-0 z-40 shadow-sm">
+      <div className="border-b border-gray-200 bg-gray-50/95 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-6 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-bold uppercase tracking-wide text-navy-deep/50">Application</p>
             <p className="font-mono text-xl font-bold text-navy-deep">{submission.applicationId}</p>
           </div>
           <div className="flex items-center gap-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-navy-deep/50">
+            <p className="hidden text-xs font-semibold uppercase tracking-wide text-navy-deep/50 sm:block">
               {isAuthenticated && user ? `Signed in as ${user.fullName}` : "Guest session"}
             </p>
             <SaveStatus state={saveState} lastSavedAt={lastSavedAt} />
@@ -743,6 +701,7 @@ const completedSections = useMemo(() => {
       </div>
 
       <SaveProblemBanner state={saveState} onRetry={saveNow} />
+      </div>
 
       <div className="mx-auto max-w-6xl px-6 py-10 grid grid-cols-1 md:grid-cols-[220px_1fr] gap-10">
         <SubmissionProgress
@@ -1096,7 +1055,7 @@ const completedSections = useMemo(() => {
                   />
 
                   {/* MOVED HERE — Covering Letter, same either/or pattern as Costing */}
-                  <FormField label="Covering Letter" hint="Required: type it here or upload a PDF below">
+                  <FormField label="Covering Letter" hint="Type it here or upload a PDF below">
                     <textarea
                       maxLength={LIMITS.longText}
                       className={textareaClasses}
@@ -1161,11 +1120,7 @@ const completedSections = useMemo(() => {
                   </FormField>
                   <FormField
                     label="Costing"
-                    hint={
-                      clientInfoRequired
-                        ? "Required: type it here or upload a PDF below"
-                        : "Optional for Visionary Design"
-                    }
+                    hint="Type it here or upload a PDF below"
                   >
                     <textarea
                       maxLength={LIMITS.longText}
@@ -1293,7 +1248,6 @@ const completedSections = useMemo(() => {
 
                 <FormField
                   label="Google Drive Folder Link"
-                  required
                   error={fieldErrors.googleDriveUrl}
                 >
                   <input

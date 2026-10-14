@@ -26,6 +26,9 @@
 html,
 body {
   overflow-x: hidden;
+  /* clip (unlike hidden) doesn't turn the page into a scroll container, so
+     position: sticky elements like the submission save bar keep working. */
+  overflow-x: clip;
   -webkit-tap-highlight-color: transparent;
 }
 

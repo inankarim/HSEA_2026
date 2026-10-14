@@ -9,7 +9,6 @@ import { logger } from "../utils/logger.js";
 // bottom of finalizeSubmission().
 import {
   requiredDocumentTypes,
-  conditionallyRequiredDocumentTypes,
   requiredMemberDocumentTypes,
   DOCUMENT_TYPES,
   MEMBER_DOCUMENT_TYPES,
@@ -614,7 +613,6 @@ const REQUIRED_COMMON_FIELDS = {
   email: "Applicant email",
   project_name: "Project name",
   project_category: "Project category",
-  google_drive_url: "Google Drive folder link",
 };
 
 // Categories 1 & 2 (practicing engineers) eligibility: the project must be
@@ -724,17 +722,8 @@ async function getMissingDocumentDescriptions(client, applicationId, row) {
     }
   }
 
-  for (const type of conditionallyRequiredDocumentTypes()) {
-    const def = DOCUMENT_TYPES[type];
-    if (def.optionalForCategories?.includes(row.project_category)) continue;
-    const textColumn = CAMEL_TO_COLUMN[def.orTextField] || def.orTextField;
-    const textSatisfied = Boolean(row[textColumn]);
-    if (!uploadedTypes.has(type) && !textSatisfied) {
-      missing.push(
-        `${def.label} must be provided as either text or an uploaded file`,
-      );
-    }
-  }
+  // The text-or-PDF items (executive summary, project description, covering
+  // letter, design demonstration, costing) are optional for every category.
 
   return missing;
 }

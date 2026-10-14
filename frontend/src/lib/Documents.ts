@@ -1,4 +1,4 @@
-import { ApiError, SESSION_EXPIRED_MESSAGE, fetchWithSessionRetry, refreshSession } from "./api";
+import { ApiError, SESSION_EXPIRED_MESSAGE, fetchWithSessionRetry, notifySessionExpired, refreshSession } from "./api";
 import type { DocumentType, MemberDocumentType, SubmissionDocument } from "../types/Document";
 
 // Mirrors the BASE_URL / envelope conventions in lib/api.ts exactly —
@@ -84,7 +84,10 @@ async function xhrUpload<T>(
     return await xhrUploadOnce<T>(url, file, opts);
   } catch (err) {
     if (!(err instanceof ApiError) || (err.status !== 401 && err.status !== 403)) throw err;
-    if (!(await refreshSession())) throw new ApiError(SESSION_EXPIRED_MESSAGE, 401);
+    if (!(await refreshSession())) {
+      notifySessionExpired();
+      throw new ApiError(SESSION_EXPIRED_MESSAGE, 401);
+    }
     opts.onProgress?.(0);
     return xhrUploadOnce<T>(url, file, opts);
   }

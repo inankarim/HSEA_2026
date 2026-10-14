@@ -21,22 +21,22 @@ export default function SaveStatus({
 }) {
   const location = useLocation();
   const config: Record<SaveState, { label: string; dot: string; text: string }> = {
-    idle: { label: "No changes yet", dot: "bg-gray-300", text: "text-gray-400" },
-    saving: { label: "Saving…", dot: "bg-accent-cyan animate-pulse", text: "text-navy-deep/70" },
+    idle: { label: "No changes yet", dot: "bg-gray-400", text: "bg-gray-100 text-gray-600 ring-gray-200" },
+    saving: { label: "Saving…", dot: "bg-sky-500 animate-pulse", text: "bg-sky-50 text-sky-800 ring-sky-200" },
     saved: {
-      label: lastSavedAt ? `Saved · ${relativeTime(lastSavedAt)}` : "Saved",
+      label: lastSavedAt ? `All changes saved · ${relativeTime(lastSavedAt)}` : "All changes saved",
       dot: "bg-emerald-500",
-      text: "text-navy-deep/70",
+      text: "bg-emerald-50 text-emerald-800 ring-emerald-200",
     },
-    error: { label: "Not saved — retrying", dot: "bg-red-600", text: "rounded-full bg-red-100 px-3 py-1 text-sm font-bold text-red-700" },
-    offline: { label: "Offline — not saved yet", dot: "bg-amber-500", text: "rounded-full bg-amber-100 px-3 py-1 text-sm font-bold text-amber-800" },
-    expired: { label: "Session expired — not saving.", dot: "bg-red-600", text: "rounded-full bg-red-100 px-3 py-1 text-sm font-bold text-red-700" },
+    error: { label: "Not saved — retrying", dot: "bg-red-600 animate-pulse", text: "bg-red-100 text-red-800 ring-red-300" },
+    offline: { label: "Offline — not saved yet", dot: "bg-amber-500 animate-pulse", text: "bg-amber-100 text-amber-900 ring-amber-300" },
+    expired: { label: "Session expired — not saving", dot: "bg-red-600", text: "bg-red-100 text-red-800 ring-red-300" },
   };
 
   const c = config[state];
 
   return (
-    <div className="flex items-center gap-2 text-xs font-medium">
+    <div className="flex items-center" aria-live="polite">
       <AnimatePresence mode="wait">
         <motion.div
           key={state}
@@ -44,9 +44,9 @@ export default function SaveStatus({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -2 }}
           transition={{ duration: 0.2 }}
-          className={`flex items-center gap-2 ${c.text}`}
+          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ring-1 ${c.text}`}
         >
-          <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
+          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${c.dot}`} />
           {c.label}
           {state === "expired" && (
             <Link to="/login" state={{ from: location.pathname }} className="font-bold underline">
@@ -83,7 +83,7 @@ export function SaveProblemBanner({ state, onRetry }: { state: SaveState; onRetr
           };
 
   return (
-    <div role="alert" className="sticky top-0 z-40 border-b-2 border-red-300 bg-red-50">
+    <div role="alert" className="border-b-2 border-red-300 bg-red-50">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <span aria-hidden className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-600 text-sm font-bold text-white">
