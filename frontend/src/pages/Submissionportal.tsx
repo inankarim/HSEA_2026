@@ -232,7 +232,7 @@ export default function SubmissionPortal() {
 
   // --- autosave ---------------------------------------------------------
 
-  const flushSave = useCallback(async () => {
+  const flushSaveOnce = useCallback(async () => {
     const patch = pendingPatch.current;
     if (Object.keys(patch).length === 0) return;
     pendingPatch.current = {};
@@ -276,6 +276,16 @@ export default function SubmissionPortal() {
       pendingPatch.current = { ...retry, ...pendingPatch.current };
     }
   }, [applicationId, guestToken]);
+
+  // Saves run one after another, and final submit waits for the chain, so a
+  // submission never reaches the server before the latest changes (such as
+  // just-ticked declarations) have been saved.
+  const saveChain = useRef<Promise<void>>(Promise.resolve());
+  const flushSave = useCallback(() => {
+    const run = saveChain.current.then(() => flushSaveOnce());
+    saveChain.current = run;
+    return run;
+  }, [flushSaveOnce]);
 
   // While saving is failing, keep retrying in the background.
   useEffect(() => {
@@ -439,7 +449,8 @@ const completedSections = useMemo(() => {
     setSubmitError(null);
     setSubmitIssues([]);
     setSubmitting(true);
-    saveNow();
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    await flushSave();
     try {
       const { submission: finalized } = await submissions.submitFinal(
         applicationId,
