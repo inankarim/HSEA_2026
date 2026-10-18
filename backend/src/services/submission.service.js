@@ -926,16 +926,18 @@ export async function finalizeSubmission(
     );
     missing.push(...missingMemberDocuments);
 
-    // A submission must have exactly one designated team leader among its
-    // members before it can be finalized. Checked here, inside the same
-    // locked transaction as the rest of final-submit validation, so a
-    // concurrent member add/remove can't race past this check.
+    // No team leader chosen: the applicant becomes the team leader. Done in
+    // the same locked transaction, so it's rolled back if the submission
+    // fails any other check, and a concurrent member change can't race it.
     const leaderCheck = await client.query(
       "SELECT COUNT(*)::int AS count FROM submission_members WHERE application_id = $1 AND is_team_leader = TRUE",
       [applicationId],
     );
     if (leaderCheck.rows[0].count === 0 && !row.applicant_is_team_leader) {
-      missing.push("A team leader must be designated (you or one of your team members)");
+      await client.query(
+        "UPDATE submissions SET applicant_is_team_leader = TRUE WHERE application_id = $1",
+        [applicationId],
+      );
     }
 
     if (missing.length > 0) {

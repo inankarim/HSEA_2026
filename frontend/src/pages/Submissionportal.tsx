@@ -417,7 +417,8 @@ const completedSections = useMemo(() => {
   const costingRequired = draft.projectCategory !== "Visionary Design";
   if (hasDesignDemonstration && (hasCosting || !costingRequired)) done.add("technical");
 
-  if (draft.applicantIsTeamLeader || teamMembers.some((m) => m.isTeamLeader)) done.add("team");
+  // Team members are optional and the applicant becomes team leader by default.
+  done.add("team");
 
   if (draft.googleDriveUrl) done.add("drive");
 
@@ -437,7 +438,7 @@ const completedSections = useMemo(() => {
     done.add("declaration");
 
   return done;
-}, [draft, existingDocuments, teamMembers]);
+}, [draft, existingDocuments]);
 
   function goToSection(id: SectionId) {
     saveNow();
@@ -527,10 +528,7 @@ const completedSections = useMemo(() => {
       if (!draft.clientName?.trim()) issues.push("Project: enter the client name.");
     }
 
-    // Team
-    if (!draft.applicantIsTeamLeader && !teamMembers.some((m) => m.isTeamLeader)) {
-      issues.push("Team Members: choose a team leader (you or one of your team members).");
-    }
+    // Team (no leader chosen → the backend makes the applicant team leader)
     for (const m of teamMembers) {
       const gaps = [
         !m.position && "position",
