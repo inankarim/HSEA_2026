@@ -61,8 +61,8 @@ describe("documentTypes registry", () => {
     assert.ok(conditional.includes("PROJECT_DESCRIPTION"));
   });
 
-  test("only the applicant photo is unconditionally required", () => {
-    assert.deepEqual(requiredDocumentTypes(), ["APPLICANT_PHOTO"]);
+  test("no document is unconditionally required", () => {
+    assert.deepEqual(requiredDocumentTypes(), []);
   });
 });
 

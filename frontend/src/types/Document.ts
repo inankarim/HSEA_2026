@@ -60,7 +60,7 @@ export const DOCUMENT_TYPE_DEFS: DocumentTypeDef[] = [
     type: "APPLICANT_PHOTO",
     label: "Applicant Photo",
     kind: "image",
-    required: true,
+    required: false,
   },
   {
     type: "OWNER_AUTHORIZATION",

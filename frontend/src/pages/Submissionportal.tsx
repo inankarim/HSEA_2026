@@ -491,7 +491,6 @@ const completedSections = useMemo(() => {
   // Costing and client details are optional for Visionary Design only.
   function validateBeforeSubmit(): string[] {
     const issues: string[] = [];
-    const uploaded = (type: DocumentType) => existingDocuments[type]?.uploadStatus === "UPLOADED";
 
     // Applicant
     if (invalidEmailFields.current.has("email")) issues.push("Applicant: enter a valid email address.");
@@ -505,7 +504,6 @@ const completedSections = useMemo(() => {
       if (!draft.universityName?.trim()) issues.push("Applicant: enter your university name.");
       if (!draft.universityEmail?.trim()) issues.push("Applicant: enter your university email.");
     }
-    if (!uploaded("APPLICANT_PHOTO")) issues.push("Applicant: upload your photo.");
 
     // Project (category-specific eligibility)
     if (!draft.projectName?.trim()) issues.push("Project: enter your project name.");

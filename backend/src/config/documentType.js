@@ -89,7 +89,7 @@ export const DOCUMENT_TYPES = {
   APPLICANT_PHOTO: {
     label: "Applicant Photo",
     kind: "image",
-    required: true,
+    required: false,
   },
   OWNER_AUTHORIZATION: {
     label: "Client / Owner Authorization Form",
