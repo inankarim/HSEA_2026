@@ -28,13 +28,14 @@ export function loadGoogleAnalytics() {
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-    gtag('config', '${gaId}');
+    gtag('config', '${gaId}', { send_page_view: false });
     window.gtag = gtag;
   `);
 }
 
 let metaPixelLoaded = false;
-const META_PIXEL_ID = "1403593594726283";
+// Set VITE_META_PIXEL_ID in the frontend .env to change it without a code edit.
+const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID || "1427775399472513";
 
 export function loadMetaPixel() {
   if (metaPixelLoaded) return;

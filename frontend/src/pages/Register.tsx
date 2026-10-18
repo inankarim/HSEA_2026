@@ -7,6 +7,8 @@ import FadeIn from "../components/FadeIn";
 import FormField, { inputClasses } from "../components/Formfield";
 import PasswordInput from "../components/PasswordInput";
 import { ApiError, auth } from "../lib/api";
+import { trackPixelEvent } from "../lib/pixel";
+import { trackGaEvent } from "../lib/ga";
 import { useAuth } from "../context/AuthContext";
 import type { ApplicantType } from "../types/Submission";
 import { NAME_PATTERN, NAME_TITLE, LIMITS, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
@@ -83,6 +85,8 @@ export default function Register() {
         universityName: form.applicantType === "STUDENT" ? form.universityName : undefined,
         universityEmail: form.applicantType === "STUDENT" ? form.universityEmail : undefined,
       });
+      trackPixelEvent("CompleteRegistration");
+      trackGaEvent("registration", { applicant_type: form.applicantType });
       await refresh();
       navigate(redirectTo, { replace: true });
     } catch (err) {

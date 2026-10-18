@@ -2,6 +2,7 @@ import { useEffect, useRef, Suspense, lazy } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import { trackPixelEvent } from "./lib/pixel";
+import { trackGaPageView } from "./lib/ga";
 import { SESSION_EXPIRED_EVENT } from "./lib/api";
 import { useAuth } from "./context/AuthContext";
 
@@ -35,17 +36,20 @@ declare global {
 function usePageViews() {
   const location = useLocation();
   const isFirstRoute = useRef(true);
+  const gaLandingSent = useRef(false);
   useEffect(() => {
     // The pixel loader already sends PageView for the landing page, so only
     // in-app navigations need one here.
     if (isFirstRoute.current) isFirstRoute.current = false;
     else trackPixelEvent("PageView");
 
-    if (!import.meta.env.VITE_GA_MEASUREMENT_ID) return;
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "page_view", {
-        page_path: location.pathname + location.search,
-      });
+    // GA4: config uses send_page_view: false, so the landing page is sent
+    // here once. Later in-app page changes are counted by GA4 itself
+    // (Enhanced measurement → "Page changes based on browser history
+    // events"); sending them here too would double-count every page.
+    if (!gaLandingSent.current) {
+      gaLandingSent.current = true;
+      trackGaPageView();
     }
   }, [location]);
 }

@@ -19,6 +19,7 @@ import {
 } from "../lib/api";
 import { documents } from "../lib/Documents";
 import { trackPixelEvent } from "../lib/pixel";
+import { trackGaEvent } from "../lib/ga";
 import { NAME_PATTERN, NAME_TITLE, LIMITS, PROJECT_STATUS_COMPLETED, PROJECT_STATUS_OPTIONS, COMPLETION_YEAR_RULE_CATEGORIES, completionYearRange, BD_PHONE_PATTERN, BD_PHONE_TITLE, BD_PHONE_PLACEHOLDER } from "../lib/validation";
 import { useUploadGate } from "../lib/useUploadGate";
 import { useAuth } from "../context/AuthContext";
@@ -459,7 +460,8 @@ const completedSections = useMemo(() => {
       );
       setSubmission(finalized);
       setConfirmOpen(false);
-      trackPixelEvent("Lead");
+      trackPixelEvent("Submission", true);
+      trackGaEvent("submission", { project_category: finalized.projectCategory ?? "" });
     } catch (err) {
       setSubmitError(
         err instanceof ApiError

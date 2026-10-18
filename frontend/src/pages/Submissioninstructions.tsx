@@ -7,6 +7,7 @@ import FadeIn from "../components/FadeIn";
 import { ApiError, submissions } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import { trackPixelEvent } from "../lib/pixel";
+import { trackGaEvent } from "../lib/ga";
 
 const PROCESS_STEPS = [
   {
@@ -114,6 +115,7 @@ export default function SubmissionInstructions() {
     try {
       const result = await submissions.start();
       trackPixelEvent("SubmissionStarted", true);
+      trackGaEvent("submission_started");
       navigate(`/submission/${result.applicationId}`);
     } catch (err) {
       setStartError(

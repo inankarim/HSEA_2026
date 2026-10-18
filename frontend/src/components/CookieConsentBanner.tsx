@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getConsent, setConsent } from "../lib/consent";
 import { loadGoogleAnalytics, loadMetaPixel } from "../lib/analyticsLoader";
+import { trackGaPageView } from "../lib/ga";
 
 export default function CookieConsentBanner() {
   const [visible, setVisible] = useState(() => getConsent() === null);
@@ -16,6 +17,8 @@ export default function CookieConsentBanner() {
     setConsent("accepted");
     loadGoogleAnalytics();
     loadMetaPixel();
+    // GA4's automatic page_view is off, so count the page they accepted on.
+    trackGaPageView();
     setVisible(false);
   }
 
