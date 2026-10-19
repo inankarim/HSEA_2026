@@ -154,7 +154,7 @@ export async function listSubmissions({
           WHERE m.application_id = s.application_id) AS member_count
       FROM submissions s
       ${where}
-      ORDER BY s.created_at DESC
+      ORDER BY s.updated_at DESC
       LIMIT $${limitParam} OFFSET $${offsetParam}`,
     [...values, pageSize, offset],
   );
