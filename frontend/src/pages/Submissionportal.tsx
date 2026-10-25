@@ -1414,7 +1414,7 @@ const completedSections = useMemo(() => {
           "authenticityConfirmed",
           "I confirm that the submitted work and information are authentic.",
         ],
-        ["termsAccepted", "I agree to the competition terms, conditions, and engineering declaration above."],
+        ["termsAccepted", "I agree to the competition terms, conditions, and declaration above."],
       ] as const
     ).map(([key, label]) => (
       <label
