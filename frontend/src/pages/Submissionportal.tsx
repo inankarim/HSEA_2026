@@ -1325,148 +1325,113 @@ const completedSections = useMemo(() => {
               )}
               {activeSection === "declaration" && (
                 <section className="space-y-6">
-                  <h2 className="text-2xl font-bold uppercase tracking-wide text-navy-deep">
-                    Declaration &amp; Terms
-                  </h2>
+  <h2 className="text-2xl font-bold uppercase tracking-wide text-navy-deep">
+    Declaration &amp; Terms
+  </h2>
 
-                  {/* Statement of Accuracy */}
-                  <div className="rounded-xl border border-navy-deep/10 bg-navy-deep/5 p-6">
-                    <h3 className="text-sm font-bold uppercase tracking-wide text-navy-deep">
-                      1. Statement of Accuracy
-                    </h3>
-                    <div className="mt-3 space-y-3 text-sm leading-relaxed text-gray-700">
-                      <p>
-                        By signing below, the entrant(s) certify that all information provided in this Entry
-                        Submission Form is complete, accurate, and true. The entrant(s) agree to hold harmless the
-                        Holcim Award Authority, LafargeHolcim Bangladesh PLC, the Award Secretariat, and
-                        associated organizing entities against any losses, damages, or liabilities arising from the use
-                        of the submitted materials. The entrant retains sole responsibility for any errors, omissions, or
-                        misrepresentations.
-                      </p>
-                    </div>
-                  </div>
+  {/* Full Terms and Conditions */}
+  <div className="rounded-xl border border-navy-deep/10 bg-navy-deep/5 p-6 text-sm leading-relaxed text-gray-700 max-h-[28rem] overflow-y-auto">
+    <h3 className="text-base font-bold uppercase tracking-wide text-navy-deep">
+      Holcim Structural Excellence Awards 2026 &mdash; Terms and Conditions
+    </h3>
+    <p className="mt-1 italic">
+      Please read these Terms carefully before submitting your entry. Submitting an entry means you accept them.
+    </p>
 
-                  {/* Conditions of Entry */}
-                  <div className="rounded-xl border border-navy-deep/10 bg-navy-deep/5 p-6">
-                    <h3 className="text-sm font-bold uppercase tracking-wide text-navy-deep">
-                      2. Conditions of Entry
-                    </h3>
-                    <div className="mt-3 space-y-4 text-sm leading-relaxed text-gray-700">
-                      <div>
-                        <p className="font-semibold text-navy-deep">Compliance</p>
-                        <p className="mt-1">
-                          By submitting this form, the entrant(s) agree to strictly abide by the official
-                          Terms and Conditions, eligibility criteria, and participation guidelines of the Holcim
-                          Structural Excellence Award.
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-navy-deep">Intellectual Property &amp; Copyright</p>
-                        <p className="mt-1">
-                          Entrants confirm that all structural designs, engineering analysis, calculations, and submitted media fulfill copyright obligations.
-                          Entrants agree to indemnify the Award Authority against any legal claims or disputes
-                          regarding ownership or copyright infringement.
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-navy-deep">Media &amp; Publication Rights</p>
-                        <p className="mt-1">
-                          Entrants grant the Award Authority and LafargeHolcim full authorization to use submitted engineering drawings, calculation summaries,
-                          photographs, text, and supporting documents for publications, exhibitions, promotional
-                          campaigns, technical documentation, and digital media.
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-navy-deep">Right of Rejection</p>
-                        <p className="mt-1">
-                          The Award Authority reserves the right to reclassify, reject, or
-                          disqualify any submission that fails to meet eligibility rules, contains unverifiable or
-                          misleading information, or violates the professional standards of the award.
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-navy-deep">Revocation of Award</p>
-                        <p className="mt-1">
-                          The Award Authority reserves the right to revoke any conferred
-                          award or recognition if submitted information is later found to be fraudulent or if the
-                          project becomes subject to legal or professional malpractice disputes.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Organiser and Acceptance</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">1.</span> The Holcim Structural Excellence Awards 2026 (&ldquo;HSEA 2026&rdquo; or the &ldquo;Award&rdquo;) are organised by LafargeHolcim Bangladesh PLC (the &ldquo;Organiser&rdquo;), acting through its Award Authority, Award Secretariat and independent Jury Panel (together, the &ldquo;Award Authority&rdquo;). There are no co-organisers. The Award is run through www.structuralexcellenceawardbd.com (the &ldquo;Website&rdquo;) and its submission portal (the &ldquo;Portal&rdquo;).</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">2.</span> By registering an account, ticking the declaration box, signing the Declaration &amp; Submission Agreement Form (the &ldquo;Form&rdquo;) or submitting an entry, each applicant, team member and Authorised Representative (together, &ldquo;Entrant&rdquo;) agrees to these Terms and Conditions (&ldquo;Terms&rdquo;), the Form and the eligibility, submission and evaluation criteria published on the Website. If there is a conflict, these Terms prevail. If you do not agree, do not submit an entry.</p>
 
-                  {/* Engineering Declaration */}
-                  <div className="rounded-xl border border-navy-deep/10 bg-navy-deep/5 p-6">
-                    <h3 className="text-sm font-bold uppercase tracking-wide text-navy-deep">
-                      3. Engineering Declaration
-                    </h3>
-                    <div className="mt-3 space-y-4 text-sm leading-relaxed text-gray-700">
-                      <p>
-                        I/We solemnly declare that I am / we are the Lead Structural Engineer(s) / Author(s) of the
-                        submitted engineering project, and all details provided in this submission are accurate and
-                        authentic.
-                      </p>
-                      <div>
-                        <p className="font-semibold text-navy-deep">Originality</p>
-                        <p className="mt-1">
-                          The project represents our original structural design work and is submitted
-                          with full authorization from all relevant collaborators, engineering firms, and project owners.
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-navy-deep">Completion &amp; Compliance</p>
-                        <p className="mt-1">
-                          The project has been fully completed or at least ≥ 50% construction completed that complies with all
-                          applicable building codes, structural safety standards, and award criteria.
-                        </p>
-                      </div>
-                      <div>
-                        <p className="font-semibold text-navy-deep">Final  Jury Decision</p>
-                        <p className="mt-1">
-                          I/We acknowledge and agree that the decision of the Jury Panel is final, binding, and not subject to appeal.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Categories and Eligibility</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">3.</span> Entries may be made in the following categories: (a) High Performance Concrete Structure; (b) Advanced Construction Technology &amp; Circularity; and (c) Next Generation Visionary Design and the Legendary Structural Engineer Award is an honorary lifetime achievement award; the recipient is selected by the Jury Panel through its own nomination process and direct submissions are not accepted.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">4.</span> For categories (a) and (b), the project must be physically located in Bangladesh; be fully completed within the last 5 years, or be an ongoing project at least 20% complete; be led by a full member or fellow of the Institution of Engineers, Bangladesh (IEB); and its structural design and execution must strictly comply with the Bangladesh National Building Code (BNBC) and hold all necessary regulatory approvals.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">5.</span> For category (c), Entrants must be final-year structural or civil engineering students, or early-career structural engineers up to IEB Associate Member status. Students must verify their status with an email on an approved university domain; IEB members must give an IEB membership number, which the Portal verifies before an entry can be finalised.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">6.</span> Employees of the Organiser and its affiliates, Jury Panel members and their immediate families, and anyone involved in running the Award may not enter. The Award Authority may require further proof of eligibility at any time.</p>
 
-                  {/* Confirmation Checkboxes */}
-                  <div className="space-y-4 border-t border-gray-200 pt-6">
-                    <h3 className="text-sm font-bold uppercase tracking-wide text-navy-deep">
-                      Confirm Your Agreement
-                    </h3>
-                    {(
-                      [
-                        ["informationConfirmed", "I confirm that the information provided is accurate."],
-                        [
-                          "filesUploadedConfirmed",
-                          "I confirm that I have uploaded all required files to my Google Drive.",
-                        ],
-                        [
-                          "namingConventionConfirmed",
-                          "I confirm that the files follow the required naming convention.",
-                        ],
-                        [
-                          "authenticityConfirmed",
-                          "I confirm that the submitted work and information are authentic.",
-                        ],
-                        ["termsAccepted", "I agree to the competition terms, conditions, and engineering declaration above."],
-                      ] as const
-                    ).map(([key, label]) => (
-                      <label
-                        key={key}
-                        className="flex items-start gap-3 rounded-lg border border-navy-deep/10 p-4 text-sm text-navy-deep cursor-pointer transition-colors hover:bg-navy-deep/5 hover:border-accent-cyan/50"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={Boolean(draft[key])}
-                          onChange={(e) => update(key, e.target.checked)}
-                          className="mt-0.5 h-4 w-4 accent-accent-cyan flex-shrink-0"
-                        />
-                        <span>{label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </section>
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Submission Requirements</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">7.</span> Entries must be submitted through the Portal by 11:59 PM (Bangladesh time) on October 31, 2026, unless the Organiser extends the deadline on the Website. Entrants must register an account and keep their login details secure, and are responsible for all activity on their account.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">8.</span> Each entry must include the completed Form and all materials listed in the Website submission guidelines, including the project presentation, documentation, drawings, Client/Owner Authorization Form, sustainability metrics and team member details and photographs (&ldquo;Materials&rdquo;). Photographs, structural drawings, CAD and CDR files must be provided through a Google Drive folder shared with the Organiser, named using the Portal-issued Application ID and kept accessible until the Award ends. The Entrant is responsible for that folder and the access it grants.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">9.</span> Late, incomplete, unverified, illegible or inaccessible entries may be rejected. The Organiser is not responsible for technical failures, lost or delayed uploads, or third-party platforms. If technical problems prevent online submission, a complete hard copy may be delivered to the Organiser&apos;s office before the deadline. Entries cannot be changed after submission unless the Award Authority asks for clarification. Names and organisational hierarchy given in the Form will appear on certificates, trophies and publications, and the Entrant is responsible for their accuracy.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Entrant Declarations and Warranties</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">10.</span> The Entrant declares and warrants that: (a) all information and Materials are complete, accurate, true and authentic; (b) the project is the Entrant&apos;s original structural design work; (c) the entry is made with the full authorisation of all collaborators, engineering firms, project owners and any other person whose consent is needed; (d) the Materials do not infringe any intellectual property, confidentiality, privacy or other right of any person and contain no confidential information the Entrant is not free to disclose; (e) the project is completed, or has reached the stage of completion stated in the entry, and complies with applicable laws, building codes and safety standards; and (f) the project is not, to the Entrant&apos;s knowledge, the subject of any legal, regulatory or professional malpractice dispute, and the Entrant will promptly notify the Organiser if one arises.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">11.</span> The Entrant remains solely responsible for any errors, omissions or misrepresentations in the entry. The Award Authority does not verify, approve or certify the structural adequacy or safety of any project, and no award amounts to such certification.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Intellectual Property and Licence</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">12.</span> The Entrant (or its licensors) keeps ownership of all intellectual property in the project and Materials. Nothing in these Terms transfers ownership to the Organiser.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">13.</span> The Entrant grants the Organiser and its affiliates a non-exclusive, royalty-free, worldwide, perpetual and irrevocable licence to use, reproduce, adapt (for formatting or length only), publish, display and communicate the Materials, and the names, likenesses and project details of the Entrant and team members, for judging, publications, exhibitions, promotional campaigns, technical documentation, digital and social media and other activities connected with the Award or the Organiser&apos;s promotion of sustainable construction, with reasonable credit where practicable. The Entrant waives, to the extent permitted by law, any moral rights that would prevent such use and confirms it has obtained the same from team members and photographers.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">14.</span> The Organiser is not obliged to use any Materials and may stop using them at any time. Materials are not returned.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Personal Data and Consent</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">15.</span> The Organiser will collect and use personal data in the Form (including names, IEB registration numbers, roles, signatures, contact details and images) to administer, judge and promote the Award, verify eligibility, announce winners, communicate with Entrants and meet legal obligations. Data may be shared with the Jury Panel, Award Secretariat, affiliates and service providers bound by confidentiality, and may be stored or processed outside Bangladesh with appropriate safeguards.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">16.</span> The Organiser will keep data secure, retain it only as long as needed for these purposes or as required by law, and apply the applicable laws of Bangladesh and its group data privacy policies. The Entrant confirms it has informed every team member and other person named in the entry of this clause and obtained their consent. Individuals may request access to or correction of their data, or withdraw consent to promotional use, by contacting the Award Secretariat; withdrawal may affect the ability to participate.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Judging</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">17.</span> Entries pass through shortlisting (eligibility and compliance screening) and jury evaluation, which may include candidate presentations, before winners are honoured at a grand gala in Dhaka (expected in January 2027). Each category is scored on a 100-point scale using the criteria on the Website; the highest-scoring entry in each category wins it, and category winners may be reassessed for the Grand Winner title. Shortlisted Entrants who do not attend a requested presentation may be withdrawn.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">18.</span> The Award Authority may move an entry to a more suitable category, request more information, or verify information with third parties, including the IEB, universities and project owners. The Jury Panel&apos;s decisions are final, binding and not subject to appeal, and feedback is not guaranteed. The Award Authority may decide not to make an award in any category.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Rejection, Disqualification and Revocation</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">19.</span> The Award Authority may reject or disqualify any entry, at any stage, if the Entrant breaches these Terms; the entry fails to meet eligibility rules; information is unverifiable, misleading, inaccurate or fraudulent; the Entrant attempts to influence the Jury Panel or acts dishonestly; or the entry violates the professional standards of the Award or could bring the Award or the Organiser into disrepute.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">20.</span> The Award Authority may revoke any award or recognition already conferred if submitted information is later found to be fraudulent or materially inaccurate, the project becomes the subject of a legal, regulatory or professional malpractice dispute, or any ground for disqualification is discovered. The Entrant must then return any certificate, trophy or prize and stop referring to the award, and the Organiser may publish the revocation.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Awards and Publicity</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">21.</span> Awards are as announced on the Website. The Grand Winner will receive BDT 5,00,000, and winners will receive trophies and recognition. Prizes are personal to the named winners, cannot be transferred or exchanged, and prize money is paid net of any taxes the Organiser must deduct by law. Winners must cooperate reasonably with announcements and the gala.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">22.</span> Winners may refer to their award in line with any brand guidelines from the Organiser, but may not otherwise use the Holcim or LafargeHolcim names or logos without written consent.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Indemnity and Limitation of Liability</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">23.</span> The Entrant agrees to indemnify and hold harmless the Organiser, its affiliates, the Award Authority, Award Secretariat, Jury Panel and their officers, employees and agents against all losses, damages, liabilities, costs and expenses (including reasonable legal fees) arising from any breach of these Terms, any inaccurate declaration, or any claim that the Materials or their use under these Terms infringe the rights of any person.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">24.</span> To the extent permitted by law, the Organiser is not liable for any indirect or consequential loss, loss of profit, opportunity or reputation, or for any loss arising from participation in the Award, the use of Materials as permitted, or events beyond its reasonable control. The Organiser&apos;s total liability to any Entrant is limited to the value of any award won by that Entrant. Nothing limits liability for fraud, death or personal injury caused by negligence, or any liability that cannot be limited by law.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Changes, Cancellation and General</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">25.</span> The Organiser may amend these Terms, or postpone, suspend or cancel the Award, where reasonably necessary, by publishing notice on the website. Amendments will not apply retrospectively to the detriment of entries already judged.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">26.</span> These Terms, the Form and the published guidelines are the entire agreement on the Award. If any provision is invalid, the rest remains in force. A failure to enforce a right is not a waiver. The Entrant may not assign its rights. Electronic acceptance and signatures are binding. The English version prevails over any translation.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Governing Law and Dispute Resolution</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">27.</span> These Terms and any dispute arising from or in connection with them or the Award are governed by the laws of Bangladesh.</p>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">28.</span> The parties will first try to resolve any dispute by good-faith negotiation. If unresolved within 30 days of written notice, either party may refer it to mediation in Dhaka under the mediation rules of the Bangladesh International Arbitration Centre (BIAC). If not settled within 60 days of the mediation referral, the dispute will be finally resolved by arbitration in Dhaka under the Arbitration Act 2001 and the BIAC Arbitration Rules.</p>
+
+    <h4 className="mt-6 font-bold uppercase tracking-wide text-navy-deep">Contact</h4>
+    <p className="mt-2"><span className="font-semibold text-navy-deep">29.</span> Questions, notices and data requests may be sent to the Award Secretariat, LafargeHolcim Bangladesh PLC, on +8801755514180 (10:00 AM to 5:00 PM), or through the contact details on the Website.</p>
+  </div>
+
+  {/* Confirmation Checkboxes */}
+  <div className="space-y-4 border-t border-gray-200 pt-6">
+    <h3 className="text-sm font-bold uppercase tracking-wide text-navy-deep">
+      Confirm Your Agreement
+    </h3>
+    {(
+      [
+        ["informationConfirmed", "I confirm that the information provided is accurate."],
+        [
+          "filesUploadedConfirmed",
+          "I confirm that I have uploaded all required files to my Google Drive.",
+        ],
+        [
+          "namingConventionConfirmed",
+          "I confirm that the files follow the required naming convention.",
+        ],
+        [
+          "authenticityConfirmed",
+          "I confirm that the submitted work and information are authentic.",
+        ],
+        ["termsAccepted", "I agree to the competition terms, conditions, and engineering declaration above."],
+      ] as const
+    ).map(([key, label]) => (
+      <label
+        key={key}
+        className="flex items-start gap-3 rounded-lg border border-navy-deep/10 p-4 text-sm text-navy-deep cursor-pointer transition-colors hover:bg-navy-deep/5 hover:border-accent-cyan/50"
+      >
+        <input
+          type="checkbox"
+          checked={Boolean(draft[key])}
+          onChange={(e) => update(key, e.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-accent-cyan flex-shrink-0"
+        />
+        <span>{label}</span>
+      </label>
+    ))}
+  </div>
+</section>
               )}
 
               {/* 07 Review & Submit */}
