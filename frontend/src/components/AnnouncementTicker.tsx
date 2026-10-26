@@ -14,7 +14,7 @@ const CYCLE_MS = 4500;
 
 // Set your actual submission deadline here — the countdown message
 // recalculates automatically on every render, so it never goes stale.
-const SUBMISSION_DEADLINE = new Date("2026-10-31T23:59:59");
+const SUBMISSION_DEADLINE = new Date("2026-11-15T23:59:59");
 
 type Announcement = {
   text: string;
@@ -37,8 +37,8 @@ function useAnnouncements(): Announcement[] {
       },
       {
 
-        text: "Submission Deadline: October 31, 2026",
-        highlight: "October 31, 2026",
+        text: "Submission Deadline: November 15, 2026",
+        highlight: "November 15, 2026",
       },
       {
         text:

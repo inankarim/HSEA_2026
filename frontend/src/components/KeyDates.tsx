@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import FadeIn from "./FadeIn";
 import bgImage from "../assets/bg2.webp";
 
-const DEADLINE = new Date("2026-10-31T23:59:00+06:00").getTime();
+const DEADLINE = new Date("2026-11-15T23:59:00+06:00").getTime();
 
 function getTimeLeft() {
   const diff = Math.max(0, DEADLINE - Date.now());
@@ -59,11 +59,11 @@ export default function KeyDates() {
           </h3>
           <div className="mt-4 inline-block rounded-lg bg-white px-6 sm:px-8 py-3 sm:py-4">
             <span className="text-lg sm:text-xl lg:text-2xl font-bold text-navy-deep">
-              31 October 2026
+             15 November 2026
             </span>
           </div>
           <p className="mt-3 text-sm text-white/60">
-            11:59 PM (BD Time) · 31 October
+            11:59 PM (BD Time) · 15 November
           </p>
         </FadeIn>
 
