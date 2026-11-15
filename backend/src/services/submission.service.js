@@ -632,7 +632,9 @@ function validateEligibility(row) {
 
   const missing = [];
   if (!row.client_name) {
-    missing.push(`Client name is required for the ${row.project_category} category`);
+    missing.push(
+      `Client name is required for the ${row.project_category} category`,
+    );
   }
 
   if (row.project_status === PROJECT_STATUS_COMPLETED) {
@@ -647,7 +649,9 @@ function validateEligibility(row) {
       );
     }
   } else if (row.project_status !== PROJECT_STATUS_UNDER_CONSTRUCTION) {
-    missing.push("Project status must be set to Completed or Under Construction");
+    missing.push(
+      "Project status must be set to Completed or Under Construction",
+    );
   }
   return missing;
 }
@@ -655,7 +659,8 @@ function validateEligibility(row) {
 function validateApplicantType(row) {
   const missing = [];
   if (row.applicant_type === "IAB_MEMBER") {
-    if (!row.iab_membership_number) missing.push("IEB membership number is required");
+    if (!row.iab_membership_number)
+      missing.push("IEB membership number is required");
   } else if (row.applicant_type === "STUDENT") {
     if (!row.university_name) missing.push("University name is required");
     if (!row.university_email) missing.push("University email is required");
@@ -673,7 +678,8 @@ function validateRequiredFields(row) {
   const declarations = {
     information_confirmed: "Confirm your information is accurate",
     files_uploaded_confirmed: "Confirm all files are uploaded",
-    naming_convention_confirmed: "Confirm your files follow the naming convention",
+    naming_convention_confirmed:
+      "Confirm your files follow the naming convention",
     authenticity_confirmed: "Confirm the work is authentic",
     terms_accepted: "Accept the terms and conditions",
   };
@@ -751,9 +757,12 @@ async function getMissingMemberDocumentDescriptions(client, applicationId) {
     if (!m.position) gaps.push("position");
     if (!m.phone) gaps.push("phone number");
     if (!m.email) gaps.push("email");
-    if (m.applicant_type === "IAB_MEMBER" && !m.iab_membership_number) gaps.push("IEB membership number");
-    if (m.applicant_type === "STUDENT" && !m.university_name) gaps.push("university name");
-    if (m.applicant_type === "STUDENT" && !m.university_email) gaps.push("university email");
+    if (m.applicant_type === "IAB_MEMBER" && !m.iab_membership_number)
+      gaps.push("IEB membership number");
+    if (m.applicant_type === "STUDENT" && !m.university_name)
+      gaps.push("university name");
+    if (m.applicant_type === "STUDENT" && !m.university_email)
+      gaps.push("university email");
     if (!m.applicant_type) gaps.push("member type (IEB Member or Student)");
     if (gaps.length > 0) {
       missing.push(

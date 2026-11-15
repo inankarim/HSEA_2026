@@ -12,33 +12,16 @@ function extractDomain(email) {
  * with a personal-email domain (gmail.com, yahoo.com, etc.) because those
  * domains are simply never present in the approved table.
  */
+/**
+ * TEMPORARY: university email verification is switched off. Any non-empty
+ * email is accepted as verified, so no domain check and no database lookup
+ * happen. To bring real verification back, restore the previous version
+ * of this file.
+ */
 export async function verifyUniversityEmail(email) {
-  if (!email || typeof email !== "string") {
+  if (!email || typeof email !== "string" || !email.trim()) {
     return { verified: false };
   }
 
-  const domain = extractDomain(email.trim().toLowerCase());
-  if (!domain) {
-    return { verified: false };
-  }
-
-  const result = await pool.query(
-    `SELECT university_name, email_domain, status
-       FROM universities
-      WHERE LOWER(email_domain) = $1`,
-    [domain]
-  );
-
-  const row = result.rows[0];
-  if (!row || row.status !== "ACTIVE") {
-    return { verified: false };
-  }
-
-  return {
-    verified: true,
-    university: {
-      name: row.university_name,
-      domain: row.email_domain,
-    },
-  };
+  return { verified: true };
 }

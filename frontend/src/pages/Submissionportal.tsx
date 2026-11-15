@@ -13,7 +13,6 @@ import {
   ApiError,
   getGuestAccessToken,
   submissions,
-  verification,
   members,
   newIdempotencyKey,
 } from "../lib/api";
@@ -115,8 +114,6 @@ export default function SubmissionPortal() {
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const [uniResult, setUniResult] = useState<null | { verified: boolean; name?: string }>(null);
-
   const [existingDocuments, setExistingDocuments] = useState<Record<string, SubmissionDocument>>({});
   const [documentsLoading, setDocumentsLoading] = useState(true);
   const [documentsError, setDocumentsError] = useState<string | null>(null);
@@ -179,9 +176,6 @@ export default function SubmissionPortal() {
         setSubmission(sub);
         setDraft(draftFromSubmission(sub));
         setTeamMembers(membersResult.members);
-        if (sub.universityVerificationStatus !== "NOT_APPLICABLE") {
-          setUniResult({ verified: sub.universityVerificationStatus === "VERIFIED" });
-        }
 
         const byType: Record<string, SubmissionDocument> = {};
         for (const d of docsResult.documents) byType[d.documentType] = d;
@@ -247,9 +241,6 @@ export default function SubmissionPortal() {
       );
       setSaveState("saved");
       setLastSavedAt(new Date());
-      if (patch.universityEmail !== undefined) {
-        setUniResult({ verified: updated.universityVerificationStatus === "VERIFIED" });
-      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 0) {
         setSaveState("offline");
@@ -333,19 +324,6 @@ export default function SubmissionPortal() {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
   }, []);
-
-  // --- verification -------------------------------------------------------
-
-  async function checkUniversityEmail() {
-    const email = (draft.universityEmail || "").trim();
-    if (!email) return;
-    try {
-      const result = await verification.universityEmail(email);
-      setUniResult({ verified: result.verified, name: result.university?.name });
-    } catch {
-      // same as above
-    }
-  }
 
   // --- documents ------------------------------------------------------
 
@@ -843,19 +821,7 @@ const completedSections = useMemo(() => {
                           className={inputClasses}
                           value={draft.universityEmail || ""}
                           onChange={(e) => update("universityEmail", e.target.value)}
-                          onBlur={checkUniversityEmail}
                         />
-                        {uniResult && (
-                          <VerificationBadge
-                            status={uniResult.verified ? "VERIFIED" : "FAILED"}
-                            verifiedLabel={
-                              uniResult.name
-                                ? `University email verified — ${uniResult.name}`
-                                : "University email verified"
-                            }
-                            failedLabel="This university email domain could not be verified. Please check your email or contact the competition team."
-                          />
-                        )}
                       </FormField>
                     </div>
                   )}

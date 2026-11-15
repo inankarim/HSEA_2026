@@ -4,7 +4,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import FadeIn from "./FadeIn";
 import bgImage from "../assets/bg2.webp";
 
-const DEADLINE = new Date("2026-11-15T23:59:00+06:00").getTime();
+// Single source of truth: the countdown and both date labels derive from this.
+// The +06:00 offset pins it to BD time regardless of the visitor's timezone.
+const DEADLINE_DATE = new Date("2026-11-30T23:59:00+06:00");
+const DEADLINE = DEADLINE_DATE.getTime();
+
+const DEADLINE_LABEL = DEADLINE_DATE.toLocaleDateString("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "Asia/Dhaka",
+}); // "30 November 2026"
+
+const DEADLINE_SHORT = DEADLINE_DATE.toLocaleDateString("en-GB", {
+  day: "numeric",
+  month: "long",
+  timeZone: "Asia/Dhaka",
+}); // "30 November"
 
 function getTimeLeft() {
   const diff = Math.max(0, DEADLINE - Date.now());
@@ -59,18 +75,18 @@ export default function KeyDates() {
           </h3>
           <div className="mt-4 inline-block rounded-lg bg-white px-6 sm:px-8 py-3 sm:py-4">
             <span className="text-lg sm:text-xl lg:text-2xl font-bold text-navy-deep">
-             15 November 2026
+              {DEADLINE_LABEL}
             </span>
           </div>
           <p className="mt-3 text-sm text-white/60">
-            11:59 PM (BD Time) · 15 November
+            11:59 PM (BD Time) · {DEADLINE_SHORT}
           </p>
         </FadeIn>
 
         {/* Right: countdown */}
         <FadeIn y={16} delay={0.15}>
           <p className="text-xs font-bold uppercase tracking-wide text-white/60">
-           Deadline Closes In
+            Deadline Closes In
           </p>
           <div className="mt-6 lg:mt-8 grid grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
             {units.map((u) => (
